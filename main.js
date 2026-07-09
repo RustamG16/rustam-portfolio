@@ -7,7 +7,7 @@ const CONFIG = {
   frames: {
     path: 'frames/hero/frame_',   // + %04d + .webp
     ext: '.webp',
-    count: 320,                   // desktop: 2x8s @ 20fps
+    count: 360,                   // desktop: orbit-a 8s + orbit-b(1) 10s @ 20fps
     pad: 4,
     mobilePath: 'frames/hero-mobile/frame_',
     mobileCount: 160,             // mobile: 10fps variant
@@ -27,16 +27,140 @@ try {
   }
 } catch (e) { /* native scroll fallback */ }
 
+const SEAM_CONFIG = {
+  seamFrame: 160,
+  mobileSeamFrame: 80,
+  buildFrames: 10,
+  decayFrames: 18,
+  peakOpacity: 0.3,
+  color: 'rgba(80, 255, 190, 1)',
+  gradeFrames: 24,
+  gradePeak: 0.25,
+  gradeColor: 'rgba(0, 20, 12, 1)',
+  bloomCenterX: 0.7,
+  bloomCenterY: 0.4,
+  bloomEdgeAlpha: 0.15,
+  glitch: {
+    windowFrames: 8,
+    maxChannelShift: 14,
+    ghostAlpha: 0.5,
+    maxSlices: 6,
+    maxSliceHeight: 30,
+    maxSliceOffset: 60,
+    scanlineColor: 'rgba(80, 255, 190, 1)',
+    scanlineAlpha: 0.35
+  }
+};
+
+const smoothstep = (t) => {
+  const x = Math.max(0, Math.min(1, t));
+  return x * x * (3 - 2 * x);
+};
+
+function seamFlashAlpha(frame, seam) {
+  const { buildFrames, decayFrames, peakOpacity } = SEAM_CONFIG;
+  if (frame < seam) {
+    const d = seam - frame;
+    if (d >= buildFrames) return 0;
+    return peakOpacity * smoothstep(1 - d / buildFrames);
+  }
+  if (frame > seam) {
+    const d = frame - seam;
+    if (d >= decayFrames) return 0;
+    return peakOpacity * (1 - smoothstep(d / decayFrames));
+  }
+  return peakOpacity;
+}
+
+function seamGradeAlpha(frame, seam) {
+  const { gradeFrames, gradePeak } = SEAM_CONFIG;
+  const d = frame - seam;
+  if (d < 0 || d >= gradeFrames) return 0;
+  return gradePeak * (1 - smoothstep(d / gradeFrames));
+}
+
+const rgbaAlpha = (rgba, a) => {
+  const m = rgba.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+  return m ? `rgba(${m[1]}, ${m[2]}, ${m[3]}, ${a})` : rgba;
+};
+
+const mulberry32 = (seed) => {
+  let s = seed | 0;
+  return () => {
+    s = (s + 0x6D2B79F5) | 0;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+};
+
+let _glitchStrip = null;
+let _glitchStripCtx = null;
+
+function drawGlitch(ctx, img, i, seam, cw, ch) {
+  const d = Math.abs(i - seam);
+  const g = SEAM_CONFIG.glitch;
+  if (d >= g.windowFrames) return;
+
+  const t = 1 - d / g.windowFrames;
+  const rng = mulberry32(i * 7919);
+  const s = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
+  const w = img.naturalWidth * s, h = img.naturalHeight * s;
+  const dx = (cw - w) / 2, dy = (ch - h) / 2;
+
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  ctx.globalAlpha = g.ghostAlpha * t;
+  const shift = g.maxChannelShift * t;
+  ctx.drawImage(img, dx - shift, dy, w, h);
+  ctx.drawImage(img, dx + shift, dy, w, h);
+  ctx.restore();
+
+  const sliceCount = Math.floor(t * g.maxSlices);
+  if (sliceCount > 0) {
+    if (!_glitchStrip) {
+      _glitchStrip = document.createElement('canvas');
+      _glitchStripCtx = _glitchStrip.getContext('2d');
+    }
+    if (_glitchStrip.width !== cw || _glitchStrip.height !== g.maxSliceHeight) {
+      _glitchStrip.width = cw;
+      _glitchStrip.height = g.maxSliceHeight;
+    }
+    const src = ctx.canvas;
+    for (let n = 0; n < sliceCount; n++) {
+      const sh = 8 + Math.floor(rng() * (g.maxSliceHeight - 8 + 1));
+      const maxY = ch - sh;
+      const sy = maxY > 0 ? Math.floor(rng() * maxY) : 0;
+      const offsetX = Math.floor((rng() * 2 - 1) * g.maxSliceOffset * t);
+      _glitchStripCtx.clearRect(0, 0, cw, sh);
+      _glitchStripCtx.drawImage(src, 0, sy, cw, sh, 0, 0, cw, sh);
+      ctx.drawImage(_glitchStrip, 0, 0, cw, sh, offsetX, sy, cw, sh);
+    }
+  }
+
+  ctx.save();
+  ctx.globalCompositeOperation = 'source-over';
+  for (let k = 0; k < 2; k++) {
+    const maxY = ch - 2;
+    const sy = maxY > 0 ? Math.floor(rng() * maxY) : 0;
+    const lh = 1 + Math.floor(rng() * 2);
+    ctx.fillStyle = rgbaAlpha(g.scanlineColor, g.scanlineAlpha * t);
+    ctx.fillRect(0, sy, cw, lh);
+  }
+  ctx.restore();
+}
+
 /* ---------- FlipbookScrubber ----------
    Canvas frame-sequence scrubber with:
    - coarse-first preloading (every 8th frame, then fill)
    - nearest-loaded-frame fallback while loading
    - cover-fit draw, devicePixelRatio aware                     */
 class FlipbookScrubber {
-  constructor(canvas, cfg) {
+  constructor(canvas, cfg, glitchEl = null) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
     this.cfg = cfg;
+    this.glitchEl = glitchEl;
     this.isMobile = innerWidth < 768 && !!cfg.mobilePath;
     this.count = this.isMobile ? (cfg.mobileCount || cfg.count) : cfg.count;
     this.images = new Array(this.count).fill(null);
@@ -97,6 +221,42 @@ class FlipbookScrubber {
     const w = img.naturalWidth * s, h = img.naturalHeight * s;
     this.ctx.clearRect(0, 0, cw, ch);
     this.ctx.drawImage(img, (cw - w) / 2, (ch - h) / 2, w, h);
+
+    const seam = this.isMobile ? SEAM_CONFIG.mobileSeamFrame : SEAM_CONFIG.seamFrame;
+    drawGlitch(this.ctx, img, i, seam, cw, ch);
+
+    const flashAlpha = seamFlashAlpha(i, seam);
+    if (flashAlpha > 0) {
+      const { bloomCenterX, bloomCenterY, bloomEdgeAlpha, color } = SEAM_CONFIG;
+      const cx = cw * bloomCenterX, cy = ch * bloomCenterY;
+      const radius = Math.hypot(cw, ch) * 0.55;
+      const ctx = this.ctx;
+      ctx.save();
+      ctx.globalCompositeOperation = 'screen';
+      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+      g.addColorStop(0, rgbaAlpha(color, flashAlpha));
+      g.addColorStop(1, rgbaAlpha(color, flashAlpha * bloomEdgeAlpha));
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, cw, ch);
+      ctx.restore();
+    }
+
+    const gradeAlpha = seamGradeAlpha(i, seam);
+    if (gradeAlpha > 0) {
+      const ctx = this.ctx;
+      ctx.save();
+      ctx.globalCompositeOperation = 'multiply';
+      ctx.fillStyle = rgbaAlpha(SEAM_CONFIG.gradeColor, gradeAlpha);
+      ctx.fillRect(0, 0, cw, ch);
+      ctx.restore();
+    }
+
+    if (this.glitchEl) {
+      this.glitchEl.classList.toggle(
+        'is-glitching',
+        Math.abs(i - seam) < SEAM_CONFIG.glitch.windowFrames
+      );
+    }
   }
   setProgress(p) {
     const i = Math.max(0, Math.min(this.count - 1, Math.round(p * (this.count - 1))));
@@ -116,7 +276,8 @@ document.querySelectorAll('[data-line]').forEach(line => {
   line.innerHTML = [...line.textContent].map(c => `<span class="ch">${c}</span>`).join('');
 });
 const chars = [...document.querySelectorAll('.hero__name .ch')];
-const scrubber = new FlipbookScrubber(document.getElementById('orbit-canvas'), CONFIG.frames);
+const heroName = document.getElementById('hero-name');
+const scrubber = new FlipbookScrubber(document.getElementById('orbit-canvas'), CONFIG.frames, heroName);
 const hero = document.getElementById('hero');
 const sub = document.getElementById('hero-sub');
 const hint = document.getElementById('hero-hint');
