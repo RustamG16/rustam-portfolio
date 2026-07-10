@@ -36,7 +36,6 @@ a{color:inherit;text-decoration:none}
 #orbit-canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .hero__content{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;pointer-events:none}
 .hero__name{font-family:var(--display);font-size:clamp(64px,13vw,220px);line-height:.92;text-align:center;letter-spacing:.01em}
-.hero__name.is-glitching{transform:skewX(1.5deg);text-shadow:-2px 0 rgba(80,255,190,.85),2px 0 rgba(255,60,180,.85)}
 .hero__line{display:block;overflow:hidden}
 .hero__line--accent{-webkit-text-stroke:2px var(--text);color:transparent}
 .hero__name .ch{display:inline-block;transform:translateY(110%);opacity:0}
