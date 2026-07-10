@@ -10,8 +10,7 @@ const CONFIG = {
     count: 360,                   // orbit-a 8s + orbit-b(1) 10s @ 20fps
     pad: 4,
     mobilePath: 'frames/hero-mobile/frame_',
-    mobileCount: 160,             // 10fps variant
-    mobileHighQuality: true,      // load 1600px desktop frames on mobile (every 2nd)
+    mobileCount: 160,             // 10fps variant, covers full 360-frame orbit
     poster: 'media/poster.webp'
   },
   heroScrub: { nameRevealEnd: 0.18, subRevealAt: 0.12, hintFadeAt: 0.05 },
@@ -162,7 +161,6 @@ class FlipbookScrubber {
     this.cfg = cfg;
     this.glitchEl = glitchEl;
     this.isMobile = innerWidth < 768 && !!cfg.mobilePath;
-    this.hqMobile = this.isMobile && !!cfg.mobileHighQuality;
     this.count = this.isMobile ? (cfg.mobileCount || cfg.count) : cfg.count;
     this.images = new Array(this.count).fill(null);
     this.loaded = new Set();
@@ -172,7 +170,7 @@ class FlipbookScrubber {
     this.painted = -1;
     this.poster = null;
     this.resize();
-    addEventListener('resize', () => { this.resize(); this.draw(Math.round(this.displayIdx)); });
+    addEventListener('resize', () => this.redraw());
     if (cfg.poster) {
       const poster = new Image();
       poster.decoding = 'async';
@@ -185,12 +183,11 @@ class FlipbookScrubber {
     this.preload();
   }
   frameNum(i) {
-    if (this.hqMobile) return i * 2 + 1;
     return i + 1;
   }
   src(i) {
     const n = String(this.frameNum(i)).padStart(this.cfg.pad, '0');
-    const base = this.hqMobile ? this.cfg.path : (this.isMobile ? this.cfg.mobilePath : this.cfg.path);
+    const base = this.isMobile ? this.cfg.mobilePath : this.cfg.path;
     return `${base}${n}${this.cfg.ext}`;
   }
   load(i) {
@@ -201,7 +198,7 @@ class FlipbookScrubber {
       this.loaded.add(i);
       const active = Math.round(this.displayIdx);
       if (this.painted < 0 && i === 0) this.draw(0);
-      else if (i === active) this.draw(i);
+      else if (i >= active - 2 && i <= active + 2) this.draw(active);
     };
     img.src = this.src(i);
     this.images[i] = img;
@@ -218,11 +215,20 @@ class FlipbookScrubber {
     setTimeout(fill, 120);
   }
   prefetchAround(i) {
-    const span = this.isMobile ? 12 : 10;
+    const span = this.isMobile ? 16 : 12;
     for (let d = 0; d <= span; d++) {
       this.load(i - d);
       this.load(i + d);
     }
+  }
+  prefetchToEnd(from) {
+    for (let j = from; j < this.count; j++) this.load(j);
+  }
+  redraw() {
+    this.resize();
+    const i = Math.round(this.displayIdx);
+    this.lastStepIdx = -1;
+    this.draw(i);
   }
   drawPoster() {
     if (!this.poster) return;
@@ -302,14 +308,17 @@ class FlipbookScrubber {
   }
   setProgress(p) {
     this.targetIdx = p * (this.count - 1);
-    this.prefetchAround(Math.round(this.targetIdx));
+    const i = Math.round(this.targetIdx);
+    this.prefetchAround(i);
+    if (p > 0.75) this.prefetchToEnd(i);
   }
   step() {
     const delta = this.targetIdx - this.displayIdx;
-    if (Math.abs(delta) < 0.04) this.displayIdx = this.targetIdx;
-    else this.displayIdx += delta * (this.isMobile ? 0.28 : 0.22);
+    if (Math.abs(delta) > 6 || Math.abs(delta) < 0.05) this.displayIdx = this.targetIdx;
+    else this.displayIdx += delta * 0.4;
     const i = Math.round(this.displayIdx);
-    if (i !== this.lastStepIdx) {
+    const needsUpgrade = this.loaded.has(i) && this.painted < i;
+    if (i !== this.lastStepIdx || needsUpgrade) {
       this.lastStepIdx = i;
       this.draw(i);
     }
@@ -368,8 +377,8 @@ const tick = () => {
 requestAnimationFrame(tick);
 
 if (window.visualViewport) {
-  visualViewport.addEventListener('resize', () => scrubber.resize());
-  visualViewport.addEventListener('scroll', () => scrubber.resize());
+  visualViewport.addEventListener('resize', () => scrubber.redraw());
+  visualViewport.addEventListener('scroll', () => scrubber.redraw());
 }
 
 /* ---------- stats counters ---------- */
