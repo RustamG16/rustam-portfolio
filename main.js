@@ -17,11 +17,12 @@ const CONFIG = {
   pillarsSteps: 3
 };
 
-/* ---------- smooth scroll (Lenis, optional) ---------- */
+/* ---------- smooth scroll (Lenis, desktop wheel only) ---------- */
 let lenis = null;
+const isTouchDevice = matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0;
 try {
-  if (window.Lenis && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    lenis = new Lenis({ lerp: 0.09 });
+  if (window.Lenis && !matchMedia('(prefers-reduced-motion: reduce)').matches && !isTouchDevice) {
+    lenis = new Lenis({ lerp: 0.09, smoothTouch: false });
     const raf = (t) => { lenis.raf(t); requestAnimationFrame(raf); };
     requestAnimationFrame(raf);
   }
@@ -166,8 +167,18 @@ class FlipbookScrubber {
     this.images = new Array(this.count).fill(null);
     this.loaded = new Set();
     this.current = -1;
+    this.poster = null;
     this.resize();
     addEventListener('resize', () => { this.resize(); this.draw(this.current < 0 ? 0 : this.current); });
+    if (cfg.poster) {
+      const poster = new Image();
+      poster.decoding = 'async';
+      poster.onload = () => {
+        this.poster = poster;
+        if (this.current < 0) this.drawPoster();
+      };
+      poster.src = cfg.poster;
+    }
     this.preload();
   }
   src(i) {
@@ -189,14 +200,34 @@ class FlipbookScrubber {
   }
   preload() {
     this.load(0);
-    for (let i = 0; i < this.count; i += 8) this.load(i);        // coarse pass
+    const coarseStep = this.isMobile ? 4 : 8;
+    const eagerEnd = this.isMobile ? 32 : 16;
+    for (let i = 0; i < this.count; i += coarseStep) this.load(i);
+    for (let i = 1; i < eagerEnd; i++) this.load(i);
     let i = 0;
+    const batch = this.isMobile ? 12 : 6;
     const fill = () => {
       let done = 0;
-      while (i < this.count && done < 6) { this.load(i); i++; done++; }
-      if (i < this.count) requestIdleCallback ? requestIdleCallback(fill) : setTimeout(fill, 60);
+      while (i < this.count && done < batch) { this.load(i); i++; done++; }
+      if (i < this.count) setTimeout(fill, this.isMobile ? 16 : 60);
     };
-    (requestIdleCallback ? requestIdleCallback(fill) : setTimeout(fill, 200));
+    setTimeout(fill, this.isMobile ? 40 : 200);
+  }
+  prefetchAround(i) {
+    const span = this.isMobile ? 20 : 12;
+    for (let d = 0; d <= span; d++) {
+      if (i - d >= 0) this.load(i - d);
+      if (i + d < this.count) this.load(i + d);
+    }
+  }
+  drawPoster() {
+    if (!this.poster) return;
+    const cw = this.canvas.width, ch = this.canvas.height;
+    const img = this.poster;
+    const s = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
+    const w = img.naturalWidth * s, h = img.naturalHeight * s;
+    this.ctx.clearRect(0, 0, cw, ch);
+    this.ctx.drawImage(img, (cw - w) / 2, (ch - h) / 2, w, h);
   }
   nearestLoaded(i) {
     if (this.loaded.has(i)) return i;
@@ -213,7 +244,10 @@ class FlipbookScrubber {
   }
   draw(i) {
     const j = this.nearestLoaded(i);
-    if (j < 0) return;
+    if (j < 0) {
+      if (this.poster) this.drawPoster();
+      return;
+    }
     this.current = i;
     const img = this.images[j];
     const cw = this.canvas.width, ch = this.canvas.height;
@@ -260,6 +294,7 @@ class FlipbookScrubber {
   }
   setProgress(p) {
     const i = Math.max(0, Math.min(this.count - 1, Math.round(p * (this.count - 1))));
+    this.prefetchAround(i);
     if (i !== this.current) this.draw(i);
   }
 }
