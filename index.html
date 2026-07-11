@@ -8,13 +8,20 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#0A0A0B">
+<meta property="og:type" content="website">
 <meta property="og:title" content="Rustam Gurbanov — Software Engineer · AI Orchestrator · Designer">
-<meta property="og:image" content="media/poster.webp">
+<meta property="og:description" content="Portfolio of Rustam Gurbanov — software engineer, AI orchestrator, web designer and content creator.">
+<!-- og:image and og:url must be ABSOLUTE urls — update both after the custom domain is live -->
+<meta property="og:image" content="https://russ-tafarii.github.io/portfolio/media/og.jpg">
 <meta property="og:url" content="https://russ-tafarii.github.io/portfolio/">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="preload" as="image" href="frames/hero/frame_0001.webp">
-<link rel="preload" as="image" href="media/poster.webp">
+<!-- 13/20 aspect matches NARROW_ASPECT in main.js -->
+<link rel="preload" as="image" href="frames/hero/frame_0001.webp" media="(min-aspect-ratio: 13/20)">
+<link rel="preload" as="image" href="media/poster.webp" media="(min-aspect-ratio: 13/20)">
+<link rel="preload" as="image" href="frames/hero-m/frame_0001.webp" media="(max-aspect-ratio: 13/20)">
+<link rel="preload" as="image" href="media/poster-m.webp" media="(max-aspect-ratio: 13/20)">
 <link rel="stylesheet" href="style.css">
 <script type="application/ld+json">
 {

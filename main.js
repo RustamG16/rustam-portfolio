@@ -3,17 +3,27 @@
    Everything below CONFIG is archetype-agnostic engine code.
    ===================================================================== */
 
+/* narrow (phone-like) viewports get a 9:16 center-crop frame set at half
+   frame rate (frames/hero-m, 180 frames) — native crop resolution instead
+   of upscaling the center strip of the 16:9 desktop frames.
+   Threshold is aspect ratio, not orientation: tablet portrait (~3:4) must
+   keep the 16:9 set or the 9:16 frames' vertical cover-crop cuts the head. */
+const NARROW_ASPECT = 0.65; /* keep in sync with 13/20 preload media queries */
+const isNarrowViewport = innerWidth / innerHeight < NARROW_ASPECT;
+const FRAME_SETS = {
+  desktop: { path: 'frames/hero/frame_',   ext: '.webp', count: 360, pad: 4, poster: 'media/poster.webp' },
+  mobile:  { path: 'frames/hero-m/frame_', ext: '.webp', count: 180, pad: 4, poster: 'media/poster-m.webp' }
+};
+
 const CONFIG = {
-  frames: {
-    path: 'frames/hero/frame_',   // + %04d + .webp
-    ext: '.webp',
-    count: 360,                   // orbit-a 160 + orbit-b(1) 200 @ 20fps
-    pad: 4,
-    poster: 'media/poster.webp'
-  },
+  frames: isNarrowViewport ? FRAME_SETS.mobile : FRAME_SETS.desktop,
   heroScrub: { nameRevealEnd: 0.18, subRevealAt: 0.12, hintFadeAt: 0.05 },
   pillarsSteps: 3
 };
+
+/* frame-count-based timings below are authored for the 360-frame set */
+const FRAME_SCALE = CONFIG.frames.count / 360;
+const scaleFrames = (n) => Math.max(2, Math.round(n * FRAME_SCALE));
 
 /* ---------- smooth scroll (Lenis, desktop wheel only) ---------- */
 let lenis = null;
@@ -27,19 +37,19 @@ try {
 } catch (e) { /* native scroll fallback */ }
 
 const SEAM_CONFIG = {
-  seamFrame: 160,
-  buildFrames: 10,
-  decayFrames: 18,
+  seamFrame: Math.round(160 * FRAME_SCALE),
+  buildFrames: scaleFrames(10),
+  decayFrames: scaleFrames(18),
   peakOpacity: 0.3,
   color: 'rgba(80, 255, 190, 1)',
-  gradeFrames: 24,
+  gradeFrames: scaleFrames(24),
   gradePeak: 0.25,
   gradeColor: 'rgba(0, 20, 12, 1)',
   bloomCenterX: 0.7,
   bloomCenterY: 0.4,
   bloomEdgeAlpha: 0.15,
   glitch: {
-    windowFrames: 8,
+    windowFrames: scaleFrames(8),
     maxChannelShift: 14,
     ghostAlpha: 0.5,
     maxSlices: 6,
@@ -217,7 +227,7 @@ class FlipbookScrubber {
     for (let j = from; j < this.count; j++) this.load(j);
   }
   redraw() {
-    this.resize();
+    if (!this.resize()) return;
     const i = Math.round(this.displayIdx);
     this.lastStepIdx = -1;
     this.draw(i);
@@ -239,13 +249,21 @@ class FlipbookScrubber {
     }
     return this.painted >= 0 ? this.painted : -1;
   }
+  /* size backing store from the canvas's own rendered box (stable 100vh
+     sticky) — NOT innerWidth/innerHeight, which change when the mobile
+     URL bar collapses/expands and would stretch the drawn image.
+     Returns false when nothing changed so scroll-time events are no-ops. */
   resize() {
     const dpr = Math.min(devicePixelRatio || 1, 2);
-    this.canvas.width = Math.round(innerWidth * dpr);
-    this.canvas.height = Math.round(innerHeight * dpr);
+    const w = Math.round(this.canvas.clientWidth * dpr);
+    const h = Math.round(this.canvas.clientHeight * dpr);
+    if (w === this.canvas.width && h === this.canvas.height) return false;
+    this.canvas.width = w;
+    this.canvas.height = h;
     this.ctx.setTransform(1, 0, 0, 1, 0, 0);
     this.ctx.imageSmoothingEnabled = true;
     this.ctx.imageSmoothingQuality = 'high';
+    return true;
   }
   draw(i) {
     const j = this.nearestLoaded(i);
@@ -316,12 +334,13 @@ class FlipbookScrubber {
   }
 }
 
-/* ---------- section progress helper ---------- */
-const viewportHeight = () => window.visualViewport?.height ?? innerHeight;
-
-const progressOf = (el) => {
+/* ---------- section progress helper ----------
+   scrub range = section height minus its pinned sticky's height. Both are
+   layout values, so progress stays stable while the mobile URL bar
+   collapses/expands (live viewport height would shift mid-scroll). */
+const progressOf = (el, sticky) => {
   const r = el.getBoundingClientRect();
-  const total = el.offsetHeight - viewportHeight();
+  const total = el.offsetHeight - sticky.offsetHeight;
   return total <= 0 ? 1 : Math.max(0, Math.min(1, -r.top / total));
 };
 
@@ -333,18 +352,20 @@ const chars = [...document.querySelectorAll('.hero__name .ch')];
 const heroName = document.getElementById('hero-name');
 const scrubber = new FlipbookScrubber(document.getElementById('orbit-canvas'), CONFIG.frames, heroName);
 const hero = document.getElementById('hero');
+const heroSticky = hero.querySelector('.hero__sticky');
 const sub = document.getElementById('hero-sub');
 const hint = document.getElementById('hero-hint');
 const progressBar = document.querySelector('#hero-progress i');
 
 /* ---------- pillars: pinned step reveal ---------- */
 const pillarsSection = document.getElementById('pillars');
+const pillarsSticky = pillarsSection.querySelector('.pillars__sticky');
 const pillarEls = [...document.querySelectorAll('.pillar')];
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /* ---------- master rAF loop (single scroll reader) ---------- */
 const tick = () => {
-  const hp = progressOf(hero);
+  const hp = progressOf(hero, heroSticky);
   scrubber.setProgress(hp);
   scrubber.step();
   const reveal = Math.min(1, hp / CONFIG.heroScrub.nameRevealEnd);
@@ -359,7 +380,7 @@ const tick = () => {
   hint.style.transition = 'opacity .4s';
   if (progressBar) progressBar.style.height = `${hp * 100}%`;
   if (!reduced) {
-    const pp = progressOf(pillarsSection);
+    const pp = progressOf(pillarsSection, pillarsSticky);
     const step = Math.min(CONFIG.pillarsSteps - 1, Math.floor(pp * CONFIG.pillarsSteps));
     pillarEls.forEach((el, i) => el.classList.toggle('is-active', i === step));
   }
@@ -367,10 +388,16 @@ const tick = () => {
 };
 requestAnimationFrame(tick);
 
-if (window.visualViewport) {
-  visualViewport.addEventListener('resize', () => scrubber.redraw());
-  visualViewport.addEventListener('scroll', () => scrubber.redraw());
-}
+/* frame set is chosen once at load; if a rotation crosses the narrow/wide
+   threshold the loaded set no longer fits the viewport — reload to pick the
+   right one. Debounced; URL-bar resizes never cross the threshold. */
+let aspectTimer = 0;
+addEventListener('resize', () => {
+  clearTimeout(aspectTimer);
+  aspectTimer = setTimeout(() => {
+    if ((innerWidth / innerHeight < NARROW_ASPECT) !== isNarrowViewport) location.reload();
+  }, 400);
+});
 
 /* ---------- stats counters ---------- */
 const io = new IntersectionObserver((entries) => {
@@ -395,38 +422,67 @@ const playBgVideo = (v) => {
   const p = v.play();
   if (p && typeof p.catch === 'function') p.catch(() => {});
 };
+const videoVisible = new Map();
 document.querySelectorAll('[data-video]').forEach(holder => {
   const v = document.createElement('video');
-  v.src = holder.dataset.video;
   v.muted = true;
+  v.defaultMuted = true;
   v.loop = true;
   v.autoplay = true;
   v.playsInline = true;
   v.preload = 'auto';
+  /* iOS requires the muted/playsinline ATTRIBUTES for autoplay of
+     script-created videos — the IDL properties alone aren't enough */
+  v.setAttribute('muted', '');
   v.setAttribute('playsinline', '');
   v.setAttribute('webkit-playsinline', '');
   bgVideos.set(holder, v);
+  /* battery-saver / low-power modes pause bg autoplay videos and paint an
+     unreachable play overlay (video sits behind content). Retry while the
+     section is on screen; the touch/pointer unlock below covers the rest. */
+  v.addEventListener('pause', () => {
+    if (document.hidden || !videoVisible.get(v) || v.ended) return;
+    setTimeout(() => {
+      if (!document.hidden && videoVisible.get(v)) playBgVideo(v);
+    }, 250);
+  });
   const mount = () => {
     if (!holder.contains(v)) {
       holder.innerHTML = '';
       holder.appendChild(v);
     }
-    playBgVideo(v);
+    if (videoVisible.get(v)) playBgVideo(v);
   };
   v.addEventListener('canplay', mount, { once: true });
   v.addEventListener('loadeddata', mount);
   v.addEventListener('ended', () => { v.currentTime = 0; playBgVideo(v); });
   v.addEventListener('stalled', () => playBgVideo(v));
-  v.load();
 });
-const resumeBgVideos = () => bgVideos.forEach(playBgVideo);
+/* defer video downloads until their section approaches — they'd otherwise
+   compete with the hero frame set for bandwidth on page load */
+const lazyVideoIo = new IntersectionObserver((entries) => {
+  entries.forEach(en => {
+    if (!en.isIntersecting) return;
+    lazyVideoIo.unobserve(en.target);
+    const v = bgVideos.get(en.target);
+    v.src = en.target.dataset.video;
+    v.load();
+  });
+}, { rootMargin: '150% 0px' });
+bgVideos.forEach((_, holder) => lazyVideoIo.observe(holder));
+const resumeBgVideos = () => bgVideos.forEach(v => { if (videoVisible.get(v)) playBgVideo(v); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) resumeBgVideos(); });
 window.addEventListener('pageshow', resumeBgVideos);
 window.addEventListener('focus', resumeBgVideos);
+/* any user gesture lifts autoplay/low-power blocks — retry paused videos */
+window.addEventListener('touchstart', resumeBgVideos, { passive: true });
+window.addEventListener('pointerdown', resumeBgVideos);
 const videoIo = new IntersectionObserver((entries) => {
   entries.forEach(en => {
-    if (!en.isIntersecting) return;
-    playBgVideo(bgVideos.get(en.target));
+    const v = bgVideos.get(en.target);
+    videoVisible.set(v, en.isIntersecting);
+    if (en.isIntersecting) playBgVideo(v);
+    else if (v && !v.paused) v.pause();
   });
 }, { threshold: 0.05 });
 bgVideos.forEach((_, holder) => videoIo.observe(holder));
@@ -441,6 +497,8 @@ document.querySelectorAll('a,.card,.btn').forEach(el => {
 
 /* ---------- anchor scroll via lenis ---------- */
 document.querySelectorAll('a[href^="#"]').forEach(a => a.addEventListener('click', e => {
-  const t = document.querySelector(a.getAttribute('href'));
+  const href = a.getAttribute('href');
+  if (href.length < 2) { e.preventDefault(); return; } /* bare "#" placeholder links */
+  const t = document.querySelector(href);
   if (t) { e.preventDefault(); lenis ? lenis.scrollTo(t) : t.scrollIntoView({ behavior: 'smooth' }); }
 }));
