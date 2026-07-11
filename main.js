@@ -7,10 +7,8 @@ const CONFIG = {
   frames: {
     path: 'frames/hero/frame_',   // + %04d + .webp
     ext: '.webp',
-    count: 360,                   // orbit-a 8s + orbit-b(1) 10s @ 20fps
+    count: 360,                   // orbit-a 160 + orbit-b(1) 200 @ 20fps
     pad: 4,
-    mobilePath: 'frames/hero-mobile/frame_',
-    mobileCount: 160,             // 10fps variant, covers full 360-frame orbit
     poster: 'media/poster.webp'
   },
   heroScrub: { nameRevealEnd: 0.18, subRevealAt: 0.12, hintFadeAt: 0.05 },
@@ -30,7 +28,6 @@ try {
 
 const SEAM_CONFIG = {
   seamFrame: 160,
-  mobileSeamFrame: 80,
   buildFrames: 10,
   decayFrames: 18,
   peakOpacity: 0.3,
@@ -160,8 +157,7 @@ class FlipbookScrubber {
     this.ctx.imageSmoothingQuality = 'high';
     this.cfg = cfg;
     this.glitchEl = glitchEl;
-    this.isMobile = innerWidth < 768 && !!cfg.mobilePath;
-    this.count = this.isMobile ? (cfg.mobileCount || cfg.count) : cfg.count;
+    this.count = cfg.count;
     this.images = new Array(this.count).fill(null);
     this.loaded = new Set();
     this.targetIdx = 0;
@@ -182,13 +178,9 @@ class FlipbookScrubber {
     }
     this.preload();
   }
-  frameNum(i) {
-    return i + 1;
-  }
   src(i) {
-    const n = String(this.frameNum(i)).padStart(this.cfg.pad, '0');
-    const base = this.isMobile ? this.cfg.mobilePath : this.cfg.path;
-    return `${base}${n}${this.cfg.ext}`;
+    const n = String(i + 1).padStart(this.cfg.pad, '0');
+    return `${this.cfg.path}${n}${this.cfg.ext}`;
   }
   load(i) {
     if (i < 0 || i >= this.count || this.images[i]) return;
@@ -215,7 +207,7 @@ class FlipbookScrubber {
     setTimeout(fill, 120);
   }
   prefetchAround(i) {
-    const span = this.isMobile ? 16 : 12;
+    const span = 12;
     for (let d = 0; d <= span; d++) {
       this.load(i - d);
       this.load(i + d);
@@ -241,15 +233,14 @@ class FlipbookScrubber {
   }
   nearestLoaded(i) {
     if (this.loaded.has(i)) return i;
-    const maxGap = this.isMobile ? 3 : 2;
-    for (let d = 1; d <= maxGap; d++) {
+    for (let d = 1; d <= 2; d++) {
       if (this.loaded.has(i - d)) return i - d;
       if (this.loaded.has(i + d)) return i + d;
     }
     return this.painted >= 0 ? this.painted : -1;
   }
   resize() {
-    const dpr = Math.min(devicePixelRatio || 1, this.isMobile ? 3 : 2);
+    const dpr = Math.min(devicePixelRatio || 1, 2);
     this.canvas.width = Math.round(innerWidth * dpr);
     this.canvas.height = Math.round(innerHeight * dpr);
     this.ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -270,7 +261,7 @@ class FlipbookScrubber {
     this.ctx.clearRect(0, 0, cw, ch);
     this.ctx.drawImage(img, (cw - w) / 2, (ch - h) / 2, w, h);
 
-    const seam = this.isMobile ? SEAM_CONFIG.mobileSeamFrame : SEAM_CONFIG.seamFrame;
+    const seam = SEAM_CONFIG.seamFrame;
     drawGlitch(this.ctx, img, i, seam, cw, ch);
 
     const flashAlpha = seamFlashAlpha(i, seam);
@@ -398,9 +389,9 @@ const io = new IntersectionObserver((entries) => {
 document.querySelectorAll('.stat__n').forEach(el => io.observe(el));
 
 /* ---------- background video loops ---------- */
-const bgVideos = [];
+const bgVideos = new Map();
 const playBgVideo = (v) => {
-  if (v.readyState < 2) return;
+  if (!v || v.readyState < 2) return;
   const p = v.play();
   if (p && typeof p.catch === 'function') p.catch(() => {});
 };
@@ -414,6 +405,7 @@ document.querySelectorAll('[data-video]').forEach(holder => {
   v.preload = 'auto';
   v.setAttribute('playsinline', '');
   v.setAttribute('webkit-playsinline', '');
+  bgVideos.set(holder, v);
   const mount = () => {
     if (!holder.contains(v)) {
       holder.innerHTML = '';
@@ -425,7 +417,6 @@ document.querySelectorAll('[data-video]').forEach(holder => {
   v.addEventListener('loadeddata', mount);
   v.addEventListener('ended', () => { v.currentTime = 0; playBgVideo(v); });
   v.addEventListener('stalled', () => playBgVideo(v));
-  bgVideos.push(v);
   v.load();
 });
 const resumeBgVideos = () => bgVideos.forEach(playBgVideo);
@@ -433,9 +424,12 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) resu
 window.addEventListener('pageshow', resumeBgVideos);
 window.addEventListener('focus', resumeBgVideos);
 const videoIo = new IntersectionObserver((entries) => {
-  entries.forEach(en => { if (en.isIntersecting) playBgVideo(en.target); });
+  entries.forEach(en => {
+    if (!en.isIntersecting) return;
+    playBgVideo(bgVideos.get(en.target));
+  });
 }, { threshold: 0.05 });
-bgVideos.forEach(v => videoIo.observe(v));
+bgVideos.forEach((_, holder) => videoIo.observe(holder));
 
 /* ---------- custom cursor ---------- */
 const cursor = document.querySelector('.cursor');
