@@ -1,229 +1,527 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="cv-root">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rustam Gurbanov — CV &amp; Documents</title>
-<meta name="description" content="Experience, skills, languages and reference documents — Rustam Gurbanov.">
+<title>Rustam Gurbanov — File RG-2026 · CV &amp; Documents</title>
+<meta name="description" content="The complete file: ten years of engineering, design and AI orchestration — four roles, two degrees, five languages and five verifiable documents.">
 <meta name="robots" content="index, follow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Instrument+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@300;400;500&family=Instrument+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <meta name="theme-color" content="#0A0A0B">
-<meta property="og:type" content="website">
-<meta property="og:title" content="Rustam Gurbanov — CV &amp; Documents">
-<meta property="og:description" content="Experience, skills, languages and reference documents — Rustam Gurbanov.">
-<meta property="og:image" content="https://russ-tafarii.github.io/portfolio/media/og.jpg">
+<meta property="og:type" content="profile">
+<meta property="og:title" content="Rustam Gurbanov — File RG-2026">
+<meta property="og:description" content="The complete file: four roles, two degrees, five languages, five verifiable documents.">
+<meta property="og:image" content="https://russ-tafarii.github.io/portfolio/media/og-cv.jpg">
 <meta property="og:url" content="https://russ-tafarii.github.io/portfolio/cv.html">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preload" as="image" href="media/cv/portrait.webp" fetchpriority="high">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="cv.css">
+<script>document.documentElement.classList.add('js')</script>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "Person",
   "name": "Rustam Gurbanov",
-  "jobTitle": [
-    "Software Engineer",
-    "AI Orchestrator",
-    "Designer",
-    "Creator"
-  ],
+  "jobTitle": ["Software Engineer", "AI Orchestrator", "Designer", "Creator"],
   "url": "https://russ-tafarii.github.io/portfolio/",
   "sameAs": [
     "https://www.instagram.com/russ.tafarii/",
     "https://www.linkedin.com/in/rustam-gurbanov016/"
   ],
-  "email": "mailto:rustam.gurbanov016@gmail.com"
+  "email": "mailto:rustam.gurbanov016@gmail.com",
+  "address": { "@type": "PostalAddress", "addressLocality": "Klagenfurt", "addressCountry": "AT" },
+  "knowsLanguage": ["az", "en", "de", "ru", "tr"],
+  "alumniOf": [
+    { "@type": "CollegeOrUniversity", "name": "Universität Klagenfurt" },
+    { "@type": "CollegeOrUniversity", "name": "Azerbaijan Technical University" }
+  ]
 }
 </script>
 </head>
-<body class="doc">
-<a class="skip-link" href="#exp-title" data-i18n="cv.skip">Skip to experience</a>
+<body class="cv-page">
+<a class="skip-link" href="#career" data-i18n="cv.skip">Skip to experience</a>
 <div class="grain" aria-hidden="true"></div>
 
-<header class="topbar">
+<header class="topbar cv-topbar">
   <a class="topbar__mark" href="index.html" aria-label="Rustam Gurbanov — home">RG</a>
   <nav class="topbar__nav" aria-label="Primary">
     <a class="topbar__cta" href="index.html" data-i18n="cv.back">← Back to portfolio</a>
+    <a class="topbar__cta topbar__cta--desk" href="assets/rustam-gurbanov-resume.pdf"
+       download="Rustam-Gurbanov-CV.pdf" data-i18n="cv.download">Download CV</a>
     <button type="button" class="topbar__lang" id="lang-toggle" aria-label="Switch language" data-i18n-aria="nav.langAria">
       <span data-lang-label>EN</span><span class="topbar__lang-sep" aria-hidden="true">/</span><span data-lang-alt>DE</span>
     </button>
   </nav>
 </header>
 
-<main class="doc-main" id="main">
-  <div class="doc-header doc-reveal">
-    <h1>Rustam Gurbanov</h1>
-    <p class="doc-header__role" data-i18n="cv.role">Software Engineer · Full-stack · Data · Design · Content</p>
-    <div class="doc-header__actions">
-      <a class="btn btn--ghost" href="assets/rustam-gurbanov-resume.pdf" download="Rustam-Gurbanov-CV.pdf" data-i18n="cv.download">Download CV</a>
-      <a class="doc-header__work" href="index.html#work" data-i18n="cv.selectedWork">Selected work →</a>
-    </div>
+<!-- ============================================================
+     THE SPINE — the owned device.
+     Real jump-nav (links), decorative rail layers are aria-hidden.
+     ============================================================ -->
+<nav class="spine" id="spine" aria-label="Jump by year" data-i18n-aria="cv.spine.aria">
+  <p class="spine__file" aria-hidden="true">FILE RG&#8209;2026</p>
+
+  <div class="spine__year" aria-hidden="true">
+    <span class="spine__year-num" id="spine-year" data-year-target="2026">2026</span>
   </div>
 
-  <section class="doc-section doc-reveal" aria-labelledby="exp-title">
-    <h2 class="doc-section__title" id="exp-title" data-i18n="cv.exp">Experience</h2>
-    <ol class="doc-exp">
-      <li class="doc-exp__item">
-        <p class="doc-exp__role" data-i18n="cv.job.infineon.role">Digitalization Engineer, Fullstack Developer</p>
-        <p class="doc-exp__meta" data-i18n="cv.job.infineon.meta">Infineon Technologies · Villach, Austria · 10/2023 – 04/2026</p>
-        <ul class="doc-exp__bullets">
-          <li data-i18n="cv.job.infineon.b1">Shipped fullstack tools for manufacturing digitalization — data workflows, APIs, and operator-facing UIs.</li>
-          <li data-i18n="cv.job.infineon.b2">Built and automated KNIME / OpenShift pipelines; IFX-KNIME Division Pioneer Award (E9Steps, 2024).</li>
-          <li data-i18n="cv.job.infineon.b3">Owned features end to end: TypeScript/React frontends, testing, Git workflows, and production handoff.</li>
-        </ul>
-      </li>
-      <li class="doc-exp__item">
-        <p class="doc-exp__role" data-i18n="cv.job.iba.role">Frontend Developer, Graphical Designer</p>
-        <p class="doc-exp__meta" data-i18n="cv.job.iba.meta">International Bank of Azerbaijan · Baku, Azerbaijan · 12/2019 – 07/2021</p>
-        <ul class="doc-exp__bullets">
-          <li data-i18n="cv.job.iba.b1">Designed and built frontend interfaces for bank digital products with HTML, CSS, JS, and React.</li>
-          <li data-i18n="cv.job.iba.b2">Produced brand-aligned graphic assets and UI systems that kept product and marketing in sync.</li>
-        </ul>
-      </li>
-      <li class="doc-exp__item">
-        <p class="doc-exp__role" data-i18n="cv.job.ibatech.role">Frontend Developer</p>
-        <p class="doc-exp__meta" data-i18n="cv.job.ibatech.meta">IBA-Tech Academy (International Bank of Azerbaijan) · Baku, Azerbaijan · 10/2019 – 12/2019</p>
-        <ul class="doc-exp__bullets">
-          <li data-i18n="cv.job.ibatech.b1">Completed intensive frontend development track (DAN.IT / IBA Tech Academy) and shipped academy projects.</li>
-        </ul>
-      </li>
-      <li class="doc-exp__item">
-        <p class="doc-exp__role" data-i18n="cv.job.bank.role">Help desk specialist</p>
-        <p class="doc-exp__meta" data-i18n="cv.job.bank.meta">Bank Republic · Baku, Azerbaijan · 08/2018 – 10/2019</p>
-        <ul class="doc-exp__bullets">
-          <li data-i18n="cv.job.bank.b1">First-line support for customers and internal teams — triage, resolution, and clear handoffs.</li>
-        </ul>
-      </li>
+  <div class="spine__rail">
+    <span class="spine__track" aria-hidden="true"></span>
+    <span class="spine__fill" id="spine-fill" aria-hidden="true"></span>
+    <!-- tenure segments painted as the reader passes each role -->
+    <span class="spine__seg" data-seg="bank"     aria-hidden="true"></span>
+    <span class="spine__seg" data-seg="ibatech"  aria-hidden="true"></span>
+    <span class="spine__seg" data-seg="iba"      aria-hidden="true"></span>
+    <span class="spine__seg" data-seg="infineon" aria-hidden="true"></span>
+
+    <ol class="spine__ticks">
+      <li class="spine__tick" data-year="2017"><a href="#education"><span class="spine__tick-y">2017</span></a></li>
+      <li class="spine__tick" data-year="2018"><a href="#role-bank"><span class="spine__tick-y">2018</span></a></li>
+      <li class="spine__tick spine__tick--minor" data-year="2019"><a href="#role-ibatech"><span class="spine__tick-y">2019</span></a></li>
+      <li class="spine__tick spine__tick--minor" data-year="2020" aria-hidden="true"></li>
+      <li class="spine__tick" data-year="2021"><a href="#education"><span class="spine__tick-y">2021</span></a></li>
+      <li class="spine__tick spine__tick--minor" data-year="2022" aria-hidden="true"></li>
+      <li class="spine__tick" data-year="2023"><a href="#role-infineon"><span class="spine__tick-y">2023</span></a></li>
+      <li class="spine__tick spine__tick--minor" data-year="2024" aria-hidden="true"></li>
+      <li class="spine__tick spine__tick--minor" data-year="2025" aria-hidden="true"></li>
+      <li class="spine__tick" data-year="2026"><a href="#endcard"><span class="spine__tick-y">2026</span></a></li>
     </ol>
+  </div>
+
+  <p class="spine__status" aria-hidden="true"><span class="spine__dot"></span><span data-i18n="cv.spine.status">FILE OPEN</span></p>
+</nav>
+
+<main class="cv-main" id="main">
+
+  <!-- ========== 1 · COVER ========== -->
+  <section class="cv-sec cv-sec--dark cv-cover" id="cover">
+    <div class="cv-cover__inner">
+      <div class="cv-cover__type">
+        <p class="cv-kicker" data-i18n="cv.cover.kicker">PERSONNEL FILE · RG-2026</p>
+        <h1 class="cv-cover__name">
+          <span class="cv-cover__line" data-line>RUSTAM</span>
+          <span class="cv-cover__line cv-cover__line--accent" data-line>GURBANOV</span>
+        </h1>
+        <p class="cv-cover__roles" aria-label="Software Engineer, AI Orchestrator, Designer, Creator">
+          <span class="cv-roller" id="role-roller" aria-hidden="true">
+            <span class="cv-roller__item is-current" data-i18n="cv.role.1">ENGINEER</span>
+            <span class="cv-roller__item" data-i18n="cv.role.2">ORCHESTRATOR</span>
+            <span class="cv-roller__item" data-i18n="cv.role.3">DESIGNER</span>
+            <span class="cv-roller__item" data-i18n="cv.role.4">CREATOR</span>
+          </span>
+        </p>
+
+        <dl class="cv-meta">
+          <div class="cv-meta__row"><dt data-i18n="cv.meta.subject">SUBJECT</dt><dd>GURBANOV, RUSTAM</dd></div>
+          <div class="cv-meta__row"><dt data-i18n="cv.meta.origin">ORIGIN</dt><dd>BAKU, AZ</dd></div>
+          <div class="cv-meta__row"><dt data-i18n="cv.meta.station">STATION</dt><dd>KLAGENFURT, AT</dd></div>
+          <div class="cv-meta__row"><dt data-i18n="cv.meta.period">PERIOD</dt><dd>2017 — 2026</dd></div>
+          <div class="cv-meta__row"><dt data-i18n="cv.meta.pages">CONTENTS</dt><dd><span data-i18n="cv.meta.pagesVal">4 ROLES · 2 DEGREES · 5 DOCUMENTS</span></dd></div>
+        </dl>
+
+        <div class="cv-cover__actions">
+          <a class="btn btn--solid" href="assets/rustam-gurbanov-resume.pdf"
+             download="Rustam-Gurbanov-CV.pdf" data-i18n="cv.download">Download CV</a>
+          <a class="btn btn--panel" href="#vault" data-i18n="cv.cover.docs">Documents ↓</a>
+        </div>
+      </div>
+
+      <!-- ID photo: real crop, passport framing, corner marks -->
+      <figure class="cv-id">
+        <div class="cv-id__frame">
+          <img class="cv-id__img" src="media/cv/portrait.webp"
+               alt="Rustam Gurbanov" width="900" height="1200" fetchpriority="high" decoding="async">
+          <span class="cv-id__corner cv-id__corner--tl" aria-hidden="true"></span>
+          <span class="cv-id__corner cv-id__corner--tr" aria-hidden="true"></span>
+          <span class="cv-id__corner cv-id__corner--bl" aria-hidden="true"></span>
+          <span class="cv-id__corner cv-id__corner--br" aria-hidden="true"></span>
+        </div>
+        <figcaption class="cv-id__cap">
+          <span data-i18n="cv.id.cap">ID · RG-2026</span>
+          <span class="cv-id__sig" aria-hidden="true">R.G.</span>
+        </figcaption>
+      </figure>
+    </div>
+
+    <p class="cv-cover__hint" aria-hidden="true"><span></span><span data-i18n="cv.cover.hint">OPEN FILE</span></p>
   </section>
 
-  <section class="doc-section doc-reveal" aria-labelledby="edu-title">
-    <h2 class="doc-section__title" id="edu-title" data-i18n="cv.edu">Education</h2>
-    <ol class="doc-exp">
-      <li class="doc-exp__item">
-        <p class="doc-exp__role" data-i18n="cv.edu.master.role">Master of Game Studies and Engineering</p>
-        <p class="doc-exp__meta" data-i18n="cv.edu.master.meta">Klagenfurt Alpen-Adria University · Klagenfurt, Austria · 10/2021 – Present</p>
-      </li>
-      <li class="doc-exp__item">
-        <p class="doc-exp__role" data-i18n="cv.edu.bach.role">Bachelor of Information Technologies (IT)</p>
-        <p class="doc-exp__meta" data-i18n="cv.edu.bach.meta">Azerbaijan Technical University · Baku, Azerbaijan · 09/2017 – 07/2021</p>
-      </li>
-    </ol>
+  <!-- ========== 2 · SEAM — the sheet ========== -->
+  <div class="cv-seam" id="seam" aria-hidden="true">
+    <p class="cv-seam__head">
+      <span>CURRICULUM VITAE</span>
+      <span>RUSTAM GURBANOV</span>
+      <span data-i18n="cv.seam.page">PAGE 01</span>
+    </p>
+  </div>
+
+  <!-- ========== 3 · VITALS ========== -->
+  <section class="cv-sec cv-sec--paper cv-vitals" id="vitals" aria-labelledby="vitals-title">
+    <div class="cv-wrap">
+      <h2 class="cv-sec__title" id="vitals-title"><span class="cv-sec__num">01</span><span data-i18n="cv.vitals">Vitals</span></h2>
+
+      <ul class="cv-vitals__grid">
+        <li class="cv-vital">
+          <span class="cv-vital__n" data-count="10">10</span><span class="cv-vital__plus">+</span>
+          <span class="cv-vital__label" data-i18n="cv.vitals.years">Years building</span>
+        </li>
+        <li class="cv-vital">
+          <span class="cv-vital__n" data-count="20">20</span><span class="cv-vital__plus">+</span>
+          <span class="cv-vital__label" data-i18n="cv.vitals.projects">Projects shipped</span>
+        </li>
+        <li class="cv-vital">
+          <span class="cv-vital__n" data-count="5">5</span><span class="cv-vital__plus"></span>
+          <span class="cv-vital__label" data-i18n="cv.vitals.langs">Languages spoken</span>
+        </li>
+        <li class="cv-vital">
+          <span class="cv-vital__n" data-count="1">1</span><span class="cv-vital__plus"></span>
+          <span class="cv-vital__label" data-i18n="cv.vitals.pipeline">Person, whole pipeline</span>
+        </li>
+      </ul>
+
+      <p class="cv-status">
+        <span class="cv-status__key" data-i18n="cv.vitals.statusKey">STATUS</span>
+        <span class="cv-status__val" data-i18n="cv.vitals.statusVal">BASED IN VILLACH, AUSTRIA · EU / REMOTE</span>
+      </p>
+    </div>
   </section>
 
-  <section class="doc-section doc-reveal" aria-labelledby="skills-title">
-    <h2 class="doc-section__title" id="skills-title" data-i18n="cv.skills">Skills</h2>
-    <div class="doc-skills">
-      <div>
-        <h3 data-i18n="cv.skills.eng">Engineering</h3>
-        <ul>
-          <li>HTML · CSS · JS · TypeScript</li>
-          <li>React · API handling · Testing</li>
-          <li>Git · OpenShift · Knime</li>
-        </ul>
-      </div>
-      <div>
-        <h3 data-i18n="cv.skills.design">Design</h3>
-        <ul>
-          <li>Figma · Canva</li>
-          <li data-i18n="cv.skills.design.graphic">Graphic design</li>
-          <li data-i18n="cv.skills.design.scroll">Scroll animation</li>
-        </ul>
-      </div>
-      <div>
-        <h3 data-i18n="cv.skills.ai">AI &amp; Automation</h3>
-        <ul>
-          <li data-i18n="cv.skills.ai.orch">AI orchestration</li>
-          <li>Cursor · Claude Code</li>
-          <li data-i18n="cv.skills.ai.content">Content generation</li>
-        </ul>
-      </div>
-      <div>
-        <h3 data-i18n="cv.skills.mkt">Marketing</h3>
-        <ul>
-          <li data-i18n="cv.skills.mkt.1">Content strategy</li>
-          <li data-i18n="cv.skills.mkt.2">Social media</li>
-          <li data-i18n="cv.skills.mkt.3">Brand storytelling</li>
-        </ul>
+  <!-- ========== 4 · CAREER ========== -->
+  <section class="cv-sec cv-sec--paper cv-career" id="career" aria-labelledby="career-title">
+    <div class="cv-wrap">
+      <h2 class="cv-sec__title" id="career-title"><span class="cv-sec__num">02</span><span data-i18n="cv.exp">Experience</span></h2>
+
+      <ol class="cv-roles">
+
+        <li class="cv-role" id="role-infineon" data-role="infineon" data-from="2023" data-to="2026">
+          <div class="cv-role__when">
+            <span class="cv-role__years"><span class="cv-role__y">2023</span><span class="cv-role__dash" aria-hidden="true">—</span><span class="cv-role__y">2026</span></span>
+            <span class="cv-role__dur" data-i18n="cv.job.infineon.dur">2 yrs 7 mos</span>
+          </div>
+          <div class="cv-role__body">
+            <h3 class="cv-role__title" data-i18n="cv.job.infineon.role">Digitalization Engineer, Fullstack Developer</h3>
+            <p class="cv-role__org">
+              <span class="cv-role__co">Infineon Technologies</span>
+              <span class="cv-role__city">Villach, Austria</span>
+            </p>
+            <ul class="cv-role__bullets">
+              <li data-i18n="cv.job.infineon.b1">Shipped fullstack tools for manufacturing digitalization — data workflows, APIs, and operator-facing UIs.</li>
+              <li data-i18n="cv.job.infineon.b2">Built and automated KNIME / OpenShift pipelines; IFX-KNIME Division Pioneer Award (E9Steps, 2024).</li>
+              <li data-i18n="cv.job.infineon.b3">Owned features end to end: TypeScript/React frontends, testing, Git workflows, and production handoff.</li>
+            </ul>
+            <ul class="cv-tags" aria-label="Tech">
+              <li>TypeScript</li><li>React</li><li>KNIME</li><li>OpenShift</li><li>Python</li><li>Git</li>
+            </ul>
+            <p class="cv-award">
+              <span class="cv-award__mark" aria-hidden="true">★</span>
+              <span data-i18n="cv.job.infineon.award">IFX-KNIME Division Pioneer Award · 2024</span>
+              <a class="cv-award__link" href="#doc-knime" data-i18n="cv.award.see">See certificate →</a>
+            </p>
+          </div>
+        </li>
+
+        <li class="cv-role" id="role-iba" data-role="iba" data-from="2019" data-to="2021">
+          <div class="cv-role__when">
+            <span class="cv-role__years"><span class="cv-role__y">2019</span><span class="cv-role__dash" aria-hidden="true">—</span><span class="cv-role__y">2021</span></span>
+            <span class="cv-role__dur" data-i18n="cv.job.iba.dur">1 yr 8 mos</span>
+          </div>
+          <div class="cv-role__body">
+            <h3 class="cv-role__title" data-i18n="cv.job.iba.role">Frontend Developer, Graphical Designer</h3>
+            <p class="cv-role__org">
+              <span class="cv-role__co">International Bank of Azerbaijan</span>
+              <span class="cv-role__city">Baku, Azerbaijan</span>
+            </p>
+            <ul class="cv-role__bullets">
+              <li data-i18n="cv.job.iba.b1">Designed and built frontend interfaces for bank digital products with HTML, CSS, JS, and React.</li>
+              <li data-i18n="cv.job.iba.b2">Produced brand-aligned graphic assets and UI systems that kept product and marketing in sync.</li>
+            </ul>
+            <ul class="cv-tags" aria-label="Tech">
+              <li>JavaScript</li><li>React</li><li>HTML/CSS</li><li>Figma</li>
+            </ul>
+          </div>
+        </li>
+
+        <li class="cv-role" id="role-ibatech" data-role="ibatech" data-from="2019" data-to="2019">
+          <div class="cv-role__when">
+            <span class="cv-role__years"><span class="cv-role__y">2019</span></span>
+            <span class="cv-role__dur" data-i18n="cv.job.ibatech.dur">3 mos</span>
+          </div>
+          <div class="cv-role__body">
+            <h3 class="cv-role__title" data-i18n="cv.job.ibatech.role">Frontend Developer</h3>
+            <p class="cv-role__org">
+              <span class="cv-role__co">IBA-Tech Academy</span>
+              <span class="cv-role__city">Baku, Azerbaijan</span>
+            </p>
+            <ul class="cv-role__bullets">
+              <li data-i18n="cv.job.ibatech.b1">Completed intensive frontend development track (DAN.IT / IBA Tech Academy) and shipped academy projects.</li>
+            </ul>
+            <ul class="cv-tags" aria-label="Tech">
+              <li>JavaScript</li><li>HTML/CSS</li>
+            </ul>
+          </div>
+        </li>
+
+        <li class="cv-role" id="role-bank" data-role="bank" data-from="2018" data-to="2019">
+          <div class="cv-role__when">
+            <span class="cv-role__years"><span class="cv-role__y">2018</span><span class="cv-role__dash" aria-hidden="true">—</span><span class="cv-role__y">2019</span></span>
+            <span class="cv-role__dur" data-i18n="cv.job.bank.dur">1 yr 3 mos</span>
+          </div>
+          <div class="cv-role__body">
+            <h3 class="cv-role__title" data-i18n="cv.job.bank.role">Help desk specialist</h3>
+            <p class="cv-role__org">
+              <span class="cv-role__co">Bank Republic</span>
+              <span class="cv-role__city">Baku, Azerbaijan</span>
+            </p>
+            <ul class="cv-role__bullets">
+              <li data-i18n="cv.job.bank.b1">First-line support for customers and internal teams — triage, resolution, and clear handoffs.</li>
+            </ul>
+            <ul class="cv-tags" aria-label="Tech">
+              <li data-i18n="cv.job.bank.t1">Support</li><li data-i18n="cv.job.bank.t2">Triage</li>
+            </ul>
+          </div>
+        </li>
+
+      </ol>
+    </div>
+  </section>
+
+  <!-- ========== 5 · EDUCATION ========== -->
+  <section class="cv-sec cv-sec--paper cv-edu" id="education" aria-labelledby="edu-title">
+    <div class="cv-wrap">
+      <h2 class="cv-sec__title" id="edu-title"><span class="cv-sec__num">03</span><span data-i18n="cv.edu">Education</span></h2>
+      <ol class="cv-degrees">
+        <li class="cv-degree">
+          <span class="cv-degree__years">2021 — <span data-i18n="cv.edu.now">present</span></span>
+          <h3 class="cv-degree__title" data-i18n="cv.edu.master.role">Master of Game Studies and Engineering</h3>
+          <p class="cv-degree__org">Universität Klagenfurt<span class="cv-degree__city">Klagenfurt, Austria</span></p>
+        </li>
+        <li class="cv-degree">
+          <span class="cv-degree__years">2017 — 2021</span>
+          <h3 class="cv-degree__title" data-i18n="cv.edu.bach.role">Bachelor of Information Technologies (IT)</h3>
+          <p class="cv-degree__org">Azerbaijan Technical University<span class="cv-degree__city">Baku, Azerbaijan</span></p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ========== 6 · CAPABILITIES ========== -->
+  <section class="cv-sec cv-sec--paper cv-caps" id="capabilities" aria-labelledby="caps-title">
+    <div class="cv-wrap">
+      <h2 class="cv-sec__title" id="caps-title"><span class="cv-sec__num">04</span><span data-i18n="cv.skills">Capabilities</span></h2>
+      <div class="cv-caps__grid">
+
+        <section class="cv-cap" aria-labelledby="cap-eng">
+          <h3 class="cv-cap__head" id="cap-eng"><span class="cv-cap__num" aria-hidden="true">01</span><span data-i18n="cv.skills.eng">Engineering</span></h3>
+          <ul class="cv-cap__list">
+            <li><span>HTML · CSS · JS · TypeScript</span><span class="cv-cap__where">Infineon · IBA</span></li>
+            <li><span>React · API handling · Testing</span><span class="cv-cap__where">Infineon</span></li>
+            <li><span>Git · OpenShift · KNIME</span><span class="cv-cap__where">Infineon</span></li>
+          </ul>
+        </section>
+
+        <section class="cv-cap" aria-labelledby="cap-des">
+          <h3 class="cv-cap__head" id="cap-des"><span class="cv-cap__num" aria-hidden="true">02</span><span data-i18n="cv.skills.design">Design</span></h3>
+          <ul class="cv-cap__list">
+            <li><span>Figma · Canva</span><span class="cv-cap__where">IBA</span></li>
+            <li><span data-i18n="cv.skills.design.graphic">Graphic design</span><span class="cv-cap__where">IBA</span></li>
+            <li><span data-i18n="cv.skills.design.scroll">Scroll animation</span><span class="cv-cap__where" data-i18n="cv.where.self">Self-directed</span></li>
+          </ul>
+        </section>
+
+        <section class="cv-cap" aria-labelledby="cap-ai">
+          <h3 class="cv-cap__head" id="cap-ai"><span class="cv-cap__num" aria-hidden="true">03</span><span data-i18n="cv.skills.ai">AI &amp; Automation</span></h3>
+          <ul class="cv-cap__list">
+            <li><span data-i18n="cv.skills.ai.orch">AI orchestration</span><span class="cv-cap__where" data-i18n="cv.where.self">Self-directed</span></li>
+            <li><span>Cursor · Claude Code</span><span class="cv-cap__where" data-i18n="cv.where.self">Self-directed</span></li>
+            <li><span data-i18n="cv.skills.ai.content">Content generation</span><span class="cv-cap__where" data-i18n="cv.where.self">Self-directed</span></li>
+          </ul>
+        </section>
+
+        <section class="cv-cap" aria-labelledby="cap-mkt">
+          <h3 class="cv-cap__head" id="cap-mkt"><span class="cv-cap__num" aria-hidden="true">04</span><span data-i18n="cv.skills.mkt">Marketing</span></h3>
+          <ul class="cv-cap__list">
+            <li><span data-i18n="cv.skills.mkt.1">Content strategy</span><span class="cv-cap__where" data-i18n="cv.where.self">Self-directed</span></li>
+            <li><span data-i18n="cv.skills.mkt.2">Social media</span><span class="cv-cap__where" data-i18n="cv.where.self">Self-directed</span></li>
+            <li><span data-i18n="cv.skills.mkt.3">Brand storytelling</span><span class="cv-cap__where">IBA</span></li>
+          </ul>
+        </section>
+
       </div>
     </div>
   </section>
 
-  <section class="doc-section doc-reveal" aria-labelledby="langs-title">
-    <h2 class="doc-section__title" id="langs-title" data-i18n="cv.langs">Languages</h2>
-    <ul class="doc-langs">
-      <li><span data-i18n="cv.lang.az">Azerbaijani</span><span class="doc-langs__level" data-i18n="cv.lang.az.lvl">native</span></li>
-      <li><span data-i18n="cv.lang.en">English</span><span class="doc-langs__level">C2</span></li>
-      <li><span data-i18n="cv.lang.de">German</span><span class="doc-langs__level">C1</span></li>
-      <li><span data-i18n="cv.lang.ru">Russian</span><span class="doc-langs__level">C1</span></li>
-      <li><span data-i18n="cv.lang.tr">Turkish</span><span class="doc-langs__level">B2</span></li>
-      <li><span data-i18n="cv.lang.es">Spanish</span><span class="doc-langs__level">B1</span></li>
-    </ul>
+  <!-- ========== 7 · LANGUAGES ========== -->
+  <section class="cv-sec cv-sec--paper cv-langs" id="languages" aria-labelledby="langs-title">
+    <div class="cv-wrap">
+      <h2 class="cv-sec__title" id="langs-title"><span class="cv-sec__num">05</span><span data-i18n="cv.langs">Languages</span></h2>
+      <ul class="cv-lang-list">
+        <li class="cv-lang" data-native="Azərbaycan" data-level="6">
+          <span class="cv-lang__name" data-i18n="cv.lang.az">Azerbaijani</span><span class="cv-lang__native" lang="az" data-native="Azərbaycan">Azərbaycan</span>
+          <span class="cv-lang__gauge" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+          <span class="cv-lang__lvl" data-i18n="cv.lang.az.lvl">native</span>
+        </li>
+        <li class="cv-lang" data-native="English" data-level="6">
+          <span class="cv-lang__name" data-i18n="cv.lang.en">English</span><span class="cv-lang__native" lang="en" data-native="English">English</span>
+          <span class="cv-lang__gauge" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+          <span class="cv-lang__lvl">C2</span>
+        </li>
+        <li class="cv-lang" data-native="Deutsch" data-level="4">
+          <span class="cv-lang__name" data-i18n="cv.lang.de">German</span><span class="cv-lang__native" lang="de" data-native="Deutsch">Deutsch</span>
+          <span class="cv-lang__gauge" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+          <span class="cv-lang__lvl">B2</span>
+        </li>
+        <li class="cv-lang" data-native="Русский" data-level="6">
+          <span class="cv-lang__name" data-i18n="cv.lang.ru">Russian</span><span class="cv-lang__native" lang="ru" data-native="Русский">Русский</span>
+          <span class="cv-lang__gauge" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+          <span class="cv-lang__lvl">C2</span>
+        </li>
+        <li class="cv-lang" data-native="Türkçe" data-level="6">
+          <span class="cv-lang__name" data-i18n="cv.lang.tr">Turkish</span><span class="cv-lang__native" lang="tr" data-native="Türkçe">Türkçe</span>
+          <span class="cv-lang__gauge" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+          <span class="cv-lang__lvl">C2</span>
+        </li>
+      </ul>
+    </div>
   </section>
 
-  <section class="doc-section doc-reveal" aria-labelledby="docs-title">
-    <h2 class="doc-section__title" id="docs-title" data-i18n="cv.docs">Documents</h2>
-    <ul class="doc-docs">
-      <li class="doc-docs__item">
-        <img class="doc-docs__thumb" src="media/docs/bachelor-certificate.webp" alt="" width="72" height="96" loading="lazy" decoding="async">
-        <span class="doc-docs__title" data-i18n="cv.doc.bach.title">Bachelor Certificate</span>
-        <a class="doc-docs__dl" href="assets/docs/bachelor-certificate.pdf" download="Rustam-Gurbanov-Bachelor-Certificate.pdf" data-i18n="cv.dl">Download</a>
-        <p class="doc-docs__desc" data-i18n="cv.doc.bach.desc">Degree certificate — Azerbaijan Technical University (Information Technologies).</p>
-        <span class="doc-docs__meta">PDF · 937 KB</span>
-      </li>
-      <li class="doc-docs__item">
-        <img class="doc-docs__thumb" src="media/docs/iba-frontend-cert.webp" alt="" width="72" height="96" loading="lazy" decoding="async">
-        <span class="doc-docs__title" data-i18n="cv.doc.iba.title">IBA Tech Academy — Frontend Certificate</span>
-        <a class="doc-docs__dl" href="assets/docs/iba-frontend-certificate.pdf" download="Rustam-Gurbanov-IBA-Frontend-Certificate.pdf" data-i18n="cv.dl">Download</a>
-        <p class="doc-docs__desc" data-i18n="cv.doc.iba.desc">Completion certificate — Frontend Development (Oct–Dec 2019), IBA Tech Academy / DAN.IT.</p>
-        <span class="doc-docs__meta">PDF · 927 KB</span>
-      </li>
-      <li class="doc-docs__item">
-        <img class="doc-docs__thumb" src="media/docs/ifx-knime-award.webp" alt="" width="72" height="96" loading="lazy" decoding="async">
-        <span class="doc-docs__title" data-i18n="cv.doc.knime.title">IFX-KNIME Division Pioneer Award</span>
-        <a class="doc-docs__dl" href="assets/docs/ifx-knime-pioneer-award.pdf" download="Rustam-Gurbanov-IFX-KNIME-Pioneer-Award.pdf" data-i18n="cv.dl">Download</a>
-        <p class="doc-docs__desc" data-i18n="cv.doc.knime.desc">Infineon certificate of achievement — IDEA: E9Steps, Use Case Contest 2024.</p>
-        <span class="doc-docs__meta">PDF · 123 KB</span>
-      </li>
-      <li class="doc-docs__item">
-        <img class="doc-docs__thumb" src="media/docs/reference-letter.webp" alt="" width="72" height="96" loading="lazy" decoding="async">
-        <span class="doc-docs__title" data-i18n="cv.doc.ref1.title">Reference Letter</span>
-        <a class="doc-docs__dl" href="assets/docs/reference-letter.pdf" download="Rustam-Gurbanov-Reference-Letter.pdf" data-i18n="cv.dl">Download</a>
-        <p class="doc-docs__desc" data-i18n="cv.doc.ref1.desc">Professional reference letter (scanned PDF).</p>
-        <span class="doc-docs__meta">PDF · 287 KB</span>
-      </li>
-      <li class="doc-docs__item">
-        <img class="doc-docs__thumb" src="media/docs/reference-letter-2.webp" alt="" width="72" height="96" loading="lazy" decoding="async">
-        <span class="doc-docs__title" data-i18n="cv.doc.ref2.title">Reference Letter 2</span>
-        <a class="doc-docs__dl" href="assets/docs/reference-letter-2.pdf" download="Rustam-Gurbanov-Reference-Letter-2.pdf" data-i18n="cv.dl">Download</a>
-        <p class="doc-docs__desc" data-i18n="cv.doc.ref2.desc">Additional professional reference letter (scanned PDF).</p>
-        <span class="doc-docs__meta">PDF · 204 KB</span>
-      </li>
-    </ul>
+  <!-- ========== 8 · THE VAULT ========== -->
+  <section class="cv-sec cv-sec--dark cv-vault" id="vault" aria-labelledby="vault-title">
+    <div class="cv-wrap">
+      <h2 class="cv-sec__title" id="vault-title"><span class="cv-sec__num">06</span><span data-i18n="cv.docs">Documents</span></h2>
+      <p class="cv-vault__lede" data-i18n="cv.vault.lede">Five originals. Scanned, not summarised — open any one full size, or take the PDF.</p>
+
+      <ul class="cv-deck" id="deck">
+
+        <li class="cv-doc cv-doc--land" id="doc-knime">
+          <a class="cv-doc__open" href="media/docs/full/ifx-knime-award.webp"
+             data-doc="ifx-knime-award" data-pdf="assets/docs/ifx-knime-pioneer-award.pdf">
+            <span class="cv-doc__shot">
+              <img src="media/docs/ifx-knime-award.webp" alt="" width="509" height="366" loading="lazy" decoding="async">
+            </span>
+            <span class="cv-doc__title" data-i18n="cv.doc.knime.title">IFX-KNIME Division Pioneer Award</span>
+            <span class="cv-doc__desc" data-i18n="cv.doc.knime.desc">Infineon certificate of achievement — IDEA: E9Steps, Use Case Contest 2024.</span>
+            <span class="cv-doc__meta">PDF · <span data-i18n="cv.doc.pg1">1 page</span> · 123 KB</span>
+          </a>
+          <a class="cv-doc__dl" href="assets/docs/ifx-knime-pioneer-award.pdf"
+             download="Rustam-Gurbanov-IFX-KNIME-Pioneer-Award.pdf" data-i18n="cv.dl">Download</a>
+        </li>
+
+        <li class="cv-doc cv-doc--land" id="doc-iba">
+          <a class="cv-doc__open" href="media/docs/full/iba-frontend-cert.webp"
+             data-doc="iba-frontend-cert" data-pdf="assets/docs/iba-frontend-certificate.pdf">
+            <span class="cv-doc__shot">
+              <img src="media/docs/iba-frontend-cert.webp" alt="" width="700" height="497" loading="lazy" decoding="async">
+            </span>
+            <span class="cv-doc__title" data-i18n="cv.doc.iba.title">IBA Tech Academy — Frontend Certificate</span>
+            <span class="cv-doc__desc" data-i18n="cv.doc.iba.desc">Completion certificate — Frontend Development (Oct–Dec 2019), IBA Tech Academy / DAN.IT.</span>
+            <span class="cv-doc__meta">PDF · <span data-i18n="cv.doc.pg1">1 page</span> · 927 KB</span>
+          </a>
+          <a class="cv-doc__dl" href="assets/docs/iba-frontend-certificate.pdf"
+             download="Rustam-Gurbanov-IBA-Frontend-Certificate.pdf" data-i18n="cv.dl">Download</a>
+        </li>
+        <li class="cv-doc cv-doc--land" id="doc-bach">
+          <a class="cv-doc__open" href="media/docs/full/bachelor-certificate.webp"
+             data-doc="bachelor-certificate" data-pdf="assets/docs/bachelor-certificate.pdf">
+            <span class="cv-doc__shot">
+              <img src="media/docs/bachelor-certificate.webp" alt="" width="720" height="510" loading="lazy" decoding="async">
+            </span>
+            <span class="cv-doc__title" data-i18n="cv.doc.bach.title">Bachelor Certificate</span>
+            <span class="cv-doc__desc" data-i18n="cv.doc.bach.desc">Degree certificate — Azerbaijan Technical University (Information Technologies).</span>
+            <span class="cv-doc__meta">PDF · <span data-i18n="cv.doc.bach.pages">5 pages</span> · 937 KB</span>
+          </a>
+          <a class="cv-doc__dl" href="assets/docs/bachelor-certificate.pdf"
+             download="Rustam-Gurbanov-Bachelor-Certificate.pdf" data-i18n="cv.dl">Download</a>
+        </li>
+
+        <li class="cv-doc cv-doc--port" id="doc-ref1">
+          <a class="cv-doc__open" href="media/docs/full/reference-letter.webp"
+             data-doc="reference-letter" data-pdf="assets/docs/reference-letter.pdf">
+            <span class="cv-doc__shot">
+              <img src="media/docs/reference-letter.webp" alt="" width="502" height="711" loading="lazy" decoding="async">
+            </span>
+            <span class="cv-doc__title" data-i18n="cv.doc.ref1.title">Reference Letter</span>
+            <span class="cv-doc__desc" data-i18n="cv.doc.ref1.desc">Professional reference letter (scanned PDF).</span>
+            <span class="cv-doc__meta">PDF · <span data-i18n="cv.doc.pg1">1 page</span> · 287 KB</span>
+          </a>
+          <a class="cv-doc__dl" href="assets/docs/reference-letter.pdf"
+             download="Rustam-Gurbanov-Reference-Letter.pdf" data-i18n="cv.dl">Download</a>
+        </li>
+
+        <li class="cv-doc cv-doc--port" id="doc-ref2">
+          <a class="cv-doc__open" href="media/docs/full/reference-letter-2.webp"
+             data-doc="reference-letter-2" data-pdf="assets/docs/reference-letter-2.pdf">
+            <span class="cv-doc__shot">
+              <img src="media/docs/reference-letter-2.webp" alt="" width="510" height="620" loading="lazy" decoding="async">
+            </span>
+            <span class="cv-doc__title" data-i18n="cv.doc.ref2.title">Reference Letter 2</span>
+            <span class="cv-doc__desc" data-i18n="cv.doc.ref2.desc">Additional professional reference letter (scanned PDF).</span>
+            <span class="cv-doc__meta">PDF · <span data-i18n="cv.doc.pg1">1 page</span> · 204 KB</span>
+          </a>
+          <a class="cv-doc__dl" href="assets/docs/reference-letter-2.pdf"
+             download="Rustam-Gurbanov-Reference-Letter-2.pdf" data-i18n="cv.dl">Download</a>
+        </li>
+      </ul>
+
+      <p class="cv-deck__hint" id="deck-hint" data-i18n="cv.vault.hint">Drag to riffle · click to open</p>
+    </div>
   </section>
+
+  <!-- ========== 9 · END CARD ========== -->
+  <section class="cv-sec cv-sec--dark cv-end" id="endcard" aria-labelledby="end-title">
+    <div class="cv-wrap">
+      <p class="cv-kicker" data-i18n="cv.end.kicker">END OF FILE · RG-2026</p>
+      <h2 class="cv-end__title" id="end-title">
+        <span data-i18n="cv.end.line1">ONE PERSON.</span>
+        <span class="accent" data-i18n="cv.end.line2">WHOLE PIPELINE.</span>
+      </h2>
+      <div class="cv-end__actions">
+        <a class="btn btn--solid" href="mailto:rustam.gurbanov016@gmail.com" data-i18n="cv.end.cta">Start a project</a>
+        <a class="btn btn--ghost" href="assets/rustam-gurbanov-resume.pdf"
+           download="Rustam-Gurbanov-CV.pdf" data-i18n="cv.download">Download CV</a>
+      </div>
+      <ul class="cv-end__links">
+        <li><a href="mailto:rustam.gurbanov016@gmail.com">rustam.gurbanov016@gmail.com</a></li>
+        <li><a href="https://www.linkedin.com/in/rustam-gurbanov016/" target="_blank" rel="noopener noreferrer">LinkedIn</a></li>
+        <li><a href="https://www.instagram.com/russ.tafarii/" target="_blank" rel="noopener noreferrer">Instagram</a></li>
+        <li><a href="https://wa.me/436763492193" target="_blank" rel="noopener noreferrer">WhatsApp</a></li>
+      </ul>
+      <footer class="footer cv-footer">
+        <span data-i18n="footer.copy">© 2026 Rustam Gurbanov</span>
+        <nav aria-label="Secondary">
+          <a href="index.html" data-i18n="footer.portfolio">Portfolio</a>
+          <a href="index.html#work" data-i18n="cv.selectedWork">Selected work →</a>
+        </nav>
+      </footer>
+    </div>
+  </section>
+
 </main>
 
-<div class="doc-footer-wrap">
-  <footer class="footer">
-    <span data-i18n="footer.copy">© 2026 Rustam Gurbanov</span>
-    <a class="footer__email" href="mailto:rustam.gurbanov016@gmail.com">rustam.gurbanov016@gmail.com</a>
-    <nav>
-      <a href="index.html" data-i18n="footer.portfolio">Portfolio</a>
-      <a href="https://www.instagram.com/russ.tafarii/" target="_blank" rel="noopener noreferrer">Instagram</a>
-      <a href="https://www.linkedin.com/in/rustam-gurbanov016/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
-    </nav>
-  </footer>
+<!-- lightbox: built empty, filled by cv.js; links above work without it -->
+<div class="cv-lightbox" id="lightbox" role="dialog" aria-modal="true" aria-labelledby="lb-title" hidden>
+  <div class="cv-lightbox__bar">
+    <p class="cv-lightbox__title" id="lb-title"></p>
+    <div class="cv-lightbox__acts">
+      <a class="cv-lightbox__act" id="lb-pdf" href="#" data-i18n="cv.lb.pdf">Open PDF</a>
+      <button type="button" class="cv-lightbox__close" id="lb-close" aria-label="Close" data-i18n-aria="cv.lb.close">✕</button>
+    </div>
+  </div>
+  <div class="cv-lightbox__stage"><img id="lb-img" src="" alt=""></div>
 </div>
 
 <a class="whatsapp-float" href="https://wa.me/436763492193" target="_blank" rel="noopener noreferrer" aria-label="Chat on WhatsApp" data-i18n-aria="whatsapp.aria">
   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.435 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
 </a>
 
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollToPlugin.min.js"></script>
-<script src="main.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollToPlugin.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/SplitText.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js"></script>
+<script src="cv.js"></script>
 </body>
 </html>

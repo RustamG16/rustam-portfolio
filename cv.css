@@ -1,0 +1,753 @@
+/* ==========================================================================
+   FILE RG-2026 — the dossier CV
+   Loaded AFTER style.css. Owns everything .cv-* / .spine.
+   Two themes live side by side as section classes, so the page is correct
+   with zero JS; cv.js only flips the chrome + animates.
+   ========================================================================== */
+
+.cv-root{
+  /* --- dark (cover, vault, end card) --- */
+  --d-bg:#0A0A0B;
+  --d-text:#F2EDE4;
+  /* Measured composited over --d-bg, not eyeballed. The original .56/.34 pair
+     put every 9.5–11px mono label at 2.75:1 — well under AA. Two tiers kept,
+     both compliant: dim 9.37:1, faint 5.03:1. Do not lower either. */
+  --d-dim:rgba(242,237,228,.74);
+  --d-faint:rgba(242,237,228,.52);
+  --d-rule:rgba(242,237,228,.14);
+  --d-rule-soft:rgba(242,237,228,.08);
+
+  /* --- paper (the file itself) --- */
+  --p-bg:#EFE9DE;
+  --p-bg-deep:#E6DFD1;
+  --p-ink:#14140F;
+  /* same audit on paper: dim 9.39:1, faint 5.15:1 (was .64/.44 = 4.98/2.80) */
+  --p-dim:rgba(20,20,15,.82);
+  --p-faint:rgba(20,20,15,.64);
+  --p-rule:rgba(20,20,15,.16);
+  --p-rule-soft:rgba(20,20,15,.09);
+
+  /* accent: acid on dark, deep green for TEXT on paper, acid as FILL only */
+  --acid:#19E28D;
+  --ink-green:#0B6B45;
+
+  --mono:'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* rhythm — every gap comes from this scale */
+  --s1:8px; --s2:14px; --s3:22px; --s4:34px;
+  --s5:54px; --s6:86px; --s7:132px; --s8:190px;
+
+  /* The layout is fluid at every width — no fixed max-width box, because a
+     1360px column stranded 280px of dead margin either side on anything wider
+     than a laptop. The page now fills the viewport and the gutter grows with
+     it; individual measures (bullets, lede) carry their own ch-based caps so
+     line length still stays readable. */
+  --spine-w:96px;
+  --gutter:clamp(20px, 4.6vw, 132px);
+  --wrap:100%;
+}
+@media (min-width:1600px){ .cv-root{--spine-w:120px} }
+@media (min-width:2200px){ .cv-root{--spine-w:140px} }
+
+/* ---------- page base ---------- */
+.cv-page{background:var(--d-bg);color:var(--d-text);cursor:auto}
+.cv-page .cursor{display:none}
+.cv-main{position:relative;z-index:1}
+
+.cv-wrap{
+  width:100%;max-width:var(--wrap);margin-inline:auto;
+  padding-inline:var(--gutter);
+}
+
+.cv-sec{position:relative;isolation:isolate}
+.cv-sec--dark{background:var(--d-bg);color:var(--d-text)}
+.cv-sec--paper{background:var(--p-bg);color:var(--p-ink)}
+
+/* paper fibre — CSS only, no image request */
+.cv-sec--paper::after{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:0;opacity:.05;
+  mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23p)'/%3E%3C/svg%3E");
+}
+.cv-sec--paper > *{position:relative;z-index:1}
+
+/* the film grain belongs to the dark half only */
+.cv-page .grain{opacity:.05;transition:opacity .5s}
+.cv-root.chrome-paper .grain{opacity:0}
+
+/* ---------- shared type atoms ---------- */
+.cv-kicker{
+  font-family:var(--mono);font-weight:400;font-size:11px;letter-spacing:.34em;text-transform:uppercase;
+  color:var(--acid);
+}
+.cv-sec--paper .cv-kicker{color:var(--ink-green)}
+
+.cv-sec__title{
+  display:flex;align-items:baseline;gap:var(--s3);
+  font-family:var(--display);font-weight:400;
+  font-size:clamp(26px,3.4vw,46px);line-height:1;letter-spacing:.005em;
+  text-transform:uppercase;
+  padding-bottom:var(--s3);margin-bottom:var(--s5);
+  border-bottom:1px solid var(--p-rule);
+}
+.cv-sec--dark .cv-sec__title{border-bottom-color:var(--d-rule)}
+.cv-sec__num{
+  font-family:var(--mono);font-weight:500;font-size:12px;letter-spacing:.2em;
+  color:var(--ink-green);flex:none;
+}
+.cv-sec--dark .cv-sec__num{color:var(--acid)}
+
+/* ==========================================================================
+   THE SPINE
+   ========================================================================== */
+.spine{
+  position:fixed;top:0;left:0;bottom:0;width:var(--spine-w);z-index:90;
+  display:none;flex-direction:column;align-items:stretch;
+  padding:calc(var(--s6) + 12px) 0 var(--s4);
+  border-right:1px solid var(--d-rule);
+  background:none;pointer-events:none;
+  transition:border-color .45s ease, color .45s ease;
+}
+.spine a{pointer-events:auto}
+/* The spine is TRANSPARENT and sits on top of each section's own background —
+   sections stay full-bleed and the content is inset instead. That way the
+   paper reaches the left edge and there is no background to flip (and so no
+   boundary at which the rail can go invisible). */
+@media (min-width:1100px){
+  .spine{display:flex}
+  .cv-wrap,.cv-cover__inner,.cv-seam__head,.cv-cover__hint{
+    padding-left:calc(var(--spine-w) + var(--gutter));
+  }
+}
+
+.cv-root.chrome-paper .spine{border-right-color:var(--p-rule)}
+
+/* runs up the far-left edge so it can never collide with the ruler or status */
+.spine__file{
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.28em;color:var(--d-faint);
+  writing-mode:vertical-rl;transform:rotate(180deg);
+  position:absolute;left:11px;top:50%;translate:0 -50%;
+  transition:color .45s ease;
+}
+.cv-root.chrome-paper .spine__file{color:var(--p-faint)}
+
+/* height:1.05em + overflow:hidden was shaving the tops off the digits — the
+   readout is the one number that must be perfectly legible */
+.spine__year{
+  margin-bottom:var(--s5);line-height:1.25;
+  text-align:right;padding-right:calc(var(--spine-w) - var(--rail-x) + 8px);
+}
+.spine__year-num{
+  display:block;line-height:1.25;
+  font-family:var(--mono);font-weight:500;font-size:19px;letter-spacing:.02em;
+  color:var(--acid);font-variant-numeric:tabular-nums;
+  transition:color .45s ease;
+}
+.cv-root.chrome-paper .spine__year-num{color:var(--ink-green)}
+
+/* The ruler line sits to the RIGHT of the year labels, so the numbers are
+   never struck through by it. --rail-x is the line's offset in the spine. */
+.spine{--rail-x:70px}
+.spine__rail{position:relative;flex:1;width:100%}
+.spine__track{
+  position:absolute;top:0;bottom:0;left:var(--rail-x);width:1px;
+  background:var(--d-rule);transition:background .45s ease;
+}
+.cv-root.chrome-paper .spine__track{background:var(--p-rule)}
+
+.spine__fill{
+  position:absolute;top:0;left:var(--rail-x);width:1px;height:0;
+  background:var(--acid);transform-origin:top;
+}
+.cv-root.chrome-paper .spine__fill{background:var(--ink-green)}
+
+/* tenure segments — painted as the reader passes each role */
+.spine__seg{
+  position:absolute;left:calc(var(--rail-x) - 1.5px);width:4px;
+  background:var(--acid);opacity:.28;
+  transform:scaleY(0);transform-origin:top;
+}
+.cv-root.chrome-paper .spine__seg{background:var(--ink-green);opacity:.3}
+.spine__seg[data-seg="bank"]    {top:11.1%;height:11.1%}
+.spine__seg[data-seg="ibatech"] {top:22.2%;height:5.5%}
+.spine__seg[data-seg="iba"]     {top:22.2%;height:22.2%}
+.spine__seg[data-seg="infineon"]{top:66.6%;height:28%}
+
+.spine__ticks{list-style:none;position:absolute;inset:0;margin:0;padding:0}
+.spine__tick{position:absolute;left:0;right:0;height:1px}
+.spine__tick::before{
+  content:"";position:absolute;left:var(--rail-x);top:0;width:11px;height:1px;
+  background:var(--d-rule);transition:background .45s ease,width .3s ease;
+}
+.cv-root.chrome-paper .spine__tick::before{background:var(--p-rule)}
+.spine__tick--minor::before{width:6px}
+
+.spine__tick a{
+  position:absolute;left:0;top:-14px;height:28px;
+  width:calc(var(--rail-x) - 8px);
+  display:flex;align-items:center;justify-content:flex-end;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;
+  color:var(--d-faint);font-variant-numeric:tabular-nums;
+  transition:color .28s ease;
+}
+.cv-root.chrome-paper .spine__tick a{color:var(--p-faint)}
+.spine__tick a:hover,.spine__tick a:focus-visible{color:var(--acid)}
+.cv-root.chrome-paper .spine__tick a:hover,
+.cv-root.chrome-paper .spine__tick a:focus-visible{color:var(--ink-green)}
+.spine__tick a:focus-visible{outline:2px solid currentColor;outline-offset:2px}
+.spine__tick.is-live a{color:var(--acid)}
+.cv-root.chrome-paper .spine__tick.is-live a{color:var(--ink-green)}
+.spine__tick-y{background:inherit;padding:0 3px}
+
+.spine__status{
+  padding-left:26px;
+  display:flex;align-items:center;gap:7px;margin-top:var(--s4);
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;color:var(--d-faint);
+  transition:color .45s ease;
+}
+.cv-root.chrome-paper .spine__status{color:var(--p-faint)}
+.spine__dot{width:5px;height:5px;border-radius:50%;background:var(--acid);flex:none}
+.cv-root.chrome-paper .spine__dot{background:var(--ink-green)}
+.spine__status.is-closed .spine__dot{background:var(--d-faint)}
+
+/* ==========================================================================
+   TOPBAR — a solid file tab, legible on BOTH themes at every scroll position.
+   (Deliberately not a theme-flip: that is what made the header vanish at
+   section boundaries in lab/005.)
+   ========================================================================== */
+.cv-topbar{
+  background:none;padding:var(--s3) var(--gutter);
+  gap:var(--s3);align-items:flex-start;
+  transition:transform .38s cubic-bezier(.2,.8,.2,1), opacity .3s;
+}
+/* the bar is a solid chip, so it would otherwise sit on top of body copy.
+   Retract while reading down, return the moment the reader scrolls up. */
+.cv-root.bar-hidden .cv-topbar{transform:translateY(-135%);opacity:0}
+@media (prefers-reduced-motion:reduce){
+  .cv-root.bar-hidden .cv-topbar{transform:none;opacity:1}
+}
+.cv-topbar .topbar__mark,
+.cv-topbar .topbar__nav{
+  background:rgba(10,10,11,.92);
+  border:1px solid rgba(242,237,228,.16);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  color:var(--d-text);
+}
+.cv-topbar .topbar__mark{
+  padding:9px 13px 7px;line-height:1;color:var(--d-text);
+}
+.cv-topbar .topbar__nav{
+  padding:var(--s1) var(--s3);gap:var(--s3);row-gap:var(--s1);
+}
+.cv-topbar .topbar__cta{border-bottom-color:var(--acid);color:var(--d-text)}
+.cv-topbar .topbar__cta:hover{color:var(--acid)}
+.cv-topbar .topbar__lang{color:var(--d-faint)}
+.cv-topbar .topbar__lang [data-lang-label],
+.cv-topbar .topbar__lang [data-lang-alt]{color:inherit}
+.cv-root[lang="en"] .cv-topbar .topbar__lang [data-lang-label],
+.cv-root[lang="de"] .cv-topbar .topbar__lang [data-lang-alt]{color:var(--d-text)}
+@media (max-width:560px){ .cv-topbar .topbar__cta--desk{display:none} }
+
+/* ==========================================================================
+   1 · COVER
+   ========================================================================== */
+/* The cover's vertical rhythm scales with viewport HEIGHT, not just width.
+   A flat 210px top padding left a dead band above the kicker and pushed the
+   CTAs below the fold on every real laptop viewport. Top padding now only has
+   to clear the topbar (~70px). */
+.cv-cover{min-height:100svh;display:flex;flex-direction:column;justify-content:center;
+  padding:clamp(88px,11vh,148px) 0 clamp(48px,7vh,104px);overflow:hidden}
+.cv-cover__inner{
+  width:100%;max-width:var(--wrap);margin-inline:auto;padding-inline:var(--gutter);
+  display:grid;grid-template-columns:1fr;gap:var(--s5);align-items:center;
+}
+@media (min-width:900px){
+  .cv-cover__inner{grid-template-columns:minmax(0,1.45fr) minmax(260px,.55fr);gap:var(--s6)}
+}
+
+.cv-cover__name{
+  font-family:var(--display);font-weight:400;
+  /* cap raised so the vw term still governs on 2K+ — at 232px the name stopped
+     growing while its column kept widening, leaving a dead band mid-cover */
+  font-size:clamp(52px,10.5vw,300px);line-height:.86;letter-spacing:-.005em;
+  text-transform:uppercase;margin:clamp(10px,1.6vh,22px) 0 clamp(12px,2vh,22px);
+}
+.cv-cover__line{display:block;overflow:hidden}
+.cv-cover__line--accent{color:var(--acid)}
+
+.cv-cover__roles{height:1.4em;overflow:hidden;margin-bottom:clamp(24px,3.6vh,54px)}
+.cv-roller{display:block;position:relative;height:1.4em}
+.cv-roller__item{
+  display:block;position:absolute;inset:0;
+  font-family:var(--mono);font-weight:400;
+  font-size:clamp(12px,1.35vw,16px);letter-spacing:.3em;text-transform:uppercase;
+  color:var(--d-dim);opacity:0;transform:translateY(100%);
+}
+.cv-roller__item.is-current{opacity:1;transform:none}
+
+/* file metadata strip */
+.cv-meta{
+  border-top:1px solid var(--d-rule);
+  max-width:min(100%,52ch);margin-bottom:clamp(24px,3.6vh,54px);
+}
+.cv-meta__row{
+  display:grid;grid-template-columns:minmax(88px,.28fr) 1fr;gap:var(--s3);
+  padding:clamp(7px,1.2vh,11px) 0;border-bottom:1px solid var(--d-rule-soft);
+}
+.cv-meta dt,.cv-meta dd{
+  font-family:var(--mono);font-size:11px;letter-spacing:.19em;text-transform:uppercase;line-height:1.5;
+}
+.cv-meta dt{color:var(--d-faint)}
+.cv-meta dd{color:var(--d-text)}
+
+.cv-cover__actions{display:flex;flex-wrap:wrap;gap:var(--s2)}
+
+/* the ID photo */
+.cv-id{margin:0;max-width:340px;justify-self:start}
+/* capped rather than free — an ID photo that grows to 700px stops reading as
+   an ID photo */
+@media (min-width:900px){ .cv-id{justify-self:end;max-width:min(30vw,560px);width:100%} }
+.cv-id__frame{
+  position:relative;aspect-ratio:3/4;overflow:hidden;
+  background:#000;border:1px solid var(--d-rule);
+}
+.cv-id__img{width:100%;height:100%;object-fit:cover;object-position:50% 22%;display:block;
+  filter:contrast(1.06) saturate(.92)}
+.cv-id__corner{position:absolute;width:14px;height:14px;border:1px solid var(--acid);opacity:.8}
+.cv-id__corner--tl{top:9px;left:9px;border-right:0;border-bottom:0}
+.cv-id__corner--tr{top:9px;right:9px;border-left:0;border-bottom:0}
+.cv-id__corner--bl{bottom:9px;left:9px;border-right:0;border-top:0}
+.cv-id__corner--br{bottom:9px;right:9px;border-left:0;border-top:0}
+.cv-id__cap{
+  display:flex;justify-content:space-between;align-items:baseline;gap:var(--s2);
+  margin-top:10px;font-family:var(--mono);font-size:10px;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--d-faint);
+}
+.cv-id__sig{font-family:var(--display);font-size:15px;letter-spacing:.06em;color:var(--d-dim)}
+
+/* right-aligned so the scroll affordance ("OPEN FILE") no longer sits inches
+   from the spine's state label ("FILE OPEN") — side by side they read as one
+   garbled string */
+.cv-cover__hint{
+  display:flex;align-items:center;justify-content:flex-end;gap:var(--s2);
+  margin:clamp(28px,4.5vh,86px) auto 0;padding-inline:var(--gutter);
+  width:100%;max-width:var(--wrap);
+  font-family:var(--mono);font-size:10px;letter-spacing:.3em;color:var(--d-faint);
+}
+.cv-cover__hint span:first-child{width:52px;height:1px;background:var(--acid);transform-origin:left}
+
+/* ==========================================================================
+   2 · SEAM — the printed sheet header
+   ========================================================================== */
+.cv-seam{
+  position:relative;background:var(--p-bg);color:var(--p-ink);
+  border-top:1px solid rgba(20,20,15,.2);
+}
+.cv-seam::after{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.05;mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23p)'/%3E%3C/svg%3E");
+}
+.cv-seam__head{
+  position:relative;z-index:1;
+  width:100%;max-width:var(--wrap);margin-inline:auto;padding:var(--s3) var(--gutter);
+  display:flex;justify-content:space-between;gap:var(--s3);flex-wrap:wrap;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;
+  color:var(--p-faint);border-bottom:1px solid var(--p-rule);
+}
+
+/* ==========================================================================
+   3 · VITALS
+   ========================================================================== */
+.cv-vitals{padding:var(--s7) 0 var(--s6)}
+.cv-vitals__grid{
+  list-style:none;display:grid;grid-template-columns:repeat(2,1fr);
+}
+@media (min-width:900px){ .cv-vitals__grid{grid-template-columns:repeat(4,1fr)} }
+.cv-vital{
+  display:flex;flex-wrap:wrap;align-items:baseline;
+  padding:var(--s4) var(--s3) var(--s4) 0;
+  border-bottom:1px solid var(--p-rule);
+}
+@media (min-width:900px){
+  .cv-vital + .cv-vital{border-left:1px solid var(--p-rule);padding-left:var(--s4)}
+}
+.cv-vital__n{
+  font-family:var(--display);font-size:clamp(44px,6.4vw,96px);line-height:.82;
+  letter-spacing:-.01em;font-variant-numeric:tabular-nums;
+}
+.cv-vital__plus{font-family:var(--display);font-size:clamp(20px,2.6vw,38px);line-height:1;color:var(--ink-green)}
+.cv-vital__label{
+  flex:1 0 100%;margin-top:var(--s2);
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--p-dim);
+}
+
+.cv-status{
+  display:flex;flex-wrap:wrap;gap:var(--s2) var(--s3);align-items:baseline;
+  margin-top:var(--s5);padding-top:var(--s3);
+}
+.cv-status__key{
+  font-family:var(--mono);font-size:10px;letter-spacing:.24em;color:var(--p-faint);
+}
+.cv-status__val{
+  font-family:var(--mono);font-size:clamp(11px,1.15vw,13px);letter-spacing:.16em;
+  text-transform:uppercase;color:var(--p-ink);
+  box-shadow:inset 0 -.42em 0 rgba(25,226,141,.4);
+}
+
+/* ==========================================================================
+   4 · CAREER — vertical, docked to the spine
+   ========================================================================== */
+.cv-career{padding:var(--s6) 0 var(--s7)}
+.cv-roles{list-style:none}
+.cv-role{
+  display:grid;grid-template-columns:1fr;gap:var(--s3);
+  padding:var(--s5) 0;border-top:1px solid var(--p-rule);
+}
+/* the section title already draws a rule — don't stack a second one under it */
+.cv-role:first-child{border-top:0;padding-top:0}
+.cv-role:last-child{border-bottom:1px solid var(--p-rule)}
+@media (min-width:820px){
+  /* capped, not fractional — at .2fr the year column grew to 340px on a 1920
+     screen and opened a dead gap between the date and the role */
+  .cv-role{grid-template-columns:minmax(140px,210px) minmax(0,1fr);gap:var(--s5)}
+  .cv-role__when{position:sticky;top:118px;align-self:start}
+}
+.cv-role__years{
+  display:flex;flex-wrap:wrap;align-items:baseline;gap:.35em;
+  font-family:var(--mono);font-weight:500;font-size:clamp(15px,1.5vw,19px);
+  letter-spacing:.04em;font-variant-numeric:tabular-nums;color:var(--p-ink);
+}
+.cv-role__dash{color:var(--p-faint)}
+.cv-role__dur{
+  display:block;margin-top:6px;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--p-faint);
+}
+.cv-role__title{
+  font-family:var(--body);font-weight:500;
+  font-size:clamp(20px,2.15vw,30px);line-height:1.16;letter-spacing:-.005em;
+}
+.cv-role__org{
+  display:flex;flex-wrap:wrap;gap:.5em var(--s3);margin-top:var(--s1);
+  font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;
+}
+.cv-role__co{color:var(--ink-green)}
+.cv-role__city{color:var(--p-faint)}
+/* a ruled dash, not a browser disc — this is a document */
+.cv-role__bullets{list-style:none;margin:var(--s3) 0 0;padding:0;max-width:64ch}
+.cv-role__bullets li{
+  position:relative;padding-left:26px;
+  font-size:clamp(15px,1.1vw,16.5px);font-weight:300;line-height:1.62;color:var(--p-dim);
+  margin-bottom:var(--s2);
+}
+.cv-role__bullets li::before{
+  content:"";position:absolute;left:0;top:.75em;width:14px;height:1px;background:var(--ink-green);opacity:.75;
+}
+
+.cv-tags{list-style:none;display:flex;flex-wrap:wrap;gap:var(--s1);margin-top:var(--s3)}
+.cv-tags li{
+  font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--p-dim);padding:5px 9px;border:1px solid var(--p-rule);
+}
+
+.cv-award{
+  display:flex;flex-wrap:wrap;align-items:center;gap:var(--s2);
+  max-width:64ch;  /* stay on the same measure as the bullets above it */
+  margin-top:var(--s3);padding:var(--s2) var(--s3);
+  background:rgba(25,226,141,.16);border-left:2px solid var(--ink-green);
+  font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--p-ink);
+}
+.cv-award__mark{color:var(--ink-green)}
+.cv-award__link{color:var(--ink-green);border-bottom:1px solid currentColor;padding-bottom:1px}
+
+/* ==========================================================================
+   5 · EDUCATION — the quiet beat
+   ========================================================================== */
+.cv-edu{padding:var(--s6) 0}
+.cv-degrees{list-style:none;display:grid;gap:var(--s5)}
+@media (min-width:820px){ .cv-degrees{grid-template-columns:repeat(2,1fr);gap:var(--s6)} }
+.cv-degree{border-top:1px solid var(--p-rule);padding-top:var(--s3)}
+.cv-degree__years{
+  display:block;font-family:var(--mono);font-weight:500;font-size:13px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink-green);font-variant-numeric:tabular-nums;
+}
+.cv-degree__title{
+  margin-top:var(--s2);
+  font-family:var(--display);font-weight:400;text-transform:uppercase;
+  font-size:clamp(22px,2.7vw,38px);line-height:1.02;letter-spacing:.004em;
+}
+.cv-degree__org{
+  margin-top:var(--s2);display:flex;flex-wrap:wrap;gap:.4em var(--s3);
+  font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--p-dim);
+}
+.cv-degree__city{color:var(--p-faint)}
+
+/* ==========================================================================
+   6 · CAPABILITIES — ruled matrix
+   ========================================================================== */
+.cv-caps{padding:var(--s6) 0}
+.cv-caps__grid{display:grid;grid-template-columns:1fr;gap:var(--s5)}
+@media (min-width:660px){ .cv-caps__grid{grid-template-columns:repeat(2,1fr);gap:var(--s5) var(--s4)} }
+@media (min-width:1180px){ .cv-caps__grid{grid-template-columns:repeat(4,1fr);gap:var(--s4)} }
+
+.cv-cap__head{
+  display:flex;align-items:baseline;gap:var(--s2);
+  padding-bottom:var(--s2);border-bottom:1px solid var(--p-ink);
+  font-family:var(--mono);font-weight:500;font-size:11.5px;letter-spacing:.22em;text-transform:uppercase;
+}
+.cv-cap__num{color:var(--ink-green)}
+.cv-cap__list{list-style:none}
+.cv-cap__list li{
+  position:relative;display:flex;flex-wrap:wrap;justify-content:space-between;gap:var(--s1);
+  align-items:baseline;padding:var(--s2) 0;border-bottom:1px solid var(--p-rule-soft);
+  font-size:14.5px;font-weight:300;line-height:1.5;color:var(--p-dim);
+  transition:color .25s ease;
+}
+.cv-cap__list li::before{
+  content:"";position:absolute;left:0;bottom:-1px;height:1px;width:0;
+  background:var(--ink-green);transition:width .4s cubic-bezier(.2,.8,.2,1);
+}
+.cv-cap__list li:hover{color:var(--p-ink)}
+.cv-cap__list li:hover::before{width:100%}
+.cv-cap__where{
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--p-faint);white-space:nowrap;
+}
+
+/* ==========================================================================
+   7 · LANGUAGES
+   ========================================================================== */
+.cv-langs{padding:var(--s6) 0 var(--s7)}
+.cv-lang-list{list-style:none}
+.cv-lang{
+  display:grid;grid-template-columns:1fr auto;align-items:center;gap:var(--s2) var(--s3);
+  padding:var(--s3) 0;border-bottom:1px solid var(--p-rule);
+}
+@media (min-width:760px){
+  /* fixed name column keeps the gauges in one vertical band instead of
+     stranding them at the far right of a very wide row */
+  .cv-lang{grid-template-columns:minmax(0,22ch) auto minmax(0,1fr);gap:var(--s4)}
+}
+.cv-lang__name{
+  font-size:clamp(17px,1.9vw,24px);font-weight:400;letter-spacing:-.004em;
+}
+.cv-lang__native{
+  display:block;margin-top:4px;
+  font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--p-faint);
+}
+.cv-lang__gauge{display:flex;gap:4px;grid-column:1;grid-row:2}
+@media (min-width:760px){ .cv-lang__gauge{grid-column:2;grid-row:1} }
+.cv-lang__gauge i{
+  display:block;width:clamp(20px,3.4vw,34px);height:8px;
+  border:1px solid var(--p-rule);background:transparent;
+}
+.cv-lang__gauge i.is-on{background:var(--acid);border-color:rgba(20,20,15,.28)}
+.cv-lang__lvl{
+  font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--p-dim);text-align:right;grid-column:2;grid-row:1;
+}
+@media (min-width:760px){ .cv-lang__lvl{grid-column:3} }
+
+/* ==========================================================================
+   8 · THE VAULT
+   ========================================================================== */
+.cv-vault{padding:var(--s7) 0 var(--s6);overflow:hidden}
+.cv-vault__lede{
+  max-width:52ch;margin:calc(var(--s5) * -1 + var(--s2)) 0 var(--s5);
+  font-size:clamp(15px,1.2vw,17px);font-weight:300;line-height:1.6;color:var(--d-dim);
+}
+.cv-deck{
+  list-style:none;display:flex;gap:var(--s4);align-items:flex-end;
+  padding:var(--s3) 0 var(--s4);
+  overflow-x:auto;scroll-snap-type:x proximity;
+  scrollbar-width:thin;-webkit-overflow-scrolling:touch;
+}
+.cv-deck::-webkit-scrollbar{height:2px}
+.cv-deck::-webkit-scrollbar-thumb{background:var(--d-rule)}
+/* was overflow-x:hidden — that killed the scrollbar AND blocked scrollLeft
+   mid-drag in some browsers. Snap fighting the drag was the real problem. */
+.cv-root.deck-dragging .cv-deck{scroll-snap-type:none;cursor:grabbing}
+/* desktop pinned-scrub mode (cv.js): deck moves via transform, not scrollLeft */
+.cv-deck--pin{overflow:visible;scroll-snap-type:none}
+
+.cv-doc{flex:none;scroll-snap-align:center;max-width:min(88vw,520px)}
+.cv-doc__open{display:block;position:relative}
+.cv-doc__shot{
+  display:block;position:relative;overflow:hidden;
+  background:#141516;border:1px solid var(--d-rule);
+  box-shadow:0 18px 44px rgba(0,0,0,.5);
+  transition:transform .45s cubic-bezier(.2,.8,.2,1), box-shadow .45s;
+}
+.cv-doc__shot img{display:block;width:100%;height:100%;object-fit:cover}
+.cv-doc--land .cv-doc__shot{width:min(84vw,460px);aspect-ratio:1.41/1}
+.cv-doc--port .cv-doc__shot{width:min(64vw,300px);aspect-ratio:.72/1}
+.cv-doc__open:hover .cv-doc__shot,
+.cv-doc__open:focus-visible .cv-doc__shot{transform:translateY(-8px);box-shadow:0 28px 60px rgba(0,0,0,.62)}
+.cv-doc__open:focus-visible{outline:2px solid var(--acid);outline-offset:6px}
+
+.cv-doc__title{
+  display:block;margin-top:var(--s3);max-width:34ch;
+  font-size:15.5px;font-weight:500;line-height:1.35;color:var(--d-text);
+}
+.cv-doc__desc{
+  display:block;margin-top:6px;max-width:40ch;
+  font-size:13.5px;font-weight:300;line-height:1.55;color:var(--d-dim);
+}
+.cv-doc__meta{
+  display:block;margin-top:var(--s2);
+  font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--d-faint);
+}
+.cv-doc__dl{
+  display:inline-block;margin-top:var(--s2);padding:9px 2px;min-height:44px;line-height:26px;
+  font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--acid);border-bottom:1px solid transparent;transition:border-color .3s;
+}
+.cv-doc__dl:hover,.cv-doc__dl:focus-visible{border-bottom-color:var(--acid)}
+.cv-doc__dl:focus-visible{outline:2px solid var(--acid);outline-offset:4px}
+
+.cv-deck__hint{
+  font-family:var(--mono);font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--d-faint);
+}
+
+/* lightbox */
+.cv-lightbox{
+  position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;
+  background:rgba(6,6,7,.96);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+}
+.cv-lightbox[hidden]{display:none}
+.cv-lightbox__bar{
+  display:flex;justify-content:space-between;align-items:center;gap:var(--s3);flex-wrap:wrap;
+  padding:var(--s3) var(--gutter);border-bottom:1px solid var(--d-rule);
+}
+.cv-lightbox__title{
+  font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--d-text);
+}
+.cv-lightbox__acts{display:flex;align-items:center;gap:var(--s3)}
+.cv-lightbox__act{
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--acid);border-bottom:1px solid var(--acid);
+  min-height:44px;display:flex;align-items:center;
+}
+.cv-lightbox__close{
+  appearance:none;background:none;border:1px solid var(--d-rule);color:var(--d-text);
+  width:44px;height:44px;cursor:pointer;font-size:15px;line-height:1;
+  transition:border-color .3s,color .3s;
+}
+.cv-lightbox__close:hover{border-color:var(--acid);color:var(--acid)}
+.cv-lightbox__act:focus-visible,.cv-lightbox__close:focus-visible{outline:2px solid var(--acid);outline-offset:3px}
+.cv-lightbox__stage{
+  flex:1;display:flex;align-items:center;justify-content:center;padding:var(--s4) var(--gutter);overflow:auto;
+}
+.cv-lightbox__stage img{max-width:100%;max-height:100%;object-fit:contain;background:#fff}
+
+/* ==========================================================================
+   9 · END CARD
+   ========================================================================== */
+.cv-end{padding:var(--s7) 0 var(--s5);min-height:88svh;display:flex;align-items:center}
+.cv-end__title{
+  font-family:var(--display);font-weight:400;text-transform:uppercase;
+  font-size:clamp(38px,7.4vw,170px);line-height:.9;letter-spacing:-.004em;
+  margin:var(--s3) 0 var(--s5);
+}
+.cv-end__title span{display:block}
+.cv-end__title .accent{color:var(--acid)}
+.cv-end__actions{display:flex;flex-wrap:wrap;gap:var(--s2);margin-bottom:var(--s5)}
+.cv-end__links{
+  list-style:none;display:flex;flex-wrap:wrap;gap:var(--s2) var(--s4);
+  padding-top:var(--s3);border-top:1px solid var(--d-rule);
+}
+.cv-end__links a{
+  display:inline-flex;align-items:center;min-height:44px;
+  font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--d-dim);
+  border-bottom:1px solid transparent;transition:color .3s,border-color .3s;
+}
+.cv-end__links a:hover,.cv-end__links a:focus-visible{color:var(--acid);border-bottom-color:var(--acid)}
+.cv-end__links a:focus-visible{outline:2px solid var(--acid);outline-offset:3px}
+.cv-footer{margin-top:var(--s5);border-top:1px solid var(--d-rule-soft);padding-top:var(--s3)}
+
+/* ==========================================================================
+   REVEALS — CSS owns the resting state, JS owns the motion.
+   Without JS every .cv-in element is simply visible.
+   ========================================================================== */
+.cv-root.js .cv-in{opacity:0;transform:translateY(20px)}
+.cv-root.js .cv-in.is-in{opacity:1;transform:none}
+
+@media (prefers-reduced-motion:reduce){
+  .cv-root.js .cv-in{opacity:1;transform:none}
+  .cv-doc__shot,.cv-cap__list li::before{transition:none}
+  .cv-page .grain{animation:none}
+}
+
+/* ==========================================================================
+   PRINT — the file, on A4, in ink. (Kept from the old page and extended.)
+   ========================================================================== */
+@media print{
+  .spine,.cv-topbar,.whatsapp-float,.grain,.cv-lightbox,
+  .cv-cover__hint,.cv-deck__hint,.cv-id__corner,.cv-end__actions,.cv-cover__actions{display:none!important}
+  .cv-page{background:#fff;color:#000}
+  .cv-main{padding-left:0}
+  /* keep a little air between sections — zeroing padding outright made the
+     status line collide with the next section heading */
+  .cv-sec,.cv-sec--dark,.cv-sec--paper{
+    background:#fff!important;color:#000!important;
+    padding:0 0 8mm!important;min-height:0!important;
+  }
+  .cv-sec__title{margin:10mm 0 5mm}
+  .cv-status{margin-top:5mm}
+  .cv-sec--paper::after,.cv-seam::after{display:none!important}
+  .cv-wrap,.cv-cover__inner{max-width:none;padding:0!important;display:block}
+  .cv-root.js .cv-in{opacity:1!important;transform:none!important;visibility:visible!important}
+  /* undo anything GSAP's pin left behind — otherwise the cover is fixed and
+     repeats on every page while later sections vanish */
+  .cv-cover__inner,.pin-spacer{
+    position:static!important;transform:none!important;opacity:1!important;
+    inset:auto!important;width:auto!important;height:auto!important;
+    min-height:0!important;max-height:none!important;padding-bottom:0!important;margin:0!important;
+  }
+  .cv-cover{min-height:0;display:block;padding:0!important;overflow:visible!important}
+  .cv-sec,.cv-vault{overflow:visible!important}
+  .cv-cover__name{font-size:34pt;color:#000}
+  .cv-cover__line--accent{color:#000}
+  /* the roller is a 1.4em masked window on screen — unmask it or the current
+     role prints sliced in half */
+  .cv-cover__roles{height:auto!important;overflow:visible!important;margin-bottom:4mm}
+  .cv-roller{height:auto!important;overflow:visible!important}
+  .cv-roller__item{position:static;opacity:1;transform:none!important;display:none;color:#000}
+  .cv-roller__item.is-current{display:block}
+  .cv-id__cap{display:flex;gap:3mm;white-space:nowrap;letter-spacing:.12em}
+  /* the ID photo is content on a printed CV (standard in AT/DE), so force it
+     to survive the pin-revert and print at a passport-ish size */
+  /* no object-fit / aspect-ratio / filter here — all three render unreliably
+     in print rasterisers. Plain intrinsic image, fixed width. */
+  /* float:right put the box past the printable width and clipped it — a
+     static block simply cannot overflow the page box */
+  .cv-id{display:block!important;width:32mm;float:none!important;margin:6mm 0 8mm}
+  .cv-id__frame{display:block!important;aspect-ratio:auto;overflow:visible;
+    border:1px solid #999;background:none;width:32mm;height:auto}
+  .cv-id__img{display:block!important;width:32mm!important;height:auto!important;
+    object-fit:fill;opacity:1!important;visibility:visible!important;filter:none}
+  .cv-id__cap{margin-top:2mm;color:#555!important}
+  .cv-id__sig{color:#000!important}
+  .cv-meta dt,.cv-meta dd,.cv-role__co,.cv-degree__years,.cv-vital__plus,
+  .cv-sec__num,.cv-kicker,.cv-award__mark,.cv-award__link{color:#000!important}
+  .cv-meta,.cv-meta__row,.cv-role,.cv-lang,.cv-cap__list li,.cv-degree,
+  .cv-vital,.cv-vitals__grid,.cv-lang-list,.cv-cap__head,.cv-sec__title{border-color:#bbb!important}
+  .cv-role__bullets li,.cv-cap__list li,.cv-role__city,.cv-degree__city,
+  .cv-doc__desc,.cv-vital__label,.cv-status__val,.cv-lang__lvl{color:#333!important}
+  .cv-status__val{box-shadow:none}
+  .cv-award{background:none;border-left:2px solid #000}
+  .cv-lang__gauge i{border-color:#666}
+  .cv-lang__gauge i.is-on{background:#000}
+  .cv-role,.cv-degree,.cv-cap,.cv-lang,.cv-doc{break-inside:avoid;page-break-inside:avoid}
+  .cv-sec{break-inside:auto}
+  .cv-career,.cv-edu,.cv-caps,.cv-langs,.cv-vault{break-before:auto}
+  .cv-role__when{position:static!important}
+  .cv-deck{display:block;overflow:visible}
+  .cv-doc{max-width:none;margin-bottom:10pt}
+  .cv-doc__shot{display:none}
+  .cv-end{min-height:0;display:block}
+  .cv-end__title{font-size:20pt;color:#000}
+  .cv-end__title .accent{color:#000}
+  .cv-end__links a{color:#000!important;min-height:0}
+  a[href^="http"]::after{content:" (" attr(href) ")";font-size:8pt;color:#666}
+  .cv-doc__dl::after,.cv-lightbox__act::after{content:""}
+}

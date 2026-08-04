@@ -22,7 +22,7 @@ a{color:inherit;text-decoration:none}
   font-size:12px;letter-spacing:.14em;text-transform:uppercase;transform:translateY(-160%);transition:transform .25s}
 .skip-link:focus{transform:translateY(0);outline:2px solid var(--text);outline-offset:3px}
 .topbar__mark:focus-visible,.footer a:focus-visible,.card:focus-visible,.work-cover:focus-visible,
-.doc-docs__dl:focus-visible,.rail-tick:focus-visible{
+.rail-tick:focus-visible{
   outline:2px solid var(--accent);outline-offset:4px}
 
 /* grain texture */
@@ -290,83 +290,10 @@ html[lang="en"] .topbar__lang [data-lang-alt]{color:var(--text-dim)}
   .work__frame{display:block}
 }
 
-/* ============ DOC PAGE (cv.html) ============ */
-body.doc{cursor:auto}
-body.doc .cursor{display:none}
-body.doc .topbar{background:transparent;mix-blend-mode:normal}
-.doc-main{max-width:var(--measure-wide);width:100%;margin:0 auto;padding:120px 4vw 10vh}
-.doc-header{margin-bottom:56px}
-.doc-header h1{font-family:var(--display);font-size:clamp(44px,7vw,96px);line-height:.95;letter-spacing:.01em}
-.doc-header__role{margin-top:14px;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);line-height:1.55;
-  max-width:var(--measure-text)}
-.doc-header__actions{margin-top:28px;display:flex;flex-wrap:wrap;gap:14px;align-items:center}
-.doc-header__work{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--text-dim);
-  border-bottom:1px solid transparent;padding:10px 2px;transition:color .3s,border-color .3s}
-.doc-header__work:hover,.doc-header__work:focus-visible{color:var(--accent);border-bottom-color:var(--accent)}
-.doc-section{margin-top:72px}
-.doc-section__title{font-size:11px;letter-spacing:.4em;text-transform:uppercase;color:var(--accent);margin-bottom:28px}
-.doc-reveal{opacity:0;transform:translateY(18px);transition:opacity .7s cubic-bezier(.2,.8,.2,1),transform .7s cubic-bezier(.2,.8,.2,1)}
-.doc-reveal.is-in{opacity:1;transform:none}
-@media (prefers-reduced-motion:reduce){
-  .doc-reveal{opacity:1;transform:none;transition:none}
-}
-.doc-exp{list-style:none;counter-reset:none}
-.doc-exp__item{padding:32px 0;border-top:1px solid rgba(242,237,228,.08)}
-.doc-exp__item:last-child{border-bottom:1px solid rgba(242,237,228,.08)}
-.doc-exp__role{font-size:clamp(18px,1.6vw,22px);font-weight:500;letter-spacing:.02em}
-.doc-exp__meta{margin-top:6px;font-size:13px;color:var(--text-dim);letter-spacing:.04em}
-.doc-exp__bullets{margin:16px 0 0 1.1em;padding:0;max-width:var(--measure-text)}
-.doc-exp__bullets li{font-size:14.5px;font-weight:300;line-height:1.65;color:var(--text-dim);margin-bottom:6px}
-@media (min-width:900px){
-  .doc-exp__item{display:grid;grid-template-columns:minmax(220px,280px) minmax(0,1fr);column-gap:clamp(28px,4vw,56px);
-    align-items:start}
-  .doc-exp__role{grid-column:1;grid-row:1}
-  .doc-exp__meta{grid-column:1;grid-row:2}
-  .doc-exp__bullets{grid-column:2;grid-row:1 / span 3;margin:0;padding-left:1.1em}
-}
-.doc-skills{display:grid;grid-template-columns:repeat(2,1fr);gap:36px 40px}
-@media (min-width:900px){
-  .doc-skills{grid-template-columns:repeat(4,1fr);gap:36px 32px}
-}
-.doc-skills h3{font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--text);margin-bottom:12px;font-weight:500}
-.doc-skills ul{list-style:none;padding:0}
-.doc-skills li{font-size:14.5px;font-weight:300;line-height:1.7;color:var(--text-dim)}
-.doc-langs{list-style:none;padding:0;max-width:none}
-.doc-langs li{display:flex;justify-content:space-between;align-items:baseline;gap:16px;
-  padding:14px 0;border-top:1px solid rgba(242,237,228,.08);font-size:14.5px;font-weight:300}
-.doc-langs li:last-child{border-bottom:1px solid rgba(242,237,228,.08)}
-.doc-langs__level{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--text-dim)}
-.doc-docs{list-style:none;padding:0}
-.doc-docs__item{display:grid;grid-template-columns:72px 1fr auto;gap:12px 28px;align-items:start;
-  padding:26px 0;border-top:1px solid rgba(242,237,228,.08)}
-.doc-docs__item:last-child{border-bottom:1px solid rgba(242,237,228,.08)}
-.doc-docs__thumb{width:72px;height:96px;object-fit:cover;border:1px solid rgba(242,237,228,.12);background:#141516;grid-row:1 / span 3}
-.doc-docs__title{font-size:15px;font-weight:500;grid-column:2}
-.doc-docs__desc{font-size:13.5px;font-weight:300;color:var(--text-dim);line-height:1.55;grid-column:2;max-width:var(--measure-text)}
-.doc-docs__meta{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:rgba(242,237,228,.4);grid-column:2}
-.doc-docs__dl{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);align-self:start;
-  border-bottom:1px solid transparent;transition:border-color .25s;grid-column:3;grid-row:1}
-.doc-docs__dl:hover{border-bottom-color:var(--accent)}
-.doc-footer-wrap{max-width:var(--measure-wide);width:100%;margin:0 auto;padding:0 4vw 8vh}
-@media (max-width:768px){
-  .doc-skills{grid-template-columns:1fr}
-  .doc-docs__item{grid-template-columns:64px 1fr;gap:8px 14px}
-  .doc-docs__thumb{width:64px;height:86px;grid-row:1 / span 2}
-  .doc-docs__title,.doc-docs__desc,.doc-docs__meta{grid-column:2}
-  .doc-docs__dl{grid-column:2;grid-row:auto;justify-self:start;margin-top:4px}
-}
+/* the CV page owns its own styles in cv.css */
 
 @media print{
-  .grain,.cursor,.topbar,.whatsapp-float,.btn,.doc-header__actions,.doc-docs__dl,.doc-docs__thumb,.skip-link{display:none!important}
-  body,body.doc{background:#fff!important;color:#000!important;cursor:auto}
-  .doc-main,.doc-footer-wrap{max-width:none;padding:0;margin:0}
-  .doc-reveal{opacity:1!important;transform:none!important}
-  .doc-docs__item{grid-template-columns:1fr}
-  .doc-header h1,.doc-exp__role,.doc-skills h3,.doc-docs__title{color:#000}
-  .doc-header__role,.doc-exp__meta,.doc-exp__bullets li,.doc-skills li,.doc-langs li,
-  .doc-langs__level,.doc-docs__desc,.doc-docs__meta,.footer,.footer__email{color:#333!important}
-  .doc-section__title{color:#000;border-bottom:1px solid #000;padding-bottom:6px}
-  .doc-exp__item,.doc-langs li,.doc-docs__item{border-color:#ccc;break-inside:avoid;page-break-inside:avoid}
-  .doc-section{break-inside:avoid;page-break-inside:avoid}
+  .grain,.cursor,.topbar,.whatsapp-float,.btn,.skip-link{display:none!important}
+  body{background:#fff!important;color:#000!important;cursor:auto}
   a{color:#000;text-decoration:none}
 }
