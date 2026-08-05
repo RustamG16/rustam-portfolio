@@ -37,8 +37,14 @@ var I18N = {
     'cv.download': 'Download CV',
     'cv.selectedWork': 'Selected work →',
     'cv.dl': 'Download',
-    'cv.spine.aria': 'Jump by year',
+    'cv.spine.aria': 'Jump by section',
     'cv.spine.status': 'FILE OPEN',
+    /* the six numbered tick labels reuse cv.vitals / cv.exp / cv.edu /
+       cv.skills / cv.langs / cv.docs directly (see below) — no separate
+       keys, so the rail can never say something different from the
+       section heading it points to. Only the unnumbered close-tick needs
+       its own string. */
+    'cv.spine.tick.end': 'End',
 
     'cv.cover.kicker': 'PERSONNEL FILE · RG-2026',
     'cv.cover.docs': 'Documents ↓',
@@ -147,8 +153,9 @@ var I18N = {
     'cv.download': 'Lebenslauf laden',
     'cv.selectedWork': 'Ausgewählte Arbeiten →',
     'cv.dl': 'Download',
-    'cv.spine.aria': 'Nach Jahr springen',
+    'cv.spine.aria': 'Nach Abschnitt springen',
     'cv.spine.status': 'AKTE OFFEN',
+    'cv.spine.tick.end': 'Ende',
 
     'cv.cover.kicker': 'PERSONALAKTE · RG-2026',
     'cv.cover.docs': 'Dokumente ↓',
@@ -332,29 +339,51 @@ $$('a[href^="#"]').forEach(function (a) {
 })();
 
 /* ==========================================================================
-   THE SPINE — year readout, progress fill, live tick, tenure segments
+   THE SPINE — section index, live position readout, progress fill.
+   Ticks are positioned by each target section's REAL height, not an even
+   split: Vitals and Career/Experience are wildly different lengths, and a
+   fake even split would lie about where you actually are in the document.
+   The rail's domain is #vitals (0%) through #endcard (100%) — the cover is
+   a bookend the rail stays hidden over (see .spine-in toggle below).
    ========================================================================== */
-var Y0 = 2017, Y1 = 2026, SPAN = Y1 - Y0;
-var spineYear = $('#spine-year');
+var spinePos = $('#spine-pos');
 var spineFill = $('#spine-fill');
 var ticks = $$('.spine__tick');
+var spineDomainStart = $('#vitals');
+var spineDomainEnd = $('#endcard');
 
-/* place ticks from their data-year so CSS never has to hardcode the ruler */
-ticks.forEach(function (t) {
-  var y = parseInt(t.getAttribute('data-year'), 10);
-  t.style.top = ((y - Y0) / SPAN * 100) + '%';
-});
-
-var shownYear = null;
-function setYear(y) {
-  if (y === shownYear) return;
-  shownYear = y;
-  if (spineYear) spineYear.textContent = String(y);
+function layoutSpineTicks() {
+  if (!spineDomainStart || !spineDomainEnd) return;
+  var top0 = spineDomainStart.getBoundingClientRect().top + window.scrollY;
+  var top1 = spineDomainEnd.getBoundingClientRect().top + window.scrollY;
+  var span = top1 - top0;
+  if (span <= 0) return;
   ticks.forEach(function (t) {
-    t.classList.toggle('is-live', parseInt(t.getAttribute('data-year'), 10) === y);
+    if (t.hasAttribute('data-end')) { t.style.top = '100%'; return; }
+    var a = t.querySelector('a');
+    var target = a && $(a.getAttribute('href'));
+    if (!target) return;
+    var y = target.getBoundingClientRect().top + window.scrollY;
+    t.style.top = Math.max(0, Math.min(100, (y - top0) / span * 100)) + '%';
   });
 }
-setYear(2026);
+layoutSpineTicks();
+addEventListener('resize', layoutSpineTicks);
+/* a window resize is covered above; ScrollTrigger.refresh() also fires on
+   its own (e.g. after the vault's late image loads settle the page height
+   below), and ticks need to be recomputed then too */
+if (hasST) ScrollTrigger.addEventListener('refresh', layoutSpineTicks);
+
+var shownSection = null;
+function setSection(n) {
+  if (n === shownSection) return;
+  shownSection = n;
+  if (spinePos) spinePos.textContent = n;
+  ticks.forEach(function (t) {
+    t.classList.toggle('is-live', t.dataset.section === n);
+  });
+}
+setSection('01');
 
 /* ==========================================================================
    Everything scroll-driven. One matchMedia so reduced-motion is a real
@@ -385,28 +414,43 @@ if (hasGSAP && hasST) {
       });
     });
 
-    /* spine year per section */
-    var yearOf = [
-      ['#cover', 2026], ['#vitals', 2026],
-      ['#role-infineon', 2023], ['#role-iba', 2019],
-      ['#role-ibatech', 2019], ['#role-bank', 2018],
-      ['#education', 2017], ['#capabilities', 2026],
-      ['#languages', 2026], ['#vault', 2026], ['#endcard', 2026]
+    /* spine position readout per section — one entry per numbered chapter;
+       #endcard has no chapter of its own, so it holds at the last number
+       (06) rather than reading blank through the close */
+    var sectionOf = [
+      ['#vitals', '01'], ['#career', '02'], ['#education', '03'],
+      ['#capabilities', '04'], ['#languages', '05'], ['#vault', '06'],
+      ['#endcard', '06']
     ];
-    yearOf.forEach(function (pair) {
+    sectionOf.forEach(function (pair) {
       var el = $(pair[0]);
       if (!el) return;
       ScrollTrigger.create({
         trigger: el, start: 'top center', end: 'bottom center',
-        onEnter: function () { setYear(pair[1]); },
-        onEnterBack: function () { setYear(pair[1]); }
+        onEnter: function () { setSection(pair[1]); },
+        onEnterBack: function () { setSection(pair[1]); }
       });
     });
 
-    /* progress fill down the rail */
-    if (spineFill) {
+    /* the rail fades in once the reader has scrolled past the cover, and
+       hides again scrolling back up into it — it never competes with the
+       cover's own full-bleed composition */
+    var coverSec = $('#cover');
+    if (coverSec) {
       ScrollTrigger.create({
-        start: 0, end: 'max',
+        trigger: coverSec, start: 'bottom top',
+        onEnter: function () { root.classList.add('spine-in'); },
+        onLeaveBack: function () { root.classList.remove('spine-in'); }
+      });
+    }
+
+    /* progress fill down the rail — scoped to the same domain as the ticks
+       (Vitals start to Endcard start), not the whole document including
+       the cover the rail stays hidden over */
+    if (spineFill && spineDomainStart && spineDomainEnd) {
+      ScrollTrigger.create({
+        trigger: spineDomainStart, start: 'top top',
+        endTrigger: spineDomainEnd, end: 'top top',
         onUpdate: function (self) { spineFill.style.height = (self.progress * 100) + '%'; }
       });
     }
@@ -577,16 +621,6 @@ if (hasGSAP && hasST) {
       });
     });
 
-    /* tenure segments paint as their role is read */
-    $$('.cv-role').forEach(function (role) {
-      var seg = $('.spine__seg[data-seg="' + role.getAttribute('data-role') + '"]');
-      if (!seg) return;
-      gsap.to(seg, {
-        scaleY: 1, ease: 'none',
-        scrollTrigger: { trigger: role, start: 'top 72%', end: 'bottom 60%', scrub: .4 }
-      });
-    });
-
     /* native language names shuffle into place (no plugin — plain JS) */
     var GLYPHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZəğıöşüÇÄÖÜАБВГДЕЖЗИЙКЛМНОПРС';
     $$('.cv-lang__native').forEach(function (el) {
@@ -613,7 +647,6 @@ if (hasGSAP && hasST) {
   /* ---------- reduced motion: complete, calm, everything final ---------- */
   mm.add('(prefers-reduced-motion: reduce)', function () {
     $$('.cv-vital__n').forEach(function (n) { n.textContent = n.getAttribute('data-count'); });
-    $$('.spine__seg').forEach(function (s) { s.style.transform = 'scaleY(1)'; });
     $$('.cv-roller__item').forEach(function (it, i) {
       if (i > 0) it.style.display = 'none';
     });
@@ -629,7 +662,7 @@ if (hasGSAP && hasST) {
 function forPrint(on) {
   if (!hasGSAP) return;
   if (pinST) { on ? pinST.disable(false) : pinST.enable(); }
-  var frozen = $$('.cv-cover__inner, .cv-id__img, .cv-in, .spine__seg');
+  var frozen = $$('.cv-cover__inner, .cv-id__img, .cv-in');
   if (on) gsap.set(frozen, { clearProps: 'transform,opacity,visibility' });
   if (!on && hasST) ScrollTrigger.refresh();
 }

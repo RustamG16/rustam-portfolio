@@ -18,9 +18,27 @@ const FRAME_SETS = {
 };
 
 /* Prefer AVIF on narrow; FlipbookScrubber falls back to WebP if frame 0 fails to decode. */
+/* The cover is a four-beat sequence, all driven from ONE rAF loop reading
+   plain position:sticky geometry (no ScrollTrigger pin, so nothing downstream
+   can perturb it):
+
+     0.00–0.16  cold open — kicker, per-character name, metadata rows write in
+     0.16–0.55  the examination — orbit plays, film gauge counts the strip
+     0.55–0.93  the seam — existing glitch fires, name flips acid; the
+                flipbook's 360 frames finish exactly at 0.93 (frame progress
+                is remapped into 0..sheetStart, see `fp` in tick())
+     0.93–1.00  the sheet rises — paper panel snaps up over the cover      */
 const CONFIG = {
   frames: isNarrowViewport ? FRAME_SETS.mobileAvif : FRAME_SETS.desktop,
-  heroScrub: { nameRevealEnd: 0.18, subRevealAt: 0.12, actionsRevealAt: 0.18, hintFadeAt: 0.05 },
+  heroScrub: {
+    kickerRevealAt: 0.012,
+    nameRevealEnd: 0.16,
+    subRevealAt: 0.11,
+    metaStart: 0.13, metaEnd: 0.30,   /* rows stagger by SCROLL, not by time */
+    actionsRevealAt: 0.30,
+    hintFadeAt: 0.05,
+    sheetStart: 0.93                  /* the file opens — frame 360 lands exactly here */
+  },
   pillarsSteps: 3,
   stripRevealAt: 0.2
 };
@@ -385,15 +403,46 @@ const I18N = {
     'nav.cta': 'Start a project',
     'nav.cv': 'Download CV',
     'nav.experience': 'Experience',
+    'nav.skip': 'Skip to work',
     'nav.langAria': 'Switch language',
+    'hero.kicker': 'BRIEF RG-2026 · SHEET 00',
     'hero.sub': 'Software Engineer · AI Orchestrator · Designer · Creator',
     'hero.cv': 'Download CV',
     'hero.experience': 'Experience & documents →',
-    'hero.scroll': 'SCROLL',
+    'hero.scroll': 'OPEN BRIEF',
+    'meta.subject': 'SUBJECT',
+    'meta.station': 'STATION',
+    'meta.field': 'FIELD',
+    'meta.fieldVal': 'ENGINEERING · AI · DESIGN',
+    'meta.period': 'PERIOD',
+    'meta.contents': 'CONTENTS',
+    'meta.contentsVal': '4 SHEETS · 3 PROJECTS · 6 DISCIPLINES',
+    'run.brief': 'BRIEF RG-2026',
+    'run.sheet01': 'SHEET 01',
+    'sheetcue.next': 'Next sheet',
+    'sheetcue.go': 'CONTINUE',
+    'sum.title': 'Summary',
+    'sum.lede': 'Ten years turning ideas into software that ships. I work the whole pipeline — architecture, interface, motion, and the AI systems that automate the rest — so a project never waits on a handoff.',
+    'sum.statusKey': 'STATUS',
+    'sum.statusVal': 'BASED IN KLAGENFURT, AUSTRIA · EU / REMOTE',
     'stats.years': 'Years building',
     'stats.projects': 'Projects shipped',
     'stats.languages': 'Languages spoken',
     'stats.pipeline': 'Person, whole pipeline',
+    'cap.title': 'Capability',
+    'cap.plate': 'PLATE A · STUDIO',
+    'work.title': 'Selected work',
+    'close.kicker': 'END OF BRIEF · RG-2026',
+    'xref.key': 'SEE ALSO',
+    'xref.desc': '4 roles · 2 degrees · 5 verified documents',
+    'bar.aria': 'Jump by sheet',
+    'bar.brief': 'BRIEF',
+    'bar.sheet': 'SHEET',
+    'bar.s1': 'Summary',
+    'bar.s2': 'Capability',
+    'bar.s3': 'Work',
+    'bar.s4': 'Close',
+    'footer.docs': 'Documents',
     'pillars.kicker': 'WHAT I DO',
     'pillars.engineer.title': 'ENGINEER',
     'pillars.engineer.body': 'Production software, end to end. Clean systems that scale — from architecture to the last commit.',
@@ -429,15 +478,46 @@ const I18N = {
     'nav.cta': 'Projekt starten',
     'nav.cv': 'Lebenslauf laden',
     'nav.experience': 'Erfahrung',
+    'nav.skip': 'Zu den Arbeiten springen',
     'nav.langAria': 'Sprache wechseln',
+    'hero.kicker': 'DOSSIER RG-2026 · BLATT 00',
     'hero.sub': 'Softwareentwickler · KI-Orchestrator · Designer · Creator',
     'hero.cv': 'Lebenslauf laden',
     'hero.experience': 'Erfahrung & Dokumente →',
-    'hero.scroll': 'SCROLLEN',
+    'hero.scroll': 'DOSSIER ÖFFNEN',
+    'meta.subject': 'PERSON',
+    'meta.station': 'STANDORT',
+    'meta.field': 'BEREICH',
+    'meta.fieldVal': 'ENTWICKLUNG · KI · DESIGN',
+    'meta.period': 'ZEITRAUM',
+    'meta.contents': 'INHALT',
+    'meta.contentsVal': '4 BLÄTTER · 3 PROJEKTE · 6 DISZIPLINEN',
+    'run.brief': 'DOSSIER RG-2026',
+    'run.sheet01': 'BLATT 01',
+    'sheetcue.next': 'Nächstes Blatt',
+    'sheetcue.go': 'WEITER',
+    'sum.title': 'Überblick',
+    'sum.lede': 'Zehn Jahre, in denen aus Ideen Software wurde, die live geht. Ich übernehme die ganze Pipeline — Architektur, Interface, Motion und die KI-Systeme, die den Rest automatisieren — so wartet ein Projekt nie auf eine Übergabe.',
+    'sum.statusKey': 'STATUS',
+    'sum.statusVal': 'BASIS KLAGENFURT, ÖSTERREICH · EU / REMOTE',
     'stats.years': 'Jahre Erfahrung',
     'stats.projects': 'Projekte geliefert',
     'stats.languages': 'Gesprochene Sprachen',
     'stats.pipeline': 'Person, ganze Pipeline',
+    'cap.title': 'Fähigkeiten',
+    'cap.plate': 'TAFEL A · STUDIO',
+    'work.title': 'Ausgewählte Arbeiten',
+    'close.kicker': 'ENDE DES DOSSIERS · RG-2026',
+    'xref.key': 'SIEHE AUCH',
+    'xref.desc': '4 Stationen · 2 Abschlüsse · 5 geprüfte Dokumente',
+    'bar.aria': 'Nach Blatt springen',
+    'bar.brief': 'DOSSIER',
+    'bar.sheet': 'BLATT',
+    'bar.s1': 'Überblick',
+    'bar.s2': 'Fähigkeiten',
+    'bar.s3': 'Arbeiten',
+    'bar.s4': 'Kontakt',
+    'footer.docs': 'Dokumente',
     'pillars.kicker': 'WAS ICH MACHE',
     'pillars.engineer.title': 'ENGINEER',
     'pillars.engineer.body': 'Produktionssoftware, Ende zu Ende. Saubere Systeme die skalieren — von der Architektur bis zum letzten Commit.',
@@ -522,50 +602,102 @@ if (orbitCanvas && hero) {
   const heroName = document.getElementById('hero-name');
   const scrubber = new FlipbookScrubber(orbitCanvas, CONFIG.frames, heroName);
   const heroSticky = hero.querySelector('.hero__sticky');
+  const kicker = document.querySelector('.hero__kicker');
   const sub = document.getElementById('hero-sub');
+  const metaRows = [...document.querySelectorAll('.hero__meta-row')];
   const actions = document.getElementById('hero-actions');
   const hint = document.getElementById('hero-hint');
-  const progressBar = document.querySelector('#hero-progress i');
+  const sheet = document.getElementById('hero-sheet');
+  const gaugeCur = document.getElementById('gauge-cur');
+  const gaugeTotal = document.getElementById('gauge-total');
+  const gaugeFill = document.getElementById('gauge-fill');
+  const S = CONFIG.heroScrub;
+
+  /* map a value from one range to 0..1, clamped */
+  const range = (v, a, b) => Math.max(0, Math.min(1, (v - a) / (b - a)));
+
+  if (gaugeTotal) gaugeTotal.textContent = String(scrubber.count);
 
   if (reduced) {
-    if (sub) sub.style.opacity = 1;
-    if (actions) {
-      actions.style.opacity = 1;
-      actions.style.pointerEvents = 'auto';
-    }
+    /* the cover collapses to a single static screen — show everything */
+    [kicker, sub, actions].forEach((el) => { if (el) el.style.opacity = 1; });
+    metaRows.forEach((r) => { r.style.opacity = 1; });
+    if (actions) actions.style.pointerEvents = 'auto';
     const pillarsStripEarly = document.querySelector('.pillars__strip');
     if (pillarsStripEarly) pillarsStripEarly.classList.add('is-visible');
     if (heroName) heroName.classList.add('is-post-seam');
   }
 
-  /* ---------- master rAF loop (hero scrub only — pillars/work via ScrollTrigger) ---------- */
+  /* ---------- master rAF loop (cover only — later sheets use ScrollTrigger) ---------- */
+  let lastFrameLabel = '';
   const tick = () => {
     const hp = progressOf(hero, heroSticky);
-    scrubber.setProgress(hp);
+    /* the flipbook must finish its own 360 frames BEFORE the paper sheet
+       starts rising over it — remap scrub progress into 0..sheetStart so
+       frame 360 lands exactly where the panel begins, instead of the last
+       ~15% of frames playing invisibly underneath it. */
+    const fp = range(hp, 0, S.sheetStart);
+    scrubber.setProgress(fp);
     scrubber.step();
-    const reveal = Math.min(1, hp / CONFIG.heroScrub.nameRevealEnd);
+
+    /* beat 1 — per-character name reveal */
+    const revealP = Math.min(1, hp / S.nameRevealEnd);
     chars.forEach((ch, i) => {
-      const local = Math.max(0, Math.min(1, reveal * (chars.length + 6) - i));
+      const local = Math.max(0, Math.min(1, revealP * (chars.length + 6) - i));
       ch.style.transform = `translateY(${(1 - local) * 110}%)`;
       ch.style.opacity = local;
     });
+
     if (!reduced) {
+      if (kicker) {
+        kicker.style.opacity = hp > S.kickerRevealAt ? 1 : 0;
+        kicker.style.transition = 'opacity .6s';
+      }
       if (sub) {
-        sub.style.opacity = hp > CONFIG.heroScrub.subRevealAt ? 1 : 0;
+        sub.style.opacity = hp > S.subRevealAt ? 1 : 0;
         sub.style.transition = 'opacity .8s';
       }
+      /* beat 1b — metadata rows write in one at a time, staggered by SCROLL
+         position rather than by a timer, so scrubbing back un-writes them */
+      if (metaRows.length) {
+        const mp = range(hp, S.metaStart, S.metaEnd);
+        metaRows.forEach((row, i) => {
+          const local = Math.max(0, Math.min(1, mp * (metaRows.length + 1) - i));
+          row.style.opacity = local;
+        });
+      }
       if (actions) {
-        const showActions = hp > CONFIG.heroScrub.actionsRevealAt;
+        const showActions = hp > S.actionsRevealAt;
         actions.style.opacity = showActions ? 1 : 0;
         actions.style.transition = 'opacity .8s';
         actions.style.pointerEvents = showActions ? 'auto' : 'none';
       }
     }
+
     if (hint) {
-      hint.style.opacity = hp > CONFIG.heroScrub.hintFadeAt ? 0 : 1;
+      hint.style.opacity = hp > S.hintFadeAt ? 0 : 1;
       hint.style.transition = 'opacity .4s';
     }
-    if (progressBar) progressBar.style.height = `${hp * 100}%`;
+
+    /* beat 2 — the film gauge. Reads the flipbook as a strip being examined.
+       Text writes are gated on an actual change so we don't touch the DOM
+       every frame for an identical string. */
+    if (gaugeCur) {
+      const n = Math.min(scrubber.count, Math.round(fp * (scrubber.count - 1)) + 1);
+      const label = String(n).padStart(3, '0');
+      if (label !== lastFrameLabel) { lastFrameLabel = label; gaugeCur.textContent = label; }
+    }
+    if (gaugeFill) gaugeFill.style.height = `${fp * 100}%`;
+
+    /* beat 4 — the sheet rises and becomes the paper half of the document.
+       Eased (smoothstep) so the rise reads as a snap over the last stretch
+       of the scrub rather than a slow crawl. Transform only, stays on the
+       compositor. */
+    if (sheet && !reduced) {
+      const k = smoothstep(range(hp, S.sheetStart, 1));
+      sheet.style.transform = `translateY(${(1 - k) * 100}%)`;
+    }
+
     requestAnimationFrame(tick);
   };
   requestAnimationFrame(tick);
@@ -582,21 +714,7 @@ if (orbitCanvas && hero) {
   });
 }
 
-/* ---------- helpers: scroll to a ScrollTrigger progress ---------- */
-const scrollToTriggerProgress = (st, progress) => {
-  if (!st) return;
-  const y = st.start + (st.end - st.start) * progress;
-  if (lenis) lenis.scrollTo(y, { immediate: false });
-  else if (gsapReady && typeof ScrollToPlugin !== 'undefined') gsap.to(window, { scrollTo: y, duration: 0.8, ease: 'power2.out' });
-  else window.scrollTo({ top: y, behavior: 'smooth' });
-};
-
-const setRailStep = (rail, step, total) => {
-  if (!rail) return;
-  rail.querySelectorAll('.rail-tick').forEach((tick, i) => tick.classList.toggle('is-active', i === step));
-};
-
-/* ---------- pillars: ScrollTrigger pin (lateral-step scrub) ---------- */
+/* ---------- capability sheet: ScrollTrigger pin (one entry per step) ---------- */
 (() => {
   const section = document.getElementById('pillars');
   if (!section || !gsapReady) return;
@@ -666,204 +784,284 @@ const setRailStep = (rail, step, total) => {
   );
 })();
 
-/* ---------- work: editorial type | framed poster | rail ---------- */
+/* ---------- 03 · selected work: reveal-in ----------
+   Every reveal is a ScrollTrigger created INSIDE mm.add() — matchMedia
+   reverts GSAP objects on breakpoint change but does NOT remove raw
+   addEventListener handlers, so the old hover-binding pattern stacked
+   duplicates each time you crossed 769px. */
 (() => {
   const section = document.getElementById('work');
   if (!section || !gsapReady) return;
-  const pin = section.querySelector('.work__pin');
-  const covers = gsap.utils.toArray('.work-cover', section);
-  const posters = gsap.utils.toArray('.work__poster-img', section);
-  const ticks = gsap.utils.toArray('.work__rail .rail-tick', section);
-  const fill = section.querySelector('.work__rail .rail__fill');
-  const rail = section.querySelector('.work__rail');
-  const frame = section.querySelector('.work__frame');
-  if (!pin || !covers.length) return;
+  const rows = gsap.utils.toArray('.worx__row', section);
+  if (!rows.length) return;
 
-  const setPosterStep = (step, { punch = false } = {}) => {
-    posters.forEach((img) => {
-      const on = +img.dataset.step === step;
-      img.classList.toggle('is-current', on);
-      if (on) {
-        gsap.fromTo(
-          img,
-          { autoAlpha: 1, scale: punch ? 1.04 : 1.02 },
-          { autoAlpha: 1, scale: 1, duration: punch ? 0.7 : 0.55, ease: 'power3.out', overwrite: 'auto' }
-        );
-      } else {
-        gsap.set(img, { autoAlpha: 0, scale: 1.02 });
+  const mm = gsap.matchMedia();
+  mm.add(
+    {
+      isMotion: '(prefers-reduced-motion: no-preference)',
+      reduceMotion: '(prefers-reduced-motion: reduce)'
+    },
+    (context) => {
+      if (context.conditions.reduceMotion) {
+        rows.forEach((el) => el.classList.add('is-in'));
+        return;
       }
+      rows.forEach((el) => {
+        ScrollTrigger.create({
+          trigger: el,
+          start: 'top 85%',
+          once: true,
+          onEnter: () => el.classList.add('is-in')
+        });
+      });
+    }
+  );
+
+  /* The posters used to be position:absolute inside a fixed-height frame, so
+     a late lazy decode cost nothing. In flow they would shift every trigger
+     start computed below them, so each plate carries width/height + a CSS
+     aspect-ratio. This refresh is the belt to that braces. */
+  const imgs = [...section.querySelectorAll('.plate img')];
+  let pending = imgs.filter((im) => !im.complete).length;
+  if (pending) {
+    imgs.forEach((im) => {
+      if (im.complete) return;
+      const done = () => { if (--pending === 0) ScrollTrigger.refresh(); };
+      im.addEventListener('load', done, { once: true });
+      im.addEventListener('error', done, { once: true });
     });
+  }
+})();
+
+/* ---------- 03 · selected work: sticky video window ----------
+   Idle, the panel loops media/closer.mp4 via the shared [data-video]
+   machinery below (untouched — that's what gives this loop the same lazy
+   mount, visibility pause/resume and low-power retry every other bg video
+   on the page gets). Hovering/focusing a row crossfades in that project's
+   poster immediately, then its preview clip once (if) it can load — a
+   missing clip just leaves the poster on screen, nothing errors visibly. */
+(() => {
+  const section = document.getElementById('work');
+  const frame = document.getElementById('worx-frame');
+  const rows = [...document.querySelectorAll('.worx__row')];
+  if (!section || !frame || !rows.length) return;
+
+  const hoverPoster = document.getElementById('worx-hover-poster');
+  const capLabel = document.getElementById('worx-cap-label');
+  const capSrc = document.getElementById('worx-cap-src');
+  /* looked up live (not cached at load) because #worx-cap-label carries
+     data-i18n="cap.plate" — a language toggle rewrites it directly via
+     applyLang(), and a stale cached string here would stomp that back to
+     the old language on the next hover/unhover. idleSrc has no i18n key
+     (matches the Capability plate's own hardcoded "BUILDER.MP4"), so it's
+     safe to read once. */
+  const getIdleLabel = () => (I18N[currentLang] && I18N[currentLang]['cap.plate']) || (capLabel ? capLabel.textContent : '');
+  const idleSrc = capSrc ? capSrc.textContent : '';
+
+  const canHover = () =>
+    matchMedia('(hover: hover) and (pointer: fine)').matches &&
+    !matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const videoCache = new Map(); // slug -> { el, failed }
+  let activeVideo = null;
+  let leaveTimer = 0;
+
+  function getPreviewVideo(row) {
+    const slug = row.id;
+    let entry = videoCache.get(slug);
+    if (entry) return entry;
+    const src = row.dataset.preview;
+    const el = document.createElement('video');
+    el.className = 'plate__frame-layer worx__hover-video';
+    el.muted = true;
+    el.loop = true;
+    el.playsInline = true;
+    el.preload = 'auto'; /* created lazily on first hover of THIS row — the row is already being hovered, so start fetching immediately */
+    el.setAttribute('muted', '');
+    el.setAttribute('playsinline', '');
+    entry = { el, failed: false };
+    videoCache.set(slug, entry);
+    el.addEventListener('error', () => { entry.failed = true; }, { once: true });
+    el.src = src;
+    frame.appendChild(el);
+    return entry;
+  }
+
+  function setIdle() {
+    if (hoverPoster) hoverPoster.classList.remove('is-active');
+    if (activeVideo) { activeVideo.el.classList.remove('is-active'); activeVideo.el.pause(); activeVideo = null; }
+    if (capLabel) capLabel.textContent = getIdleLabel();
+    if (capSrc) capSrc.textContent = idleSrc;
+  }
+
+  function activate(row) {
+    clearTimeout(leaveTimer);
+    if (capLabel) capLabel.textContent = row.dataset.capLabel || getIdleLabel();
+    if (capSrc) capSrc.textContent = row.dataset.capSrc || idleSrc;
+
+    if (activeVideo) { activeVideo.el.classList.remove('is-active'); activeVideo.el.pause(); activeVideo = null; }
+
+    if (hoverPoster) {
+      hoverPoster.src = row.dataset.poster;
+      hoverPoster.classList.add('is-active');
+    }
+
+    if (!row.dataset.preview) return;
+    const entry = getPreviewVideo(row);
+    activeVideo = entry;
+    if (entry.failed) return; // stays on the poster — graceful fallback
+    try { entry.el.currentTime = 0; } catch (e) { /* not seekable yet — fine, it starts at 0 anyway */ }
+    const show = () => { entry.el.classList.add('is-active'); };
+    if (entry.el.readyState >= 2) show();
+    else entry.el.addEventListener('loadeddata', show, { once: true });
+    const p = entry.el.play();
+    if (p && typeof p.catch === 'function') p.catch(() => {});
+  }
+
+  function scheduleLeave() {
+    clearTimeout(leaveTimer);
+    leaveTimer = setTimeout(setIdle, 140);
+  }
+
+  rows.forEach((row) => {
+    row.addEventListener('mouseenter', () => { if (canHover()) activate(row); });
+    row.addEventListener('mouseleave', () => { if (canHover()) scheduleLeave(); });
+    row.addEventListener('focusin', () => { if (canHover()) activate(row); });
+    row.addEventListener('focusout', () => { if (canHover()) scheduleLeave(); });
+  });
+})();
+
+/* ---------- the sheet counter: page progress + live sheet + theme flip ----------
+   The homepage's own device. Horizontal where the CV's spine is vertical, and
+   it counts sheets rather than years. */
+(() => {
+  const bar = document.getElementById('sheetbar');
+  if (!bar || !gsapReady) return;
+  const fill = document.getElementById('sheetbar-fill');
+  const cur = document.getElementById('sheet-cur');
+  const ticks = [...bar.querySelectorAll('.sheetbar__tick')];
+  const root = document.documentElement;
+
+  /* progress along the whole document */
+  if (fill) {
+    gsap.to(fill, {
+      scaleX: 1,
+      ease: 'none',
+      scrollTrigger: { trigger: document.body, start: 'top top', end: 'bottom bottom', scrub: 0.3 }
+    });
+  }
+
+  /* which sheet is under the reader, and is it paper or dark?
+     Checked at the section's own midpoint rather than with an early
+     rootMargin — an offset boundary is exactly how a chrome theme ends up
+     flipping before the section it belongs to actually arrives. */
+  const sheets = [
+    { el: document.getElementById('hero'),    n: '00', paper: false },
+    { el: document.getElementById('stats'),   n: '01', paper: true  },
+    { el: document.getElementById('pillars'), n: '02', paper: true  },
+    { el: document.getElementById('work'),    n: '03', paper: true  },
+    { el: document.getElementById('contact'), n: '04', paper: false }
+  ].filter((s) => s.el);
+
+  /* setLive owns the READOUT only (sheet number + live tick). It must not
+     touch the theme: several of these triggers can change state in a single
+     update, and whichever fired last would win. */
+  const setLive = (idx) => {
+    const s = sheets[idx];
+    if (!s) return;
+    if (cur && cur.textContent !== s.n) cur.textContent = s.n;
+    ticks.forEach((t) => t.classList.toggle('is-live', +t.dataset.sheet === idx));
   };
 
-  const setWorkStep = (step, { punch = true } = {}) => {
-    covers.forEach((el, i) => {
-      const on = i === step;
-      el.classList.toggle('is-active', on);
-      gsap.set(el, { autoAlpha: on ? 1 : 0 });
+  sheets.forEach((s, i) => {
+    ScrollTrigger.create({
+      trigger: s.el,
+      start: 'top center',
+      end: 'bottom center',
+      onToggle: (self) => { if (self.isActive) setLive(i); }
     });
-    setPosterStep(step, { punch });
-    setRailStep(rail, step, covers.length);
-  };
+  });
+  setLive(0);
 
-  const hoverPoster = (step, on) => {
-    const img = posters.find((p) => +p.dataset.step === step);
-    if (!img || !img.classList.contains('is-current')) return;
-    gsap.to(img, {
-      scale: on ? 1.03 : 1,
-      duration: 0.55,
-      ease: 'power2.out',
-      overwrite: 'auto'
+  /* THEME — exactly one trigger owns chrome-paper, spanning the whole paper
+     band: from the moment the cover's sheet starts rising, to the moment the
+     dark close arrives. Both edges belong to the same trigger, so isActive is
+     resolved from the final scroll position rather than from which edges got
+     crossed. That matters: an earlier version used a start-edge onEnter plus
+     a separate per-section writer, and jumping straight from the cover to
+     #contact (which every sheet-counter link can do) fired the start edge,
+     blew past the end edge, and left a paper counter on a dark screen. */
+  const hero = document.getElementById('hero');
+  const contact = document.getElementById('contact');
+  if (hero && contact) {
+    ScrollTrigger.create({
+      trigger: hero,
+      start: () => 'top top-=' + (hero.offsetHeight * CONFIG.heroScrub.sheetStart),
+      endTrigger: contact,
+      end: 'top center',
+      onToggle: (self) => { root.classList.toggle('chrome-paper', self.isActive); }
+    });
+  }
+})();
+
+/* ---------- 01 · summary: vitals counters + enter stagger ----------
+   Driven by ScrollTrigger rather than IntersectionObserver so the whole page
+   runs on one scroll system, and the markup already renders the final numbers
+   so the sheet is correct with JS off. */
+(() => {
+  const section = document.getElementById('stats');
+  if (!section || !gsapReady) return;
+  const numbers = gsap.utils.toArray('.vital__n', section);
+  const items = gsap.utils.toArray('.vital', section);
+  if (!numbers.length) return;
+
+  const countUp = () => {
+    numbers.forEach((n) => {
+      const target = +n.dataset.count;
+      if (!Number.isFinite(target)) return;
+      const obj = { v: 0 };
+      gsap.to(obj, {
+        v: target, duration: 1.5, ease: 'power2.out',
+        onUpdate: () => { n.textContent = Math.round(obj.v); }
+      });
     });
   };
 
   const mm = gsap.matchMedia();
   mm.add(
     {
-      isDesktop: '(min-width: 769px) and (prefers-reduced-motion: no-preference)',
-      isStatic: '(max-width: 768px), (prefers-reduced-motion: reduce)'
+      isMotion: '(prefers-reduced-motion: no-preference)',
+      reduceMotion: '(prefers-reduced-motion: reduce)'
     },
     (context) => {
-      const { isDesktop, isStatic } = context.conditions;
-
-      if (isStatic) {
-        covers.forEach((c) => {
-          c.classList.add('is-active');
-          gsap.set(c, { clearProps: 'opacity,visibility' });
-        });
-        posters.forEach((img, i) => {
-          const on = i === 0;
-          img.classList.toggle('is-current', on);
-          gsap.set(img, { autoAlpha: on ? 1 : 0, scale: 1 });
-        });
-        return;
-      }
-
-      if (!isDesktop) return;
-
-      setWorkStep(0, { punch: false });
-      let lastStep = 0;
-
-      if (fill) {
-        gsap.set(fill, {
-          scaleY: 1 / covers.length,
-          transformOrigin: 'top center'
-        });
-      }
-
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: pin,
-          start: 'top top',
-          end: '+=' + covers.length * 50 + '%',
-          pin: true,
-          scrub: true,
-          id: 'work',
-          onUpdate: (self) => {
-            const step = Math.min(
-              covers.length - 1,
-              Math.max(0, Math.round(self.progress * (covers.length - 1)))
-            );
-            if (step !== lastStep) {
-              lastStep = step;
-              setWorkStep(step, { punch: true });
-            }
-          }
+      if (context.conditions.reduceMotion) return; /* markup already shows finals */
+      gsap.set(items, { autoAlpha: 0, y: 28 });
+      ScrollTrigger.create({
+        trigger: section,
+        start: 'top 75%',
+        once: true,
+        onEnter: () => {
+          gsap.to(items, { autoAlpha: 1, y: 0, duration: 0.7, ease: 'power3.out', stagger: 0.1 });
+          countUp();
         }
       });
-
-      covers.forEach((_, i) => {
-        if (i === 0) return;
-        tl.to({}, { duration: 0.5 });
-      });
-
-      if (fill) {
-        tl.to(fill, {
-          scaleY: 1,
-          ease: 'none',
-          duration: Math.max(tl.duration(), 0.01)
-        }, 0);
-      }
-      tl.to({}, { duration: 0.15 });
-
-      ticks.forEach((tick) => {
-        tick.addEventListener('click', () => {
-          const step = +tick.dataset.step || 0;
-          const progress = covers.length <= 1 ? 0 : step / (covers.length - 1);
-          scrollToTriggerProgress(tl.scrollTrigger, progress);
-        });
-      });
-
-      const canHover = matchMedia('(hover: hover) and (pointer: fine)').matches;
-      if (canHover) {
-        const bindHover = (el, step) => {
-          el.addEventListener('pointerenter', () => hoverPoster(step, true));
-          el.addEventListener('pointerleave', () => hoverPoster(step, false));
-          el.addEventListener('focus', () => hoverPoster(step, true));
-          el.addEventListener('blur', () => hoverPoster(step, false));
-        };
-        covers.forEach((cover) => bindHover(cover, +cover.dataset.step || 0));
-        if (frame) {
-          frame.addEventListener('pointerenter', () => hoverPoster(lastStep, true));
-          frame.addEventListener('pointerleave', () => hoverPoster(lastStep, false));
-        }
-      }
-
-      return () => { /* matchMedia cleanup */ };
     }
   );
-})();
-
-/* ---------- stats counters + enter stagger ---------- */
-(() => {
-  const stats = document.querySelectorAll('.stat__n');
-  if (!stats.length) return;
-
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach(en => {
-      if (!en.isIntersecting) return;
-      io.unobserve(en.target);
-      const n = en.target, target = +n.dataset.count, t0 = performance.now();
-      const run = (t) => {
-        const k = Math.min(1, (t - t0) / 1400);
-        n.textContent = Math.round(target * (1 - Math.pow(1 - k, 3)));
-        if (k < 1) requestAnimationFrame(run);
-      };
-      requestAnimationFrame(run);
-    });
-  }, { threshold: 0.6 });
-  stats.forEach(el => io.observe(el));
-
-  if (!gsapReady) return;
-  const section = document.getElementById('stats');
-  const items = gsap.utils.toArray('.stat', section);
-  if (!section || !items.length) return;
-
-  const mm = gsap.matchMedia();
-  mm.add('(prefers-reduced-motion: no-preference)', () => {
-    gsap.set(items, { autoAlpha: 0, y: 28 });
-    ScrollTrigger.create({
-      trigger: section,
-      start: 'top 75%',
-      once: true,
-      onEnter: () => {
-        gsap.to(items, {
-          autoAlpha: 1,
-          y: 0,
-          duration: 0.7,
-          ease: 'power3.out',
-          stagger: 0.1
-        });
-      }
-    });
-  });
 })();
 
 /* ---------- finale title enter ---------- */
 (() => {
   if (!gsapReady) return;
-  const title = document.querySelector('.finale__title');
+  const title = document.querySelector('.close__title');
   if (!title) return;
-  const lines = gsap.utils.toArray('span', title);
+  /* [data-close-line], not 'span' — the middle line now wraps its own
+     accent word + hairline + tag in nested spans, which a bare 'span'
+     selector would also sweep into this 3-line stagger. Deliberately NOT
+     named data-line: that attribute is already used globally by the hero's
+     char-split effect (main.js, `document.querySelectorAll('[data-line]')`
+     with no scoping), which would otherwise also catch these and mangle
+     them. */
+  const lines = gsap.utils.toArray('[data-close-line]', title);
   if (!lines.length) return;
 
   const mm = gsap.matchMedia();
@@ -960,15 +1158,28 @@ const videoIo = new IntersectionObserver((entries) => {
 }, { threshold: 0.05 });
 bgVideos.forEach((_, holder) => videoIo.observe(holder));
 
-/* ---------- custom cursor ---------- */
-const cursor = document.querySelector('.cursor');
-if (cursor) {
-  addEventListener('mousemove', e => { cursor.style.left = e.clientX + 'px'; cursor.style.top = e.clientY + 'px'; });
-  document.querySelectorAll('a,.work-cover,.btn,.topbar__lang,.rail-tick').forEach(el => {
-    el.addEventListener('mouseenter', () => cursor.classList.add('is-hover'));
-    el.addEventListener('mouseleave', () => cursor.classList.remove('is-hover'));
-  });
-}
+/* The acid dot cursor is retired — it used mix-blend-mode:screen, which is
+   invisible over the cream paper sheets, and a glowing blob fought a document
+   that is otherwise precise. cv.html had already opted out. */
+
+/* ---------- topbar: retract while reading down, return on scroll up ----------
+   The bar is a solid chip on this page too, so it would otherwise sit on top
+   of body copy. Deliberately not a theme flip: that is what made the header
+   vanish at section boundaries in lab/005. */
+(() => {
+  const root = document.documentElement;
+  const bar = document.querySelector('.brief-topbar');
+  if (!bar || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  let last = window.scrollY;
+  addEventListener('scroll', () => {
+    const y = window.scrollY;
+    if (Math.abs(y - last) < 6) return;
+    root.classList.toggle('bar-hidden', y > last && y > 220);
+    last = y;
+  }, { passive: true });
+  /* never hide the bar from a keyboard user tabbing into it */
+  bar.addEventListener('focusin', () => root.classList.remove('bar-hidden'));
+})();
 
 /* ---------- anchor scroll via lenis ---------- */
 document.querySelectorAll('a[href^="#"]').forEach(a => a.addEventListener('click', e => {

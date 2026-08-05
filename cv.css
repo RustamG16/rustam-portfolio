@@ -5,49 +5,28 @@
    with zero JS; cv.js only flips the chrome + animates.
    ========================================================================== */
 
+/* The document tokens (dark + paper palettes, --acid/--ink-green, --mono, the
+   --s1..--s7 rhythm and --gutter) now live in style.css :root, because the
+   homepage speaks the same language. Only CV-specific layout vars remain here.
+
+   DO NOT move --spine-w to style.css: its @media overrides just below must
+   stay in the same file as its base declaration. Media queries add no
+   specificity, so a split would let this file's base win at every width and
+   silently freeze the spine at 96px on large screens. */
 .cv-root{
-  /* --- dark (cover, vault, end card) --- */
-  --d-bg:#0A0A0B;
-  --d-text:#F2EDE4;
-  /* Measured composited over --d-bg, not eyeballed. The original .56/.34 pair
-     put every 9.5–11px mono label at 2.75:1 — well under AA. Two tiers kept,
-     both compliant: dim 9.37:1, faint 5.03:1. Do not lower either. */
-  --d-dim:rgba(242,237,228,.74);
-  --d-faint:rgba(242,237,228,.52);
-  --d-rule:rgba(242,237,228,.14);
-  --d-rule-soft:rgba(242,237,228,.08);
-
-  /* --- paper (the file itself) --- */
-  --p-bg:#EFE9DE;
-  --p-bg-deep:#E6DFD1;
-  --p-ink:#14140F;
-  /* same audit on paper: dim 9.39:1, faint 5.15:1 (was .64/.44 = 4.98/2.80) */
-  --p-dim:rgba(20,20,15,.82);
-  --p-faint:rgba(20,20,15,.64);
-  --p-rule:rgba(20,20,15,.16);
-  --p-rule-soft:rgba(20,20,15,.09);
-
-  /* accent: acid on dark, deep green for TEXT on paper, acid as FILL only */
-  --acid:#19E28D;
-  --ink-green:#0B6B45;
-
-  --mono:'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
-
-  /* rhythm — every gap comes from this scale */
-  --s1:8px; --s2:14px; --s3:22px; --s4:34px;
-  --s5:54px; --s6:86px; --s7:132px; --s8:190px;
-
   /* The layout is fluid at every width — no fixed max-width box, because a
      1360px column stranded 280px of dead margin either side on anything wider
      than a laptop. The page now fills the viewport and the gutter grows with
      it; individual measures (bullets, lede) carry their own ch-based caps so
      line length still stays readable. */
-  --spine-w:96px;
-  --gutter:clamp(20px, 4.6vw, 132px);
+  /* widened again for the section rewrite: labels are now full section
+     names ("Capabilities", "Experience"), longer than the year-rail's old
+     words — see .spine{--rail-x} below. */
+  --spine-w:168px;
   --wrap:100%;
 }
-@media (min-width:1600px){ .cv-root{--spine-w:120px} }
-@media (min-width:2200px){ .cv-root{--spine-w:140px} }
+@media (min-width:1600px){ .cv-root{--spine-w:190px} }
+@media (min-width:2200px){ .cv-root{--spine-w:210px} }
 
 /* ---------- page base ---------- */
 .cv-page{background:var(--d-bg);color:var(--d-text);cursor:auto}
@@ -59,29 +38,17 @@
   padding-inline:var(--gutter);
 }
 
-.cv-sec{position:relative;isolation:isolate}
-.cv-sec--dark{background:var(--d-bg);color:var(--d-text)}
-.cv-sec--paper{background:var(--p-bg);color:var(--p-ink)}
-
-/* paper fibre — CSS only, no image request */
-.cv-sec--paper::after{
-  content:"";position:absolute;inset:0;pointer-events:none;z-index:0;opacity:.05;
-  mix-blend-mode:multiply;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23p)'/%3E%3C/svg%3E");
-}
-.cv-sec--paper > *{position:relative;z-index:1}
+/* .cv-sec / .cv-sec--dark / .cv-sec--paper surfaces, the paper-fibre ::after
+   (and its load-bearing `> *` z-index companion), and .cv-kicker now live in
+   style.css under "DOCUMENT COMPONENTS", listed alongside the homepage's
+   .theme-* names. The .cv-* selectors are unchanged there, so this page and
+   cv.js need no edit. */
 
 /* the film grain belongs to the dark half only */
 .cv-page .grain{opacity:.05;transition:opacity .5s}
 .cv-root.chrome-paper .grain{opacity:0}
 
 /* ---------- shared type atoms ---------- */
-.cv-kicker{
-  font-family:var(--mono);font-weight:400;font-size:11px;letter-spacing:.34em;text-transform:uppercase;
-  color:var(--acid);
-}
-.cv-sec--paper .cv-kicker{color:var(--ink-green)}
-
 .cv-sec__title{
   display:flex;align-items:baseline;gap:var(--s3);
   font-family:var(--display);font-weight:400;
@@ -98,7 +65,12 @@
 .cv-sec--dark .cv-sec__num{color:var(--acid)}
 
 /* ==========================================================================
-   THE SPINE
+   THE SPINE — a section index, not a year timeline.
+   Fades in once the reader is past the cover (cv.js toggles .spine-in on
+   <html> from a ScrollTrigger on #cover) so it never competes with that
+   full-bleed composition; invisible AND non-interactive while hidden
+   (visibility, not just opacity — an invisible-but-clickable rail sitting
+   over the cover would be a real keyboard-tab trap).
    ========================================================================== */
 .spine{
   position:fixed;top:0;left:0;bottom:0;width:var(--spine-w);z-index:90;
@@ -106,7 +78,14 @@
   padding:calc(var(--s6) + 12px) 0 var(--s4);
   border-right:1px solid var(--d-rule);
   background:none;pointer-events:none;
-  transition:border-color .45s ease, color .45s ease;
+  opacity:0;visibility:hidden;
+  transition:border-color .45s ease, color .45s ease,
+    opacity .4s ease, visibility 0s linear .4s;
+}
+.cv-root.spine-in .spine{
+  opacity:1;visibility:visible;
+  transition:border-color .45s ease, color .45s ease,
+    opacity .4s ease, visibility 0s linear 0s;
 }
 .spine a{pointer-events:auto}
 /* The spine is TRANSPARENT and sits on top of each section's own background —
@@ -131,23 +110,27 @@
 }
 .cv-root.chrome-paper .spine__file{color:var(--p-faint)}
 
-/* height:1.05em + overflow:hidden was shaving the tops off the digits — the
-   readout is the one number that must be perfectly legible */
-.spine__year{
+/* the live "you are here" readout — current section number, echoing each
+   section's own .cv-sec__num badge. height:1.05em + overflow:hidden was
+   shaving the tops off the digits — this is the one number that must be
+   perfectly legible. */
+.spine__pos{
   margin-bottom:var(--s5);line-height:1.25;
   text-align:right;padding-right:calc(var(--spine-w) - var(--rail-x) + 8px);
 }
-.spine__year-num{
+.spine__pos-num{
   display:block;line-height:1.25;
   font-family:var(--mono);font-weight:500;font-size:19px;letter-spacing:.02em;
   color:var(--acid);font-variant-numeric:tabular-nums;
   transition:color .45s ease;
 }
-.cv-root.chrome-paper .spine__year-num{color:var(--ink-green)}
+.cv-root.chrome-paper .spine__pos-num{color:var(--ink-green)}
 
-/* The ruler line sits to the RIGHT of the year labels, so the numbers are
-   never struck through by it. --rail-x is the line's offset in the spine. */
-.spine{--rail-x:70px}
+/* The ruler line sits to the RIGHT of the labels, so they're never struck
+   through by it. --rail-x is the line's offset in the spine. Widened to fit
+   full section names ("Capabilities", "Experience") on one line, not the
+   old 4-digit years. */
+.spine{--rail-x:136px}
 .spine__rail{position:relative;flex:1;width:100%}
 .spine__track{
   position:absolute;top:0;bottom:0;left:var(--rail-x);width:1px;
@@ -161,18 +144,6 @@
 }
 .cv-root.chrome-paper .spine__fill{background:var(--ink-green)}
 
-/* tenure segments — painted as the reader passes each role */
-.spine__seg{
-  position:absolute;left:calc(var(--rail-x) - 1.5px);width:4px;
-  background:var(--acid);opacity:.28;
-  transform:scaleY(0);transform-origin:top;
-}
-.cv-root.chrome-paper .spine__seg{background:var(--ink-green);opacity:.3}
-.spine__seg[data-seg="bank"]    {top:11.1%;height:11.1%}
-.spine__seg[data-seg="ibatech"] {top:22.2%;height:5.5%}
-.spine__seg[data-seg="iba"]     {top:22.2%;height:22.2%}
-.spine__seg[data-seg="infineon"]{top:66.6%;height:28%}
-
 .spine__ticks{list-style:none;position:absolute;inset:0;margin:0;padding:0}
 .spine__tick{position:absolute;left:0;right:0;height:1px}
 .spine__tick::before{
@@ -185,9 +156,9 @@
 .spine__tick a{
   position:absolute;left:0;top:-14px;height:28px;
   width:calc(var(--rail-x) - 8px);
-  display:flex;align-items:center;justify-content:flex-end;
-  font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;
-  color:var(--d-faint);font-variant-numeric:tabular-nums;
+  display:flex;align-items:center;justify-content:flex-end;gap:7px;
+  font-family:var(--mono);font-size:10px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--d-faint);
   transition:color .28s ease;
 }
 .cv-root.chrome-paper .spine__tick a{color:var(--p-faint)}
@@ -197,7 +168,15 @@
 .spine__tick a:focus-visible{outline:2px solid currentColor;outline-offset:2px}
 .spine__tick.is-live a{color:var(--acid)}
 .cv-root.chrome-paper .spine__tick.is-live a{color:var(--ink-green)}
-.spine__tick-y{background:inherit;padding:0 3px}
+/* the folio number — same accent + weight as each section's own
+   .cv-sec__num badge, so the rail visibly speaks the same numbering as the
+   page itself, not a decorative "01/02/03" invented for the rail alone */
+.spine__tick-n{
+  font-weight:500;color:var(--acid);flex:none;
+  transition:color .45s ease;
+}
+.cv-root.chrome-paper .spine__tick-n{color:var(--ink-green)}
+.spine__tick-t{background:inherit;white-space:nowrap}
 
 .spine__status{
   padding-left:26px;
@@ -443,11 +422,7 @@
   content:"";position:absolute;left:0;top:.75em;width:14px;height:1px;background:var(--ink-green);opacity:.75;
 }
 
-.cv-tags{list-style:none;display:flex;flex-wrap:wrap;gap:var(--s1);margin-top:var(--s3)}
-.cv-tags li{
-  font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;
-  color:var(--p-dim);padding:5px 9px;border:1px solid var(--p-rule);
-}
+/* .cv-tags promoted to style.css (shared with the homepage's .tags) */
 
 .cv-award{
   display:flex;flex-wrap:wrap;align-items:center;gap:var(--s2);
@@ -551,6 +526,21 @@
    8 · THE VAULT
    ========================================================================== */
 .cv-vault{padding:var(--s7) 0 var(--s6);overflow:hidden}
+/* The spine is fixed on top (z-index:90) but paints no background, so a card
+   sliding under it during the pinned scrub would show straight through and
+   tangle with its ruler/type. Mask the section so cards fade out — not cut —
+   before they reach the rail, and fade back in past it. Same breakpoint the
+   spine itself uses, since below it there's no rail to hide behind. */
+@media (min-width:1100px){
+  .cv-vault{
+    -webkit-mask-image:linear-gradient(to right,
+      transparent 0, transparent var(--spine-w),
+      #000 calc(var(--spine-w) + var(--gutter)), #000 100%);
+    mask-image:linear-gradient(to right,
+      transparent 0, transparent var(--spine-w),
+      #000 calc(var(--spine-w) + var(--gutter)), #000 100%);
+  }
+}
 .cv-vault__lede{
   max-width:52ch;margin:calc(var(--s5) * -1 + var(--s2)) 0 var(--s5);
   font-size:clamp(15px,1.2vw,17px);font-weight:300;line-height:1.6;color:var(--d-dim);

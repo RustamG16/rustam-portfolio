@@ -60,35 +60,36 @@
 
 <!-- ============================================================
      THE SPINE — the owned device.
-     Real jump-nav (links), decorative rail layers are aria-hidden.
-     ============================================================ -->
-<nav class="spine" id="spine" aria-label="Jump by year" data-i18n-aria="cv.spine.aria">
+     Now a SECTION index, not a year timeline: hidden over the cover (it
+     never competes with that full-bleed composition), it fades in once the
+     reader reaches the chaptered body and reads 01 Vitals ... 06 Documents
+     — the exact numbers + names each section already carries on its own
+     heading (.cv-sec__num + data-i18n, reused verbatim below so the two can
+     never drift apart). Real jump-nav (links), decorative rail layers are
+     aria-hidden. Tick position is proportional to each section's REAL
+     height (cv.js `layoutSpineTicks`), not an even split — Vitals and
+     Career are wildly different lengths. -->
+<nav class="spine" id="spine" aria-label="Jump by section" data-i18n-aria="cv.spine.aria">
   <p class="spine__file" aria-hidden="true">FILE RG&#8209;2026</p>
 
-  <div class="spine__year" aria-hidden="true">
-    <span class="spine__year-num" id="spine-year" data-year-target="2026">2026</span>
+  <div class="spine__pos" aria-hidden="true">
+    <span class="spine__pos-num" id="spine-pos">01</span>
   </div>
 
   <div class="spine__rail">
     <span class="spine__track" aria-hidden="true"></span>
     <span class="spine__fill" id="spine-fill" aria-hidden="true"></span>
-    <!-- tenure segments painted as the reader passes each role -->
-    <span class="spine__seg" data-seg="bank"     aria-hidden="true"></span>
-    <span class="spine__seg" data-seg="ibatech"  aria-hidden="true"></span>
-    <span class="spine__seg" data-seg="iba"      aria-hidden="true"></span>
-    <span class="spine__seg" data-seg="infineon" aria-hidden="true"></span>
 
     <ol class="spine__ticks">
-      <li class="spine__tick" data-year="2017"><a href="#education"><span class="spine__tick-y">2017</span></a></li>
-      <li class="spine__tick" data-year="2018"><a href="#role-bank"><span class="spine__tick-y">2018</span></a></li>
-      <li class="spine__tick spine__tick--minor" data-year="2019"><a href="#role-ibatech"><span class="spine__tick-y">2019</span></a></li>
-      <li class="spine__tick spine__tick--minor" data-year="2020" aria-hidden="true"></li>
-      <li class="spine__tick" data-year="2021"><a href="#education"><span class="spine__tick-y">2021</span></a></li>
-      <li class="spine__tick spine__tick--minor" data-year="2022" aria-hidden="true"></li>
-      <li class="spine__tick" data-year="2023"><a href="#role-infineon"><span class="spine__tick-y">2023</span></a></li>
-      <li class="spine__tick spine__tick--minor" data-year="2024" aria-hidden="true"></li>
-      <li class="spine__tick spine__tick--minor" data-year="2025" aria-hidden="true"></li>
-      <li class="spine__tick" data-year="2026"><a href="#endcard"><span class="spine__tick-y">2026</span></a></li>
+      <li class="spine__tick" data-section="01"><a href="#vitals"><span class="spine__tick-n">01</span><span class="spine__tick-t" data-i18n="cv.vitals">Vitals</span></a></li>
+      <li class="spine__tick" data-section="02"><a href="#career"><span class="spine__tick-n">02</span><span class="spine__tick-t" data-i18n="cv.exp">Experience</span></a></li>
+      <li class="spine__tick" data-section="03"><a href="#education"><span class="spine__tick-n">03</span><span class="spine__tick-t" data-i18n="cv.edu">Education</span></a></li>
+      <li class="spine__tick" data-section="04"><a href="#capabilities"><span class="spine__tick-n">04</span><span class="spine__tick-t" data-i18n="cv.skills">Capabilities</span></a></li>
+      <li class="spine__tick" data-section="05"><a href="#languages"><span class="spine__tick-n">05</span><span class="spine__tick-t" data-i18n="cv.langs">Languages</span></a></li>
+      <li class="spine__tick" data-section="06"><a href="#vault"><span class="spine__tick-n">06</span><span class="spine__tick-t" data-i18n="cv.docs">Documents</span></a></li>
+      <!-- the close, unnumbered like its own heading (no cv-sec__num there
+           either) — a bookend, not a seventh chapter -->
+      <li class="spine__tick spine__tick--minor" data-section="end" data-end="true"><a href="#endcard"><span class="spine__tick-t" data-i18n="cv.spine.tick.end">End</span></a></li>
     </ol>
   </div>
 
@@ -185,7 +186,7 @@
 
       <p class="cv-status">
         <span class="cv-status__key" data-i18n="cv.vitals.statusKey">STATUS</span>
-        <span class="cv-status__val" data-i18n="cv.vitals.statusVal">BASED IN VILLACH, AUSTRIA · EU / REMOTE</span>
+        <span class="cv-status__val" data-i18n="cv.vitals.statusVal">BASED IN KLAGENFURT, AUSTRIA · EU / REMOTE</span>
       </p>
     </div>
   </section>
@@ -466,7 +467,7 @@
         </li>
       </ul>
 
-      <p class="cv-deck__hint" id="deck-hint" data-i18n="cv.vault.hint">Drag to riffle · click to open</p>
+      <p class="cv-deck__hint" id="deck-hint" data-i18n="cv.vault.hint">Scroll to browse · click to open</p>
     </div>
   </section>
 
