@@ -28,9 +28,12 @@
 @media (min-width:1600px){ .cv-root{--spine-w:190px} }
 @media (min-width:2200px){ .cv-root{--spine-w:210px} }
 
-/* ---------- page base ---------- */
-.cv-page{background:var(--d-bg);color:var(--d-text);cursor:auto}
-.cv-page .cursor{display:none}
+/* ---------- page base ----------
+   The two cursor opt-outs that used to live here (`cursor:auto` and
+   `.cv-page .cursor{display:none}`) are gone: the CV now runs the same
+   reticle as the homepage via cursor.js. Both would silently win over
+   style.css, since cv.css loads second. */
+.cv-page{background:var(--d-bg);color:var(--d-text)}
 .cv-main{position:relative;z-index:1}
 
 .cv-wrap{
@@ -194,37 +197,68 @@
    (Deliberately not a theme-flip: that is what made the header vanish at
    section boundaries in lab/005.)
    ========================================================================== */
+/* This used to be two floating chips — one around the RG mark, one around the
+   nav. The homepage draws ONE bar instead: transparent over its cover, solid
+   past it, with the ink flipping per section. Same component now, same tokens
+   as .brief-topbar in style.css; only the links differ.
+
+   The old note here said a theme-flip was avoided because a flipping header
+   vanished at boundaries in lab/005. That failure needs a GHOST bar — text
+   sitting straight on the section. Past the cover this bar is an opaque chip,
+   so its background and its ink always change together and it cannot become
+   unreadable; the ghost state is confined to #cover, which is always dark. */
 .cv-topbar{
-  background:none;padding:var(--s3) var(--gutter);
-  gap:var(--s3);align-items:flex-start;
-  transition:transform .38s cubic-bezier(.2,.8,.2,1), opacity .3s;
+  padding:var(--s3) var(--gutter);
+  gap:var(--s3);align-items:center;
+  transition:transform .38s cubic-bezier(.2,.8,.2,1), opacity .3s,
+    background .4s ease, border-color .4s ease, color .4s ease;
+  background:var(--topbar-chip);
+  border-bottom:1px solid var(--topbar-border);
+  -webkit-backdrop-filter:var(--topbar-blur);backdrop-filter:var(--topbar-blur);
+  color:var(--topbar-fg);
+  /* default: still on the cover → ghost, bright accent over the dark plate */
+  --topbar-fg:var(--acid);
+  --topbar-fg-dim:var(--d-faint);
+  --topbar-chip:transparent;
+  --topbar-border:transparent;
+  --topbar-blur:none;
 }
-/* the bar is a solid chip, so it would otherwise sit on top of body copy.
-   Retract while reading down, return the moment the reader scrolls up. */
+.cv-root.past-cover.bar-paper .cv-topbar{
+  /* past the cover, over a paper section → black bar, bright accent */
+  --topbar-fg:var(--acid);
+  --topbar-fg-dim:var(--d-faint);
+  --topbar-chip:rgba(10,10,11,.92);
+  --topbar-border:rgba(242,237,228,.16);
+  --topbar-blur:blur(10px);
+}
+.cv-root.past-cover:not(.bar-paper) .cv-topbar{
+  /* past the cover, over a dark section → beige bar, deep ink-green */
+  --topbar-fg:var(--ink-green);
+  --topbar-fg-dim:var(--p-faint);
+  --topbar-chip:rgba(239,233,222,.92);
+  --topbar-border:var(--p-rule);
+  --topbar-blur:blur(10px);
+}
+/* Retract while reading down, return the moment the reader scrolls up. */
 .cv-root.bar-hidden .cv-topbar{transform:translateY(-135%);opacity:0}
 @media (prefers-reduced-motion:reduce){
   .cv-root.bar-hidden .cv-topbar{transform:none;opacity:1}
 }
 .cv-topbar .topbar__mark,
 .cv-topbar .topbar__nav{
-  background:rgba(10,10,11,.92);
-  border:1px solid rgba(242,237,228,.16);
-  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
-  color:var(--d-text);
+  background:none;border:none;backdrop-filter:none;-webkit-backdrop-filter:none;
+  color:inherit;
 }
-.cv-topbar .topbar__mark{
-  padding:9px 13px 7px;line-height:1;color:var(--d-text);
-}
-.cv-topbar .topbar__nav{
-  padding:var(--s1) var(--s3);gap:var(--s3);row-gap:var(--s1);
-}
-.cv-topbar .topbar__cta{border-bottom-color:var(--acid);color:var(--d-text)}
-.cv-topbar .topbar__cta:hover{color:var(--acid)}
-.cv-topbar .topbar__lang{color:var(--d-faint)}
+.cv-topbar .topbar__mark{padding:0;line-height:1}
+.cv-topbar .topbar__nav{padding:0;gap:var(--s3);row-gap:var(--s1)}
+.cv-topbar .topbar__cta{border-bottom-color:currentColor;color:var(--topbar-fg)}
+.cv-topbar .topbar__cta:hover{color:var(--topbar-fg-dim)}
+.cv-topbar .topbar__lang{color:var(--topbar-fg-dim)}
+.cv-topbar .topbar__lang:hover,.cv-topbar .topbar__lang:focus-visible{color:var(--topbar-fg)}
 .cv-topbar .topbar__lang [data-lang-label],
 .cv-topbar .topbar__lang [data-lang-alt]{color:inherit}
 .cv-root[lang="en"] .cv-topbar .topbar__lang [data-lang-label],
-.cv-root[lang="de"] .cv-topbar .topbar__lang [data-lang-alt]{color:var(--d-text)}
+.cv-root[lang="de"] .cv-topbar .topbar__lang [data-lang-alt]{color:var(--topbar-fg)}
 @media (max-width:560px){ .cv-topbar .topbar__cta--desk{display:none} }
 
 /* ==========================================================================
@@ -251,7 +285,13 @@
   font-size:clamp(52px,10.5vw,300px);line-height:.86;letter-spacing:-.005em;
   text-transform:uppercase;margin:clamp(10px,1.6vh,22px) 0 clamp(12px,2vh,22px);
 }
-.cv-cover__line{display:block;overflow:hidden}
+/* same fix as .hero__line in style.css: the reveal mask is the line box, and
+   at line-height:.86 that box clips the bottom off every glyph. A full em of
+   box, with the leading taken back as negative margin. */
+.cv-cover__line{display:block;overflow:hidden;line-height:1}
+/* positive, so RUSTAM and GURBANOV read as two lines rather than one mass —
+   matches .hero__line + .hero__line in style.css */
+.cv-cover__line + .cv-cover__line{margin-top:.04em}
 .cv-cover__line--accent{color:var(--acid)}
 
 .cv-cover__roles{height:1.4em;overflow:hidden;margin-bottom:clamp(24px,3.6vh,54px)}

@@ -37,6 +37,7 @@ var I18N = {
     'cv.download': 'Download CV',
     'cv.selectedWork': 'Selected work →',
     'cv.dl': 'Download',
+    'cursor.open': 'OPEN ↗',
     'cv.spine.aria': 'Jump by section',
     'cv.spine.status': 'FILE OPEN',
     /* the six numbered tick labels reuse cv.vitals / cv.exp / cv.edu /
@@ -153,6 +154,7 @@ var I18N = {
     'cv.download': 'Lebenslauf laden',
     'cv.selectedWork': 'Ausgewählte Arbeiten →',
     'cv.dl': 'Download',
+    'cursor.open': 'ÖFFNEN ↗',
     'cv.spine.aria': 'Nach Abschnitt springen',
     'cv.spine.status': 'AKTE OFFEN',
     'cv.spine.tick.end': 'Ende',
@@ -270,6 +272,11 @@ function applyLang(lang) {
   $$('[data-i18n-aria]').forEach(function (el) {
     var k = el.getAttribute('data-i18n-aria');
     if (dict[k] != null) el.setAttribute('aria-label', dict[k]);
+  });
+  /* the reticle's legend — cursor.js reads dataset.cursorLabel at hover time */
+  $$('[data-i18n-cursor]').forEach(function (el) {
+    var k = el.getAttribute('data-i18n-cursor');
+    if (dict[k] != null) el.dataset.cursorLabel = dict[k];
   });
   var t = $('#lang-toggle');
   if (t) t.setAttribute('aria-pressed', currentLang === 'de' ? 'true' : 'false');
@@ -400,8 +407,8 @@ if (hasGSAP && hasST) {
   mm.add('all', function () {
 
     /* chrome theme: flip on the section boundary crossing the viewport middle.
-       The topbar is theme-independent by design, so only the spine flips —
-       nothing can end up invisible at a boundary. */
+       This one drives the SPINE, which runs the full height of the screen, so
+       the middle is the honest place to measure it. */
     $$('.cv-sec, .cv-seam').forEach(function (sec) {
       var paper = sec.classList.contains('cv-sec--paper') || sec.classList.contains('cv-seam');
       ScrollTrigger.create({
@@ -413,6 +420,38 @@ if (hasGSAP && hasST) {
         }
       });
     });
+
+    /* The topbar now flips too (it is the homepage's bar, not two chips), and
+       it needs its OWN measurement: the bar sits at the top of the screen, so
+       flipping it on the viewport middle would recolour it half a screen early
+       — that mismatch is exactly what made the header vanish at boundaries in
+       lab/005. BAR_Y is the bar's own baseline; the section under THAT is what
+       the bar has to agree with. */
+    var BAR_Y = 72;
+    $$('.cv-sec, .cv-seam').forEach(function (sec) {
+      var paper = sec.classList.contains('cv-sec--paper') || sec.classList.contains('cv-seam');
+      ScrollTrigger.create({
+        trigger: sec,
+        start: 'top top+=' + BAR_Y,
+        end: 'bottom top+=' + BAR_Y,
+        onToggle: function (self) {
+          if (self.isActive) root.classList.toggle('bar-paper', paper);
+        }
+      });
+    });
+
+    /* ghost over the cover, solid past it — the homepage's third state, which
+       chrome-paper alone cannot express (it is false both on the dark cover
+       and on a dark body section, and those want opposite bars) */
+    var coverSec = $('#cover');
+    if (coverSec) {
+      ScrollTrigger.create({
+        trigger: coverSec,
+        start: 'bottom top+=' + BAR_Y,
+        onEnter: function () { root.classList.add('past-cover'); },
+        onLeaveBack: function () { root.classList.remove('past-cover'); }
+      });
+    }
 
     /* spine position readout per section — one entry per numbered chapter;
        #endcard has no chapter of its own, so it holds at the last number

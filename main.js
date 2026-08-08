@@ -3,41 +3,46 @@
    Everything below CONFIG is archetype-agnostic engine code.
    ===================================================================== */
 
-/* narrow (phone-like) viewports get a 9:16 center-crop frame set at half
-   frame rate (frames/hero-m, 180 frames) — native crop resolution instead
-   of upscaling the center strip of the 16:9 desktop frames.
-   Threshold is aspect ratio, not orientation: tablet portrait (~3:4) must
-   keep the 16:9 set or the 9:16 frames' vertical cover-crop cuts the head. */
-const NARROW_ASPECT = 0.65; /* keep in sync with 13/20 preload media queries */
-const isNarrowViewport = innerWidth / innerHeight < NARROW_ASPECT;
+/* ---------- the cover exists in two forms ----------
+   Wide LANDSCAPE viewports get the scrubbed flipbook. Everything narrower —
+   phones, and portrait tablets — gets a still cover (the .hero__id portrait
+   lockup, see style.css) and downloads not one frame. That is not a
+   downgrade for its own sake: the scrubbed sticky was measured in dvh, so
+   every time a mobile URL bar collapsed the canvas resized and the
+   cover-crop scale jumped, which is the zoom-in/zoom-out you could feel
+   while scrolling. A still cover cannot do that.
 
+   SCRUB_MQ must stay in sync with the preload <link media> attributes in
+   index.html and with the still-cover media query in style.css. */
+const SCRUB_MQ = '(min-width: 901px) and (min-aspect-ratio: 13/20)';
+const scrubMQ = matchMedia(SCRUB_MQ);
+
+/* One directory, two encodings. AVIF is primary: re-derived straight from
+   assets-in/orbit-a.mp4 (1920x1080) and orbit-b(1).mp4 (1280x720) at fps=20,
+   it is both sharper than the old WebP set and a third smaller. The WebP set
+   is the fallback, picked up automatically if frame 0 fails to decode. */
 const FRAME_SETS = {
-  desktop: { path: 'frames/hero/frame_',    ext: '.webp', count: 360, pad: 4, poster: 'media/poster.webp' },
-  mobileAvif: { path: 'frames/hero-m2/frame_', ext: '.avif', count: 90,  pad: 4, poster: 'media/poster-m.webp' },
-  mobileWebp: { path: 'frames/hero-m/frame_',  ext: '.webp', count: 180, pad: 4, poster: 'media/poster-m.webp' }
+  desktop:     { path: 'frames/hero/frame_', ext: '.avif', count: 360, pad: 4, poster: 'media/poster.webp' },
+  desktopWebp: { path: 'frames/hero/frame_', ext: '.webp', count: 360, pad: 4, poster: 'media/poster.webp' }
 };
 
-/* Prefer AVIF on narrow; FlipbookScrubber falls back to WebP if frame 0 fails to decode. */
-/* The cover is a four-beat sequence, all driven from ONE rAF loop reading
-   plain position:sticky geometry (no ScrollTrigger pin, so nothing downstream
-   can perturb it):
+/* The scrubbed cover is a three-beat sequence on ONE ScrollTrigger-scrubbed
+   timeline (no pin — plain position:sticky, so no pin-spacer can perturb it):
 
      0.00–0.16  cold open — kicker, per-character name, metadata rows write in
      0.16–0.55  the examination — orbit plays, film gauge counts the strip
-     0.55–0.93  the seam — existing glitch fires, name flips acid; the
-                flipbook's 360 frames finish exactly at 0.93 (frame progress
-                is remapped into 0..sheetStart, see `fp` in tick())
-     0.93–1.00  the sheet rises — paper panel snaps up over the cover      */
+     0.55–1.00  the seam — existing glitch fires, name flips acid; the
+                flipbook's 360 frames finish exactly at 1.0, the same instant
+                the sticky releases into #stats                            */
 const CONFIG = {
-  frames: isNarrowViewport ? FRAME_SETS.mobileAvif : FRAME_SETS.desktop,
+  frames: FRAME_SETS.desktop,
   heroScrub: {
     kickerRevealAt: 0.012,
     nameRevealEnd: 0.16,
     subRevealAt: 0.11,
     metaStart: 0.13, metaEnd: 0.30,   /* rows stagger by SCROLL, not by time */
     actionsRevealAt: 0.30,
-    hintFadeAt: 0.05,
-    sheetStart: 0.93                  /* the file opens — frame 360 lands exactly here */
+    hintFadeAt: 0.05
   },
   pillarsSteps: 3,
   stripRevealAt: 0.2
@@ -58,6 +63,10 @@ if (gsapReady) {
 try {
   if (window.Lenis && !matchMedia('(prefers-reduced-motion: reduce)').matches && !isTouchDevice) {
     lenis = new Lenis({ lerp: 0.09, smoothTouch: false });
+    /* exposed the way cv.js already exposes it: a programmatic jump has to go
+       through Lenis, or its virtual position and the real one desync and every
+       scrubbed ScrollTrigger reads a stale scroll offset */
+    window.__lenis = lenis;
     if (gsapReady) {
       lenis.on('scroll', ScrollTrigger.update);
       gsap.ticker.add((time) => { lenis.raf(time * 1000); });
@@ -208,8 +217,20 @@ class FlipbookScrubber {
     this.lastStepIdx = -1;
     this.painted = -1;
     this.poster = null;
+    /* filled in when frame 0 reports its natural size; resize() needs it to
+       know how big a backing store the frames can actually fill */
+    this.frameW = 0;
+    this.frameH = 0;
     this.resize();
-    addEventListener('resize', () => this.redraw());
+    /* ResizeObserver rather than window.resize: it fires on the canvas's own
+       box, so a viewport resize that does not change the canvas (and, on the
+       still cover, a URL-bar resize) costs nothing. */
+    if (window.ResizeObserver) {
+      this._ro = new ResizeObserver(() => this.redraw());
+      this._ro.observe(canvas);
+    } else {
+      addEventListener('resize', () => this.redraw());
+    }
     if (cfg.poster) {
       const poster = new Image();
       poster.decoding = 'async';
@@ -232,6 +253,13 @@ class FlipbookScrubber {
     this.images[i] = img;
     const done = () => {
       this.loaded.add(i);
+      /* the first frame to arrive tells resize() the source resolution, which
+         is what lets it refuse to allocate a canvas bigger than the frames */
+      if (!this.frameW && img.naturalWidth) {
+        this.frameW = img.naturalWidth;
+        this.frameH = img.naturalHeight;
+        this.resize();
+      }
       const active = Math.round(this.displayIdx);
       if (this.painted < 0 && i === 0) this.draw(0);
       else if (i >= active - 2 && i <= active + 2) this.draw(active);
@@ -256,7 +284,7 @@ class FlipbookScrubber {
   fallbackToWebp() {
     if (this._fellBack) return Promise.resolve();
     this._fellBack = true;
-    const fb = FRAME_SETS.mobileWebp;
+    const fb = FRAME_SETS.desktopWebp;
     this.cfg = fb;
     this.count = fb.count;
     this.images = new Array(this.count).fill(null);
@@ -311,14 +339,29 @@ class FlipbookScrubber {
     }
     return this.painted >= 0 ? this.painted : -1;
   }
-  /* size backing store from the canvas's own rendered box (stable 100vh
-     sticky) — NOT innerWidth/innerHeight, which change when the mobile
-     URL bar collapses/expands and would stretch the drawn image.
-     Returns false when nothing changed so scroll-time events are no-ops. */
+  /* size backing store from the canvas's own rendered box — NOT
+     innerWidth/innerHeight, which change when a URL bar collapses/expands
+     and would stretch the drawn image.
+     Returns false when nothing changed so scroll-time events are no-ops.
+
+     The ratio clamp is the important part. This used to take min(dpr, 2)
+     unconditionally, so a 1440px laptop at DPR 2 asked for a 2880px-wide
+     canvas and every single draw upscaled a 1600px frame by ~1.8x — over
+     three times the fill rate, for detail the source does not contain.
+     Clamping so the cover-fit scale never exceeds 1 costs nothing visually
+     (the compositor performs the final scale instead of drawImage, with the
+     same filtering) and is the largest single smoothness win on the cover. */
   resize() {
-    const dpr = Math.min(devicePixelRatio || 1, 2);
-    const w = Math.round(this.canvas.clientWidth * dpr);
-    const h = Math.round(this.canvas.clientHeight * dpr);
+    const cw = this.canvas.clientWidth;
+    const chh = this.canvas.clientHeight;
+    if (!cw || !chh) return false;
+    let dpr = Math.min(devicePixelRatio || 1, 2);
+    if (this.frameW && this.frameH) {
+      const s = Math.max((cw * dpr) / this.frameW, (chh * dpr) / this.frameH);
+      if (s > 1) dpr = Math.max(1, dpr / s);
+    }
+    const w = Math.round(cw * dpr);
+    const h = Math.round(chh * dpr);
     if (w === this.canvas.width && h === this.canvas.height) return false;
     this.canvas.width = w;
     this.canvas.height = h;
@@ -384,12 +427,15 @@ class FlipbookScrubber {
     this.prefetchAround(i);
     if (p > 0.75) this.prefetchToEnd(i);
   }
+  /* The smoothing lives in ScrollTrigger's scrub now. The old `delta * 0.4`
+     lerp was per-rAF, so it caught up roughly twice as fast on a 120Hz
+     display as on a 60Hz one — the same page felt like two different
+     animations. scrub is time-based and frame-rate normalised. Keeping both
+     would just stack two lags, so this only paints when the index changes. */
   step() {
-    const delta = this.targetIdx - this.displayIdx;
-    if (Math.abs(delta) > 6 || Math.abs(delta) < 0.05) this.displayIdx = this.targetIdx;
-    else this.displayIdx += delta * 0.4;
+    this.displayIdx = this.targetIdx;
     const i = Math.round(this.displayIdx);
-    const needsUpgrade = this.loaded.has(i) && this.painted < i;
+    const needsUpgrade = this.loaded.has(i) && this.painted !== i;
     if (i !== this.lastStepIdx || needsUpgrade) {
       this.lastStepIdx = i;
       this.draw(i);
@@ -416,11 +462,7 @@ const I18N = {
     'meta.fieldVal': 'ENGINEERING · AI · DESIGN',
     'meta.period': 'PERIOD',
     'meta.contents': 'CONTENTS',
-    'meta.contentsVal': '4 SHEETS · 3 PROJECTS · 6 DISCIPLINES',
-    'run.brief': 'BRIEF RG-2026',
-    'run.sheet01': 'SHEET 01',
-    'sheetcue.next': 'Next sheet',
-    'sheetcue.go': 'CONTINUE',
+    'meta.contentsVal': '4 SHEETS · 4 PROJECTS · 6 DISCIPLINES',
     'sum.title': 'Summary',
     'sum.lede': 'Ten years turning ideas into software that ships. I work the whole pipeline — architecture, interface, motion, and the AI systems that automate the rest — so a project never waits on a handoff.',
     'sum.statusKey': 'STATUS',
@@ -457,13 +499,16 @@ const I18N = {
     'pillars.strip.motion': 'Motion',
     'pillars.strip.video': 'Video',
     'work.kicker': 'SELECTED WORK',
+    'work.meridian': 'Luxury alpine resort site — scroll-scrubbed canvas arrival, four interactive instruments, eight bespoke routes.',
     'work.sonnwerk': 'Premium CBD brand site — field-to-bottle storytelling, editorial type, scroll narrative.',
     'work.urologie': 'Medical boutique practice site for Dr. Danijel Jozipovic — calm precision, booking-led.',
     'work.eduHub': 'Study-abroad consultancy landing — guidance-focused scroll experience for international students.',
+    'work.tag.hosp': 'Hospitality · Experience',
     'work.tag.brand': 'Brand · Scrollytelling',
     'work.tag.health': 'Healthcare · Landing',
     'work.tag.edu': 'Education · Landing',
     'work.cta': 'View project →',
+    'cursor.view': 'VIEW ↗',
     'finale.line1': "LET'S BUILD",
     'finale.line2': 'SOMETHING',
     'finale.line3': 'UNFORGETTABLE',
@@ -491,11 +536,7 @@ const I18N = {
     'meta.fieldVal': 'ENTWICKLUNG · KI · DESIGN',
     'meta.period': 'ZEITRAUM',
     'meta.contents': 'INHALT',
-    'meta.contentsVal': '4 BLÄTTER · 3 PROJEKTE · 6 DISZIPLINEN',
-    'run.brief': 'DOSSIER RG-2026',
-    'run.sheet01': 'BLATT 01',
-    'sheetcue.next': 'Nächstes Blatt',
-    'sheetcue.go': 'WEITER',
+    'meta.contentsVal': '4 BLÄTTER · 4 PROJEKTE · 6 DISZIPLINEN',
     'sum.title': 'Überblick',
     'sum.lede': 'Zehn Jahre, in denen aus Ideen Software wurde, die live geht. Ich übernehme die ganze Pipeline — Architektur, Interface, Motion und die KI-Systeme, die den Rest automatisieren — so wartet ein Projekt nie auf eine Übergabe.',
     'sum.statusKey': 'STATUS',
@@ -532,13 +573,16 @@ const I18N = {
     'pillars.strip.motion': 'Motion',
     'pillars.strip.video': 'Video',
     'work.kicker': 'AUSGEWÄHLTE ARBEITEN',
+    'work.meridian': 'Luxus-Alpenresort-Website — scroll-gescrubbte Canvas-Ankunft, vier interaktive Instrumente, acht maßgefertigte Routen.',
     'work.sonnwerk': 'Premium-CBD-Markenseite — Storytelling vom Feld zur Flasche, editorial Typo, Scroll-Narrativ.',
     'work.urologie': 'Medizinische Boutique-Praxis-Website für Dr. Danijel Jozipovic — ruhige Präzision, buchungsgeführt.',
     'work.eduHub': 'Landingpage für Studienberatung — guidance-fokussiertes Scroll-Erlebnis für internationale Studierende.',
+    'work.tag.hosp': 'Hospitality · Experience',
     'work.tag.brand': 'Brand · Scrollytelling',
     'work.tag.health': 'Healthcare · Landing',
     'work.tag.edu': 'Education · Landing',
     'work.cta': 'Projekt ansehen →',
+    'cursor.view': 'ANSEHEN ↗',
     'finale.line1': 'LASS UNS',
     'finale.line2': 'ETWAS',
     'finale.line3': 'UNVERGESSLICHES BAUEN',
@@ -567,6 +611,12 @@ const applyLang = (lang) => {
     const key = el.getAttribute('data-i18n-aria');
     if (dict[key] != null) el.setAttribute('aria-label', dict[key]);
   });
+  /* the reticle's legend (cursor.js reads dataset.cursorLabel at hover time,
+     so translating the attribute here is enough — no re-binding needed) */
+  document.querySelectorAll('[data-i18n-cursor]').forEach((el) => {
+    const key = el.getAttribute('data-i18n-cursor');
+    if (dict[key] != null) el.dataset.cursorLabel = dict[key];
+  });
   const toggle = document.getElementById('lang-toggle');
   if (toggle) {
     toggle.setAttribute('aria-pressed', currentLang === 'de' ? 'true' : 'false');
@@ -579,139 +629,189 @@ if (langToggle) {
   langToggle.addEventListener('click', () => applyLang(currentLang === 'en' ? 'de' : 'en'));
 }
 
-/* ---------- section progress helper ----------
-   scrub range = section height minus its pinned sticky's height. Both are
-   layout values, so progress stays stable while the mobile URL bar
-   collapses/expands (live viewport height would shift mid-scroll). */
-const progressOf = (el, sticky) => {
-  const r = el.getBoundingClientRect();
-  const total = el.offsetHeight - sticky.offsetHeight;
-  return total <= 0 ? 1 : Math.max(0, Math.min(1, -r.top / total));
-};
-
-/* ---------- hero: name split + scrub bindings ---------- */
+/* ---------- hero: name split + scrub bindings ----------
+   The old progressOf() helper is gone: ScrollTrigger now owns the cover's
+   scrub range, computed from the same two layout values it used (section
+   height minus sticky height), so progress still cannot be perturbed by a
+   URL bar collapsing mid-scroll. */
 const orbitCanvas = document.getElementById('orbit-canvas');
 const hero = document.getElementById('hero');
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-if (orbitCanvas && hero) {
+if (hero) {
   document.querySelectorAll('[data-line]').forEach(line => {
     line.innerHTML = [...line.textContent].map(c => `<span class="ch">${c}</span>`).join('');
   });
   const chars = [...document.querySelectorAll('.hero__name .ch')];
   const heroName = document.getElementById('hero-name');
-  const scrubber = new FlipbookScrubber(orbitCanvas, CONFIG.frames, heroName);
   const heroSticky = hero.querySelector('.hero__sticky');
   const kicker = document.querySelector('.hero__kicker');
   const sub = document.getElementById('hero-sub');
   const metaRows = [...document.querySelectorAll('.hero__meta-row')];
   const actions = document.getElementById('hero-actions');
   const hint = document.getElementById('hero-hint');
-  const sheet = document.getElementById('hero-sheet');
+  const idFig = hero.querySelector('.hero__id');
   const gaugeCur = document.getElementById('gauge-cur');
   const gaugeTotal = document.getElementById('gauge-total');
   const gaugeFill = document.getElementById('gauge-fill');
   const S = CONFIG.heroScrub;
 
-  /* map a value from one range to 0..1, clamped */
-  const range = (v, a, b) => Math.max(0, Math.min(1, (v - a) / (b - a)));
+  /* Which cover? The flipbook needs a wide landscape viewport, GSAP, and a
+     user who has not asked for less motion. Anything else gets the still
+     cover — which is a real cover with its own ID portrait, not a fallback. */
+  const wantsScrub = scrubMQ.matches && gsapReady && !reduced && !!orbitCanvas;
+  /* leaves a readable answer in the DOM for QA — which cover was chosen, and
+     what the viewport looked like when it was chosen */
+  hero.dataset.cover = wantsScrub ? 'scrub' : 'still';
 
-  if (gaugeTotal) gaugeTotal.textContent = String(scrubber.count);
-
-  if (reduced) {
-    /* the cover collapses to a single static screen — show everything */
-    [kicker, sub, actions].forEach((el) => { if (el) el.style.opacity = 1; });
-    metaRows.forEach((r) => { r.style.opacity = 1; });
-    if (actions) actions.style.pointerEvents = 'auto';
-    const pillarsStripEarly = document.querySelector('.pillars__strip');
-    if (pillarsStripEarly) pillarsStripEarly.classList.add('is-visible');
+  if (!wantsScrub) {
+    /* ---------- the still cover ----------
+       The class is what CSS hangs the static layout off for the reduced-motion
+       and no-GSAP cases; narrow viewports get the same rules from a media
+       query, so the still cover also survives JS never running at all. */
+    hero.classList.add('hero--still');
     if (heroName) heroName.classList.add('is-post-seam');
-  }
+    if (actions) actions.style.pointerEvents = 'auto';
 
-  /* ---------- master rAF loop (cover only — later sheets use ScrollTrigger) ---------- */
-  let lastFrameLabel = '';
-  const tick = () => {
-    const hp = progressOf(hero, heroSticky);
-    /* the flipbook must finish its own 360 frames BEFORE the paper sheet
-       starts rising over it — remap scrub progress into 0..sheetStart so
-       frame 360 lands exactly where the panel begins, instead of the last
-       ~15% of frames playing invisibly underneath it. */
-    const fp = range(hp, 0, S.sheetStart);
-    scrubber.setProgress(fp);
-    scrubber.step();
+    const show = [kicker, sub, actions, idFig].filter(Boolean);
+    if (gsapReady && !reduced) {
+      /* a one-shot entrance, not a scroll-linked one — nothing here is
+         allowed to depend on scroll position, which is the whole point */
+      /* y:0 is load-bearing. CSS parks .ch at translateY(110%), which computes
+         to ~48px; GSAP reads the matrix, cannot tell it was a percentage, and
+         records it as y:48px. Animating yPercent alone then leaves that 48px
+         behind — and .hero__line is overflow:hidden, so every character ends
+         up clipped out of sight. Zeroing y explicitly claims the axis. */
+      gsap.set(chars, { yPercent: 110, y: 0, opacity: 0 });
+      gsap.set(show, { opacity: 0 });
+      gsap.set(metaRows, { opacity: 0 });
+      gsap.timeline({ defaults: { ease: 'power3.out' } })
+        .to(kicker, { opacity: 1, duration: 0.6 }, 0.05)
+        .to(chars, { yPercent: 0, y: 0, opacity: 1, duration: 0.9, stagger: 0.028 }, 0.12)
+        .to(sub, { opacity: 1, duration: 0.7 }, 0.55)
+        .to(idFig, { opacity: 1, duration: 0.9 }, 0.4)
+        .to(metaRows, { opacity: 1, duration: 0.5, stagger: 0.06 }, 0.7)
+        .to(actions, { opacity: 1, duration: 0.6 }, 1.0);
+    } else {
+      /* reduced motion, or no GSAP: the finished state, immediately */
+      const set = (el, css) => { if (el) Object.assign(el.style, css); };
+      chars.forEach((c) => set(c, { transform: 'none', opacity: 1, transition: 'none' }));
+      show.forEach((el) => set(el, { opacity: 1 }));
+      metaRows.forEach((r) => set(r, { opacity: 1 }));
+      const stripEarly = document.querySelector('.pillars__strip');
+      if (stripEarly) stripEarly.classList.add('is-visible');
+    }
+  } else {
+    /* ---------- the scrubbed cover ---------- */
+    const scrubber = new FlipbookScrubber(orbitCanvas, CONFIG.frames, heroName);
+    if (gaugeTotal) gaugeTotal.textContent = String(scrubber.count);
 
-    /* beat 1 — per-character name reveal */
-    const revealP = Math.min(1, hp / S.nameRevealEnd);
-    chars.forEach((ch, i) => {
-      const local = Math.max(0, Math.min(1, revealP * (chars.length + 6) - i));
-      ch.style.transform = `translateY(${(1 - local) * 110}%)`;
-      ch.style.opacity = local;
+    /* One scrubbed timeline drives everything. The old loop wrote transform
+       and opacity onto all 14 name characters, the kicker, the sub, five
+       metadata rows and the actions block on EVERY rAF whether or not the
+       value had changed — roughly 25 style writes per frame, forever. GSAP
+       writes only what actually moved, and only while the timeline is live.
+
+       No pin: `end` is computed from the same two layout values the old
+       progressOf() used, so the range stays immune to URL-bar resizing and
+       nothing downstream inherits a pin-spacer. */
+    const clock = { p: 0 };
+    const tl = gsap.timeline({
+      defaults: { ease: 'none' },
+      scrollTrigger: {
+        trigger: hero,
+        start: 'top top',
+        end: () => '+=' + Math.max(1, hero.offsetHeight - heroSticky.offsetHeight),
+        scrub: 0.55,
+        invalidateOnRefresh: true
+      }
     });
 
-    if (!reduced) {
-      if (kicker) {
-        kicker.style.opacity = hp > S.kickerRevealAt ? 1 : 0;
-        kicker.style.transition = 'opacity .6s';
-      }
-      if (sub) {
-        sub.style.opacity = hp > S.subRevealAt ? 1 : 0;
-        sub.style.transition = 'opacity .8s';
-      }
-      /* beat 1b — metadata rows write in one at a time, staggered by SCROLL
-         position rather than by a timer, so scrubbing back un-writes them */
-      if (metaRows.length) {
-        const mp = range(hp, S.metaStart, S.metaEnd);
-        metaRows.forEach((row, i) => {
-          const local = Math.max(0, Math.min(1, mp * (metaRows.length + 1) - i));
-          row.style.opacity = local;
-        });
+    /* the clock: total duration 1, so every position below reads directly as
+       a fraction of cover progress and CONFIG.heroScrub stays meaningful */
+    tl.to(clock, { p: 1, duration: 1 }, 0);
+
+    /* beat 1 — the name writes itself in, character by character */
+    const charSpan = Math.max(0.02, S.nameRevealEnd - 0.06);
+    /* y:0 on both ends — see the note in the still branch: CSS parks .ch at
+       translateY(110%), GSAP reads that back as ~48 pixels, and yPercent
+       alone would leave the residual inside an overflow:hidden line box */
+    tl.fromTo(chars,
+      { yPercent: 110, y: 0, opacity: 0 },
+      { yPercent: 0, y: 0, opacity: 1, duration: 0.06,
+        stagger: charSpan / Math.max(1, chars.length - 1) }, 0);
+
+    if (kicker) tl.fromTo(kicker, { opacity: 0 }, { opacity: 1, duration: 0.035 }, S.kickerRevealAt);
+    if (sub) tl.fromTo(sub, { opacity: 0 }, { opacity: 1, duration: 0.045 }, S.subRevealAt);
+
+    /* beat 1b — metadata rows write in one at a time, staggered by SCROLL
+       position rather than by a timer, so scrubbing back un-writes them */
+    if (metaRows.length) {
+      const span = Math.max(0.02, S.metaEnd - S.metaStart);
+      tl.fromTo(metaRows, { opacity: 0 },
+        { opacity: 1, duration: span / 2,
+          stagger: (span / 2) / Math.max(1, metaRows.length - 1) }, S.metaStart);
+    }
+    if (actions) tl.fromTo(actions, { opacity: 0 }, { opacity: 1, duration: 0.05 }, S.actionsRevealAt);
+    if (hint) tl.fromTo(hint, { opacity: 1 }, { opacity: 0, duration: 0.035 }, S.hintFadeAt);
+
+    /* beat 2 — the film gauge. scaleY, not height: a transform cannot
+       invalidate layout, and this bar redraws on every frame of the cover. */
+    if (gaugeFill) tl.fromTo(gaugeFill, { scaleY: 0 }, { scaleY: 1, duration: 1 }, 0);
+
+    /* The canvas rides gsap.ticker — the same clock Lenis and ScrollTrigger
+       already share, so there is exactly one rAF loop on the page. Both
+       writes below are gated on an actual change. */
+    let lastLabel = '';
+    let actionsOn = null;
+    gsap.ticker.add(() => {
+      scrubber.setProgress(clock.p);
+      scrubber.step();
+
+      if (gaugeCur) {
+        const n = Math.min(scrubber.count, Math.round(clock.p * (scrubber.count - 1)) + 1);
+        const label = String(n).padStart(3, '0');
+        if (label !== lastLabel) { lastLabel = label; gaugeCur.textContent = label; }
       }
       if (actions) {
-        const showActions = hp > S.actionsRevealAt;
-        actions.style.opacity = showActions ? 1 : 0;
-        actions.style.transition = 'opacity .8s';
-        actions.style.pointerEvents = showActions ? 'auto' : 'none';
+        const on = clock.p > S.actionsRevealAt;
+        if (on !== actionsOn) {
+          actionsOn = on;
+          actions.style.pointerEvents = on ? 'auto' : 'none';
+        }
       }
-    }
+    });
+  }
 
-    if (hint) {
-      hint.style.opacity = hp > S.hintFadeAt ? 0 : 1;
-      hint.style.transition = 'opacity .4s';
-    }
+  /* Crossing the scrub/still threshold (a rotation, or a window dragged past
+     900px) swaps which cover is correct, and neither can be rebuilt in place
+     — the still one has no canvas and the scrubbed one has no portrait.
 
-    /* beat 2 — the film gauge. Reads the flipbook as a strip being examined.
-       Text writes are gated on an actual change so we don't touch the DOM
-       every frame for an identical string. */
-    if (gaugeCur) {
-      const n = Math.min(scrubber.count, Math.round(fp * (scrubber.count - 1)) + 1);
-      const label = String(n).padStart(3, '0');
-      if (label !== lastFrameLabel) { lastFrameLabel = label; gaugeCur.textContent = label; }
-    }
-    if (gaugeFill) gaugeFill.style.height = `${fp * 100}%`;
-
-    /* beat 4 — the sheet rises and becomes the paper half of the document.
-       Eased (smoothstep) so the rise reads as a snap over the last stretch
-       of the scrub rather than a slow crawl. Transform only, stays on the
-       compositor. */
-    if (sheet && !reduced) {
-      const k = smoothstep(range(hp, S.sheetStart, 1));
-      sheet.style.transform = `translateY(${(1 - k) * 100}%)`;
-    }
-
-    requestAnimationFrame(tick);
+     The same check also self-corrects a decision made too early. main.js runs
+     at the end of <body>, which is normally after layout has settled, but not
+     always: a panel that animates open, a window restoring its size, devtools
+     docking, all resize the viewport a beat later. Getting it wrong used to
+     be permanent — the still cover would sit there on a wide desktop with no
+     way back. The sessionStorage latch means one correction, never a loop. */
+  const RETRY_KEY = 'rg-cover-retry';
+  let mqTimer = 0;
+  const recheck = () => {
+    clearTimeout(mqTimer);
+    mqTimer = setTimeout(() => {
+      const want = scrubMQ.matches && gsapReady && !reduced && !!orbitCanvas;
+      if (want === wantsScrub) return;
+      let tries = 0;
+      try { tries = +sessionStorage.getItem(RETRY_KEY) || 0; } catch (e) { tries = 99; }
+      if (tries >= 2) return;
+      try { sessionStorage.setItem(RETRY_KEY, String(tries + 1)); } catch (e) { /* private mode: just don't retry */ }
+      location.reload();
+    }, 350);
   };
-  requestAnimationFrame(tick);
-
-  /* frame set is chosen once at load; if a rotation crosses the narrow/wide
-     threshold the loaded set no longer fits the viewport — reload to pick the
-     right one. Debounced; URL-bar resizes never cross the threshold. */
-  let aspectTimer = 0;
-  addEventListener('resize', () => {
-    clearTimeout(aspectTimer);
-    aspectTimer = setTimeout(() => {
-      if ((innerWidth / innerHeight < NARROW_ASPECT) !== isNarrowViewport) location.reload();
-    }, 400);
-  });
+  if (scrubMQ.addEventListener) scrubMQ.addEventListener('change', recheck);
+  addEventListener('load', recheck);
+  /* clear the latch once a load has stood unchanged for a few seconds, so a
+     later genuine rotation still gets its one correction */
+  setTimeout(() => { try { sessionStorage.removeItem(RETRY_KEY); } catch (e) {} }, 4000);
 }
 
 /* ---------- capability sheet: ScrollTrigger pin (one entry per step) ---------- */
@@ -833,48 +933,68 @@ if (orbitCanvas && hero) {
   }
 })();
 
-/* ---------- 03 · selected work: sticky video window ----------
-   Idle, the panel loops media/closer.mp4 via the shared [data-video]
-   machinery below (untouched — that's what gives this loop the same lazy
-   mount, visibility pause/resume and low-power retry every other bg video
-   on the page gets). Hovering/focusing a row crossfades in that project's
-   poster immediately, then its preview clip once (if) it can load — a
-   missing clip just leaves the poster on screen, nothing errors visibly. */
+/* ---------- 03 · selected work: floating hover preview ----------
+   The sticky plate on the left is idle-only now: it loops media/closer.mp4
+   via the shared [data-video] machinery below and never reacts to hover, so
+   its caption stays "PLATE A · STUDIO / CLOSER.MP4".
+
+   The preview instead flies to the RIGHT EDGE of whichever row is hovered
+   and tracks the pointer's Y — the picture stays beside the title the eye is
+   already on. One card is reused by every row; each row's poster/clip/caption
+   come from the data-* attributes it already carried.
+
+   Position is absolute inside .worx (not fixed) so the card stays glued to
+   its row while the page scrolls under a stationary pointer. Everything the
+   pointer drives is transform-only, via quickTo — one reused tween per axis
+   rather than a new tween per pointermove. */
 (() => {
   const section = document.getElementById('work');
-  const frame = document.getElementById('worx-frame');
+  const worx = section && section.querySelector('.worx');
+  const float = document.getElementById('worx-float');
+  const floatFrame = document.getElementById('worx-float-frame');
+  const poster = document.getElementById('worx-float-poster');
   const rows = [...document.querySelectorAll('.worx__row')];
-  if (!section || !frame || !rows.length) return;
+  if (!section || !worx || !float || !floatFrame || !rows.length) return;
+  if (typeof gsap === 'undefined') return; /* no GSAP: rows keep their inline .worx__media posters */
 
-  const hoverPoster = document.getElementById('worx-hover-poster');
-  const capLabel = document.getElementById('worx-cap-label');
-  const capSrc = document.getElementById('worx-cap-src');
-  /* looked up live (not cached at load) because #worx-cap-label carries
-     data-i18n="cap.plate" — a language toggle rewrites it directly via
-     applyLang(), and a stale cached string here would stomp that back to
-     the old language on the next hover/unhover. idleSrc has no i18n key
-     (matches the Capability plate's own hardcoded "BUILDER.MP4"), so it's
-     safe to read once. */
-  const getIdleLabel = () => (I18N[currentLang] && I18N[currentLang]['cap.plate']) || (capLabel ? capLabel.textContent : '');
-  const idleSrc = capSrc ? capSrc.textContent : '';
+  const capLabel = document.getElementById('worx-float-label');
+  const capSrc = document.getElementById('worx-float-src');
 
+  /* the 1000px arm matches .worx__float's own media query — below it the card
+     is display:none and the rows show their inline posters, so a narrow
+     desktop window must not try to fly a zero-width card around */
   const canHover = () =>
     matchMedia('(hover: hover) and (pointer: fine)').matches &&
+    matchMedia('(min-width: 1000px)').matches &&
     !matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  gsap.set(float, { autoAlpha: 0, scale: 0.96 });
+  const xTo = gsap.quickTo(float, 'x', { duration: 0.45, ease: 'power3.out' });
+  const yTo = gsap.quickTo(float, 'y', { duration: 0.55, ease: 'power3.out' });
+  /* the tilt is pointer VELOCITY, not position — the card leans into the
+     direction of travel and settles flat when the hand stops */
+  const rotTo = gsap.quickTo(float, 'rotation', { duration: 0.7, ease: 'power3.out' });
 
   const videoCache = new Map(); // slug -> { el, failed }
   let activeVideo = null;
   let leaveTimer = 0;
+  let currentRow = null;
+  let revealTl = null;
+  let lastY = 0;
+  let lastT = 0;
+  let tiltTimer = 0;
 
   function getPreviewVideo(row) {
     const slug = row.id;
     let entry = videoCache.get(slug);
     if (entry) return entry;
-    const src = row.dataset.preview;
     const el = document.createElement('video');
-    el.className = 'plate__frame-layer worx__hover-video';
+    el.className = 'worx__float-video';
     el.muted = true;
-    el.loop = true;
+    /* THE MERIDIAN's clip is a continuous descent that ends at the resort —
+       looping it back to the clouds would be a cut. data-preview-loop="false"
+       plays it once and holds the last frame. Everything else loops. */
+    el.loop = row.dataset.previewLoop !== 'false';
     el.playsInline = true;
     el.preload = 'auto'; /* created lazily on first hover of THIS row — the row is already being hovered, so start fetching immediately */
     el.setAttribute('muted', '');
@@ -882,28 +1002,76 @@ if (orbitCanvas && hero) {
     entry = { el, failed: false };
     videoCache.set(slug, entry);
     el.addEventListener('error', () => { entry.failed = true; }, { once: true });
-    el.src = src;
-    frame.appendChild(el);
+    el.src = row.dataset.preview;
+    floatFrame.appendChild(el);
     return entry;
   }
 
-  function setIdle() {
-    if (hoverPoster) hoverPoster.classList.remove('is-active');
-    if (activeVideo) { activeVideo.el.classList.remove('is-active'); activeVideo.el.pause(); activeVideo = null; }
-    if (capLabel) capLabel.textContent = getIdleLabel();
-    if (capSrc) capSrc.textContent = idleSrc;
+  /* Park the card against the hovered row. clientY is optional: keyboard
+     focus has no pointer, so the card centres on the row instead. */
+  function place(row, clientY, animate) {
+    const wr = worx.getBoundingClientRect();
+    const rr = row.getBoundingClientRect();
+    const cw = float.offsetWidth;
+    const ch = float.offsetHeight;
+
+    const x = (rr.right - wr.left) - cw;
+    const top = rr.top - wr.top;
+    const minY = top + 10;
+    const maxY = top + rr.height - ch - 10;
+
+    let y;
+    if (clientY == null || maxY <= minY) y = top + (rr.height - ch) / 2;
+    else y = Math.max(minY, Math.min(maxY, (clientY - wr.top) - ch / 2));
+
+    if (animate) {
+      xTo(x); yTo(y);
+    } else {
+      gsap.set(float, { x, y });
+    }
+    return y;
   }
 
-  function activate(row) {
+  function setIdle() {
+    currentRow = null;
+    if (revealTl) revealTl.kill();
+    revealTl = gsap.to(float, {
+      autoAlpha: 0, scale: 0.96, rotation: 0,
+      duration: 0.3, ease: 'power2.in'
+    });
+    if (activeVideo) {
+      activeVideo.el.classList.remove('is-active');
+      activeVideo.el.pause();
+      activeVideo = null;
+    }
+  }
+
+  function activate(row, clientY) {
     clearTimeout(leaveTimer);
-    if (capLabel) capLabel.textContent = row.dataset.capLabel || getIdleLabel();
-    if (capSrc) capSrc.textContent = row.dataset.capSrc || idleSrc;
+    const first = currentRow !== row;
+    currentRow = row;
 
-    if (activeVideo) { activeVideo.el.classList.remove('is-active'); activeVideo.el.pause(); activeVideo = null; }
+    if (capLabel) capLabel.textContent = row.dataset.capLabel || '';
+    if (capSrc) capSrc.textContent = row.dataset.capSrc || '';
 
-    if (hoverPoster) {
-      hoverPoster.src = row.dataset.poster;
-      hoverPoster.classList.add('is-active');
+    if (activeVideo) {
+      activeVideo.el.classList.remove('is-active');
+      activeVideo.el.pause();
+      activeVideo = null;
+    }
+    if (poster && row.dataset.poster) poster.src = row.dataset.poster;
+
+    if (first) {
+      /* jump to the new row rather than sliding across the whole list */
+      place(row, clientY, false);
+      if (revealTl) revealTl.kill();
+      revealTl = gsap.timeline()
+        .to(float, { autoAlpha: 1, scale: 1, duration: 0.5, ease: 'power3.out' }, 0)
+        .fromTo(floatFrame,
+          { clipPath: 'inset(0% 0% 100% 0%)' },
+          { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.55, ease: 'power3.out' }, 0);
+    } else {
+      place(row, clientY, true);
     }
 
     if (!row.dataset.preview) return;
@@ -924,11 +1092,29 @@ if (orbitCanvas && hero) {
   }
 
   rows.forEach((row) => {
-    row.addEventListener('mouseenter', () => { if (canHover()) activate(row); });
+    row.addEventListener('mouseenter', (e) => { if (canHover()) activate(row, e.clientY); });
+    row.addEventListener('mousemove', (e) => {
+      if (!canHover() || currentRow !== row) return;
+      place(row, e.clientY, true);
+      const now = performance.now();
+      const dt = now - lastT;
+      if (dt > 0 && dt < 200) {
+        rotTo(gsap.utils.clamp(-4, 4, (e.clientY - lastY) * 0.22));
+      }
+      lastY = e.clientY;
+      lastT = now;
+      /* velocity only exists while the hand is moving — without this the card
+         would hold its last tilt indefinitely once the pointer stopped */
+      clearTimeout(tiltTimer);
+      tiltTimer = setTimeout(() => rotTo(0), 90);
+    }, { passive: true });
     row.addEventListener('mouseleave', () => { if (canHover()) scheduleLeave(); });
-    row.addEventListener('focusin', () => { if (canHover()) activate(row); });
+    row.addEventListener('focusin', () => { if (canHover()) activate(row, null); });
     row.addEventListener('focusout', () => { if (canHover()) scheduleLeave(); });
   });
+
+  /* a resize mid-hover would leave the card measured against the old grid */
+  addEventListener('resize', () => { if (currentRow) place(currentRow, null, false); });
 })();
 
 /* ---------- the sheet counter: page progress + live sheet + theme flip ----------
@@ -984,11 +1170,11 @@ if (orbitCanvas && hero) {
   setLive(0);
 
   /* THEME — exactly one trigger owns chrome-paper, spanning the whole paper
-     band: from the moment the cover's sheet starts rising, to the moment the
-     dark close arrives. Both edges belong to the same trigger, so isActive is
-     resolved from the final scroll position rather than from which edges got
-     crossed. That matters: an earlier version used a start-edge onEnter plus
-     a separate per-section writer, and jumping straight from the cover to
+     band: from the moment the hero's pin releases into #stats, to the moment
+     the dark close arrives. Both edges belong to the same trigger, so isActive
+     is resolved from the final scroll position rather than from which edges
+     got crossed. That matters: an earlier version used a start-edge onEnter
+     plus a separate per-section writer, and jumping straight from the cover to
      #contact (which every sheet-counter link can do) fired the start edge,
      blew past the end edge, and left a paper counter on a dark screen. */
   const hero = document.getElementById('hero');
@@ -996,10 +1182,24 @@ if (orbitCanvas && hero) {
   if (hero && contact) {
     ScrollTrigger.create({
       trigger: hero,
-      start: () => 'top top-=' + (hero.offsetHeight * CONFIG.heroScrub.sheetStart),
+      start: 'bottom top',
       endTrigger: contact,
       end: 'top center',
       onToggle: (self) => { root.classList.toggle('chrome-paper', self.isActive); }
+    });
+  }
+
+  /* the topbar's ghost/bar switch needs a THIRD state chrome-paper alone
+     can't express: chrome-paper is false both inside the hero (ghost, no
+     bar) and past it over the dark Close section (a beige bar) — .past-hero
+     tells those two apart. True from the instant #stats begins through the
+     rest of the document; false only while still inside the hero. */
+  if (hero) {
+    ScrollTrigger.create({
+      trigger: hero,
+      start: 'bottom top',
+      onEnter: () => root.classList.add('past-hero'),
+      onLeaveBack: () => root.classList.remove('past-hero')
     });
   }
 })();
@@ -1054,13 +1254,11 @@ if (orbitCanvas && hero) {
   if (!gsapReady) return;
   const title = document.querySelector('.close__title');
   if (!title) return;
-  /* [data-close-line], not 'span' — the middle line now wraps its own
-     accent word + hairline + tag in nested spans, which a bare 'span'
-     selector would also sweep into this 3-line stagger. Deliberately NOT
-     named data-line: that attribute is already used globally by the hero's
-     char-split effect (main.js, `document.querySelectorAll('[data-line]')`
-     with no scoping), which would otherwise also catch these and mangle
-     them. */
+  /* [data-close-line], deliberately NOT named data-line: that attribute is
+     already used globally by the hero's char-split effect (main.js,
+     `document.querySelectorAll('[data-line]')` with no scoping), which would
+     otherwise also catch these three and mangle them into per-character
+     spans. */
   const lines = gsap.utils.toArray('[data-close-line]', title);
   if (!lines.length) return;
 
