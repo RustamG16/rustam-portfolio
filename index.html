@@ -4,19 +4,35 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Rustam Gurbanov — Brief RG-2026 · Software Engineer · AI Orchestrator · Designer</title>
-<meta name="description" content="Portfolio of Rustam Gurbanov — software engineer, AI orchestrator, web designer and content creator. Ten years, three shipped sites, one whole pipeline.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@300;400;500&family=Instrument+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<meta name="description" content="Portfolio of Rustam Gurbanov — software engineer, AI orchestrator, web designer and content creator. Ten years, four shipped sites, one whole pipeline.">
+<!-- SITE_URL: every absolute url on this page is the same origin. If the custom
+     domain changes, the full list to update is: canonical, og:url, og:image,
+     twitter:image, the JSON-LD "url", sitemap.xml, and cv.html's own pair. -->
+<link rel="canonical" href="https://rustamg16.github.io/rustam-portfolio/">
+<!-- Self-hosted. These used to come from fonts.googleapis.com, which put a
+     render-blocking cross-origin stylesheet on the critical path AND sent every
+     visitor's IP to Google — the thing the 2022 Austrian mass-warning wave was
+     about. Same three families, one origin, no third party. -->
+<link rel="preload" as="font" type="font/woff2" href="fonts/anton-latin.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="fonts/instrument-sans-latin.woff2" crossorigin>
 <meta name="theme-color" content="#0A0A0B">
 <meta property="og:type" content="website">
+<meta property="og:site_name" content="Rustam Gurbanov">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="de_AT">
 <meta property="og:title" content="Rustam Gurbanov — Brief RG-2026">
 <meta property="og:description" content="Software engineer, AI orchestrator, designer and creator. One person, whole pipeline.">
-<!-- og:image and og:url must be ABSOLUTE urls — update both after the custom domain is live -->
 <meta property="og:image" content="https://rustamg16.github.io/rustam-portfolio/media/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Rustam Gurbanov — Brief RG-2026">
 <meta property="og:url" content="https://rustamg16.github.io/rustam-portfolio/">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Rustam Gurbanov — Brief RG-2026">
+<meta name="twitter:description" content="Software engineer, AI orchestrator, designer and creator. One person, whole pipeline.">
+<meta name="twitter:image" content="https://rustamg16.github.io/rustam-portfolio/media/og.jpg">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="apple-touch-icon" href="media/apple-touch-icon.png">
 <!-- Two covers, one page. The scrubbed flipbook only exists on wide, landscape
      viewports; narrow ones get a still cover (no canvas, no frames at all), so
      these preloads must match SCRUB_MQ in main.js exactly. The strip is
@@ -58,7 +74,7 @@
   <nav class="topbar__nav" aria-label="Primary">
     <a class="topbar__cta topbar__cta--desk" href="assets/rustam-gurbanov-resume.pdf" download="Rustam-Gurbanov-CV.pdf" data-i18n="nav.cv">Download CV</a>
     <a class="topbar__cta topbar__cta--desk" href="cv.html" data-i18n="nav.experience">Experience</a>
-    <a class="topbar__cta topbar__cta--desk" href="#contact" data-i18n="nav.cta">Start a project</a>
+    <a class="topbar__cta topbar__cta--desk" href="#contact" data-i18n="nav.cta">Available for work</a>
     <button type="button" class="topbar__lang" id="lang-toggle" aria-label="Switch language" data-i18n-aria="nav.langAria">
       <span data-lang-label>EN</span><span class="topbar__lang-sep" aria-hidden="true">/</span><span data-lang-alt>DE</span>
     </button>
@@ -87,7 +103,7 @@
     </ol>
 
     <div class="drawer__actions">
-      <a class="btn btn--solid" href="#contact" data-i18n="nav.cta">Start a project</a>
+      <a class="btn btn--solid" href="#contact" data-i18n="nav.cta">Available for work</a>
       <a class="btn btn--ghost" href="assets/rustam-gurbanov-resume.pdf" download="Rustam-Gurbanov-CV.pdf" data-i18n="nav.cv">Download CV</a>
       <a class="btn btn--ghost" href="cv.html" data-i18n="nav.experience">Experience</a>
     </div>
@@ -285,9 +301,15 @@
      The per-project preview is .worx__float — one shared card that flies to
      the right edge of whichever row is hovered and tracks the pointer's Y.
      Keeping it beside the title means the eye never has to leave the thing
-     it is pointing at. Rows still carry data-poster / data-preview /
-     data-cap-*; the float reads them. A missing preview clip just leaves the
-     poster showing.
+     it is pointing at.
+
+     data-preview IS THE SWITCH, and only rows 01/02 carry it: they play a
+     clip. Rows 03/04 have no data-preview, so the float cycles the three
+     stills their sibling .worx__media already lists instead. That keeps the
+     live video decoders on this page down to two, and it means changing a
+     project between the two kinds is a markup edit, not a main.js edit.
+     data-poster is the base layer under both arms, so a row whose media
+     fails just shows its poster.
 
      Below 1000px there is no pointer to follow, so each row instead carries a
      .worx__media CAROUSEL — data-shots (three stills) plus an optional
@@ -350,7 +372,7 @@
           <div class="worx__media" data-shots="media/work/shots/meridian/01.webp,media/work/shots/meridian/02.webp,media/work/shots/meridian/03.webp"
                data-clip="media/work/previews/meridian.mp4" data-media-label="The Meridian">
             <span class="plate__frame plate__frame--wide" aria-hidden="true">
-              <img src="media/work/shots/meridian/01.webp" alt="" width="1000" height="562" loading="lazy" decoding="async">
+              <img src="media/work/shots/meridian/01.webp" alt="The Meridian — screenshot of the live site" width="1000" height="562" loading="lazy" decoding="async">
             </span>
           </div>
         </li>
@@ -371,7 +393,7 @@
           <div class="worx__media" data-shots="media/work/shots/sonnwerk/01.webp,media/work/shots/sonnwerk/02.webp,media/work/shots/sonnwerk/03.webp"
                data-clip="media/work/previews/sonnwerk.mp4" data-media-label="Sonnwerk">
             <span class="plate__frame plate__frame--wide" aria-hidden="true">
-              <img src="media/work/shots/sonnwerk/01.webp" alt="" width="1000" height="562" loading="lazy" decoding="async">
+              <img src="media/work/shots/sonnwerk/01.webp" alt="Sonnwerk — screenshot of the live site" width="1000" height="562" loading="lazy" decoding="async">
             </span>
           </div>
         </li>
@@ -379,7 +401,7 @@
         <li>
           <a class="worx__row reveal" id="project-urologie"
              href="https://sr-urologie.netlify.app/" target="_blank" rel="noopener noreferrer"
-             data-poster="media/work/posters/sr-urologie.webp" data-preview="media/work/previews/sr-urologie.mp4"
+             data-poster="media/work/posters/sr-urologie.webp"
              data-cap-label="PLATE 03 · SR UROLOGIE" data-cap-src="LIVE"
              data-cursor="view" data-cursor-label="VIEW ↗" data-i18n-cursor="cursor.view">
             <span class="worx__index">03</span>
@@ -392,7 +414,7 @@
           <div class="worx__media" data-shots="media/work/shots/sr-urologie/01.webp,media/work/shots/sr-urologie/02.webp,media/work/shots/sr-urologie/03.webp"
                data-media-label="SR Urologie">
             <span class="plate__frame plate__frame--wide" aria-hidden="true">
-              <img src="media/work/shots/sr-urologie/01.webp" alt="" width="1000" height="562" loading="lazy" decoding="async">
+              <img src="media/work/shots/sr-urologie/01.webp" alt="SR Urologie — screenshot of the live site" width="1000" height="562" loading="lazy" decoding="async">
             </span>
           </div>
         </li>
@@ -400,7 +422,7 @@
         <li>
           <a class="worx__row reveal" id="project-eduhub"
              href="https://rustamg16.github.io/education-hub-connect/" target="_blank" rel="noopener noreferrer"
-             data-poster="media/work/posters/education-hub.webp" data-preview="media/work/previews/education-hub.mp4"
+             data-poster="media/work/posters/education-hub.webp"
              data-cap-label="PLATE 04 · EDUCATION HUB" data-cap-src="LIVE"
              data-cursor="view" data-cursor-label="VIEW ↗" data-i18n-cursor="cursor.view">
             <span class="worx__index">04</span>
@@ -413,7 +435,7 @@
           <div class="worx__media" data-shots="media/work/shots/education-hub/01.webp,media/work/shots/education-hub/02.webp,media/work/shots/education-hub/03.webp"
                data-media-label="Education Hub">
             <span class="plate__frame plate__frame--wide" aria-hidden="true">
-              <img src="media/work/shots/education-hub/01.webp" alt="" width="1000" height="562" loading="lazy" decoding="async">
+              <img src="media/work/shots/education-hub/01.webp" alt="Education Hub — screenshot of the live site" width="1000" height="562" loading="lazy" decoding="async">
             </span>
           </div>
         </li>
@@ -436,7 +458,7 @@
     <div class="close__grid">
       <div class="close__col">
         <div class="close__actions">
-          <a class="btn btn--solid" href="mailto:rustam.gurbanov016@gmail.com" data-i18n="finale.cta">Start a project</a>
+          <a class="btn btn--solid" href="mailto:rustam.gurbanov016@gmail.com" data-i18n="finale.cta">Available for work</a>
           <a class="btn btn--ghost" href="assets/rustam-gurbanov-resume.pdf" download="Rustam-Gurbanov-Resume.pdf" data-i18n="finale.cv">Download CV</a>
           <!-- the cross-reference: this is what makes the two pages one
                document. A third action alongside the two buttons rather
@@ -467,6 +489,7 @@
       <nav aria-label="Secondary">
         <a href="cv.html" data-i18n="footer.cv">CV</a>
         <a href="cv.html#vault" data-i18n="footer.docs">Documents</a>
+        <a href="legal.html" data-i18n="footer.legal">Legal</a>
       </nav>
     </footer>
   </div>

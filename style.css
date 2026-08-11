@@ -1,3 +1,51 @@
+/* ============ FONTS (self-hosted) ============
+   These used to arrive as a render-blocking stylesheet from
+   fonts.googleapis.com. Two reasons that changed, and both matter:
+
+   1. It was a cross-origin round trip (DNS + TLS + CSS + THEN the woff2) sitting
+      on the critical path in front of first paint.
+   2. It sent every visitor's IP address to Google. An Austrian law firm sent
+      ~33,000 warning letters over exactly that in 2022; the courts later called
+      the campaign abusive, but self-hosting removes the question rather than
+      winning the argument.
+
+   Latin subset only — U+0000-00FF covers the German the DE toggle needs
+   (ä ö ü ß), so latin-ext is not worth the extra files.
+
+   style.css is loaded by BOTH index.html and cv.html, so these declarations
+   serve the whole site and must stay in this file rather than cv.css.
+   index.html preloads the two that render above the fold (Anton for the name,
+   Instrument Sans for body); IBM Plex Mono is below-fold labels and can arrive
+   on its own schedule. If you add a preload, add it to BOTH pages' heads. */
+@font-face{
+  font-family:'Anton';font-style:normal;font-weight:400;font-display:swap;
+  src:url(fonts/anton-latin.woff2) format('woff2');
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+/* Instrument Sans ships as ONE variable file covering 400-700. The old Google
+   request asked for 300 as well; Instrument Sans has no 300, so Google was
+   already serving 400 for it and the range below reproduces that exactly. */
+@font-face{
+  font-family:'Instrument Sans';font-style:normal;font-weight:400 700;font-stretch:100%;font-display:swap;
+  src:url(fonts/instrument-sans-latin.woff2) format('woff2');
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face{
+  font-family:'IBM Plex Mono';font-style:normal;font-weight:300;font-display:swap;
+  src:url(fonts/ibm-plex-mono-300-latin.woff2) format('woff2');
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face{
+  font-family:'IBM Plex Mono';font-style:normal;font-weight:400;font-display:swap;
+  src:url(fonts/ibm-plex-mono-400-latin.woff2) format('woff2');
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face{
+  font-family:'IBM Plex Mono';font-style:normal;font-weight:500;font-display:swap;
+  src:url(fonts/ibm-plex-mono-500-latin.woff2) format('woff2');
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
 /* ============ TOKENS (from sitespec.json) ============ */
 :root{
   --bg:#0A0A0B; --ink:#0A0A0B;
@@ -830,7 +878,7 @@ html[lang="en"] .topbar__lang [data-lang-alt]{color:var(--text-dim)}
   aspect-ratio:16/9;background:#111;border:1px solid var(--p-rule);
   box-shadow:0 18px 50px rgba(20,20,15,.22);
 }
-.worx__float-poster,.worx__float-video{
+.worx__float-poster,.worx__float-video,.worx__float-still{
   position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;
 }
 /* the clip crossfades in over its own poster once it has a frame to show;
@@ -840,6 +888,24 @@ html[lang="en"] .topbar__lang [data-lang-alt]{color:var(--text-dim)}
    400ms is well past the point a UI transition stops reading as immediate. */
 .worx__float-video{opacity:0;z-index:1;transition:opacity .18s cubic-bezier(.23,1,.32,1)}
 .worx__float-video.is-active{opacity:1}
+/* Rows 03/04 carry no clip: their float cycles the three stills the mobile
+   carousel already uses. 240ms is .worx__car-track's own number further down —
+   the two media systems in this one section should dissolve at the same speed,
+   and 240 sits inside the sub-300ms budget the rest of this file keeps.
+
+   The transition is deliberately ASYMMETRIC, and that asymmetry IS the
+   crossfade: the incoming layer rises 0->1 over 240ms at z-index 2, while the
+   outgoing one holds at opacity 1 (0s duration, 240ms delay) at z-index 1
+   until the incoming has fully covered it, then snaps to 0 underneath
+   something opaque. A symmetric fade would sit both layers near .5 mid-swap
+   and dip the whole card's brightness on every step. No JS timer is involved
+   in the fade — main.js only ever moves one class. */
+.worx__float-still{
+  opacity:0;z-index:1;transition:opacity 0s cubic-bezier(.23,1,.32,1) .24s;
+}
+.worx__float-still.is-active{
+  opacity:1;z-index:2;transition:opacity .24s cubic-bezier(.23,1,.32,1) 0s;
+}
 .worx__float-cap{
   display:flex;justify-content:space-between;align-items:baseline;gap:var(--s2);margin-top:9px;
   font-family:var(--mono);font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--p-faint);

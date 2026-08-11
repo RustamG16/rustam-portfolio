@@ -30,6 +30,7 @@ var I18N = {
     'nav.langAria': 'Switch language',
     'whatsapp.aria': 'Chat on WhatsApp',
     'footer.copy': '© 2026 Rustam Gurbanov',
+    'footer.legal': 'Legal',
     'footer.portfolio': 'Portfolio',
 
     'cv.skip': 'Skip to experience',
@@ -141,12 +142,13 @@ var I18N = {
     'cv.end.kicker': 'END OF FILE · RG-2026',
     'cv.end.line1': 'ONE PERSON.',
     'cv.end.line2': 'WHOLE PIPELINE.',
-    'cv.end.cta': 'Start a project'
+    'cv.end.cta': 'Available for work'
   },
   de: {
     'nav.langAria': 'Sprache wechseln',
     'whatsapp.aria': 'Auf WhatsApp schreiben',
     'footer.copy': '© 2026 Rustam Gurbanov',
+    'footer.legal': 'Impressum',
     'footer.portfolio': 'Portfolio',
 
     'cv.skip': 'Zur Erfahrung springen',
@@ -253,7 +255,7 @@ var I18N = {
     'cv.end.kicker': 'ENDE DER AKTE · RG-2026',
     'cv.end.line1': 'EINE PERSON.',
     'cv.end.line2': 'GANZE PIPELINE.',
-    'cv.end.cta': 'Projekt starten'
+    'cv.end.cta': 'Offen für Anstellung'
   }
 };
 
@@ -818,7 +820,13 @@ function openLightbox(trigger) {
   lbImg.src = trigger.getAttribute('href');
   lbImg.alt = titleEl ? titleEl.textContent : '';
   lbTitle.textContent = titleEl ? titleEl.textContent : '';
-  lbPdf.href = trigger.getAttribute('data-pdf') || '#';
+  /* no href in the markup and none set here when there is no PDF: an <a>
+     without href is neither focusable nor clickable, which is the correct
+     resting state for a JS-populated action. href="#" used to jump the page to
+     the top if the doc had no PDF attached. */
+  var pdf = trigger.getAttribute('data-pdf');
+  if (pdf) { lbPdf.href = pdf; lbPdf.hidden = false; }
+  else { lbPdf.removeAttribute('href'); lbPdf.hidden = true; }
   lb.hidden = false;
   document.body.style.overflow = 'hidden';
   if (lenis) lenis.stop();
@@ -828,7 +836,9 @@ function openLightbox(trigger) {
 function closeLightbox() {
   if (!lb || lb.hidden) return;
   lb.hidden = true;
-  lbImg.src = '';
+  /* removeAttribute, not src='': assigning an empty string resolves against
+     the document URL and makes the browser re-request cv.html as an image. */
+  lbImg.removeAttribute('src');
   document.body.style.overflow = '';
   if (lenis) lenis.start();
   if (lastFocused) lastFocused.focus();

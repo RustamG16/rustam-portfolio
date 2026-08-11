@@ -495,7 +495,7 @@ class FlipbookScrubber {
 /* ---------- i18n (EN / DE) ---------- */
 const I18N = {
   en: {
-    'nav.cta': 'Start a project',
+    'nav.cta': 'Available for work',
     'nav.cv': 'Download CV',
     'nav.experience': 'Experience',
     'nav.skip': 'Skip to work',
@@ -536,6 +536,7 @@ const I18N = {
     'bar.s3': 'Work',
     'bar.s4': 'Close',
     'footer.docs': 'Documents',
+    'footer.legal': 'Legal',
     'pillars.kicker': 'WHAT I DO',
     'pillars.engineer.title': 'ENGINEER',
     'pillars.engineer.body': 'Production software, end to end. Clean systems that scale — from architecture to the last commit.',
@@ -563,7 +564,7 @@ const I18N = {
     'finale.line1': "LET'S BUILD",
     'finale.line2': 'SOMETHING',
     'finale.line3': 'UNFORGETTABLE',
-    'finale.cta': 'Start a project',
+    'finale.cta': 'Available for work',
     'finale.cv': 'Download CV',
     'footer.copy': '© 2026 Rustam Gurbanov',
     'footer.cv': 'CV',
@@ -571,7 +572,7 @@ const I18N = {
     'whatsapp.aria': 'Chat on WhatsApp'
   },
   de: {
-    'nav.cta': 'Projekt starten',
+    'nav.cta': 'Offen für Anstellung',
     'nav.cv': 'Lebenslauf laden',
     'nav.experience': 'Erfahrung',
     'nav.skip': 'Zu den Arbeiten springen',
@@ -612,6 +613,7 @@ const I18N = {
     'bar.s3': 'Arbeiten',
     'bar.s4': 'Kontakt',
     'footer.docs': 'Dokumente',
+    'footer.legal': 'Impressum',
     'pillars.kicker': 'WAS ICH MACHE',
     'pillars.engineer.title': 'ENGINEER',
     'pillars.engineer.body': 'Produktionssoftware, Ende zu Ende. Saubere Systeme die skalieren — von der Architektur bis zum letzten Commit.',
@@ -639,7 +641,7 @@ const I18N = {
     'finale.line1': 'LASS UNS',
     'finale.line2': 'ETWAS',
     'finale.line3': 'UNVERGESSLICHES BAUEN',
-    'finale.cta': 'Projekt starten',
+    'finale.cta': 'Offen für Anstellung',
     'finale.cv': 'Lebenslauf laden',
     'footer.copy': '© 2026 Rustam Gurbanov',
     'footer.cv': 'CV',
@@ -1236,7 +1238,30 @@ if (hero) {
    Position is absolute inside .worx (not fixed) so the card stays glued to
    its row while the page scrolls under a stationary pointer. Everything the
    pointer drives is transform-only, via quickTo — one reused tween per axis
-   rather than a new tween per pointermove. */
+   rather than a new tween per pointermove.
+
+   TWO KINDS OF PREVIEW, and data-preview is the switch. Rows that carry it
+   (01 The Meridian, 02 Sonnwerk) play their clip. Rows that don't (03 SR
+   Urologie, 04 Education Hub) cycle the three stills their sibling
+   .worx__media already lists for the mobile carousel — so this file adds no
+   attribute to the page and a future project changes arms by editing markup
+   rather than this module. Note rows 01/02 have BOTH data-preview and a
+   data-shots sibling: data-shots is the fallback arm, never the test.
+
+   THE BUG THIS SHAPE PREVENTS. The previous version tracked one activeVideo
+   and cleared .is-active only from THAT element — while a `loadeddata` from a
+   row you had already left could add .is-active to a DIFFERENT one. Two lit
+   layers, and the stale one (paused, opacity 1) painted over everything for
+   the rest of the session: "the video turns into a static image after you
+   hover the other cards". Two rules make that unreachable rather than
+   merely unlikely:
+
+     1. showLayer() is the only thing that may add .is-active, and it clears
+        the whole frame before lighting anything.
+     2. every hover mints a generation token; async work started by an older
+        hover checks it and returns instead of painting.
+
+   Both are belts for the same hole, deliberately. */
 (() => {
   const section = document.getElementById('work');
   const worx = section && section.querySelector('.worx');
@@ -1265,8 +1290,21 @@ if (hero) {
      direction of travel and settles flat when the hand stops */
   const rotTo = gsap.quickTo(float, 'rotation', { duration: 0.7, ease: 'power3.out' });
 
-  const videoCache = new Map(); // slug -> { el, failed }
-  let activeVideo = null;
+  /* one still per 1100ms. Three shots = a 3.3s cycle, in the same range as the
+     6s clips rows 01/02 play. Below ~900ms three stills read as a flicker;
+     above ~1400ms a 1.5s hover never even reaches shot 02, which is the whole
+     point of cycling them. The 240ms crossfade itself lives in style.css
+     (.worx__float-still) — CSS owns the transition, this file only ever
+     decides WHICH layer is lit. */
+  const STILL_HOLD_MS = 1100;
+
+  const media = new Map(); // slug -> { kind:'video', el, failed } | { kind:'stills', imgs, idx }
+  /* hover generation. See activate(). There is deliberately NO "activeVideo"
+     pointer any more — a single "the one layer allowed to be lit" variable is
+     exactly the structure that let a second layer become lit and never be
+     unlit. */
+  let gen = 0;
+  let stillTimer = 0;
   let leaveTimer = 0;
   let currentRow = null;
   let revealTl = null;
@@ -1274,41 +1312,85 @@ if (hero) {
   let lastT = 0;
   let tiltTimer = 0;
 
-  function getPreviewVideo(row, preload = 'auto') {
-    const slug = row.id;
-    let entry = videoCache.get(slug);
-    if (entry) return entry;
-    const el = document.createElement('video');
-    el.className = 'worx__float-video';
-    el.muted = true;
-    /* All four clips are frame-locked loops now (The Meridian's one-way
-       descent was replaced by the agency site's own loop), so no row carries
-       data-preview-loop="false" any more. The opt-out stays wired: it costs a
-       comparison and it is the only way a future non-looping clip can be
-       dropped in without editing this file. */
-    el.loop = row.dataset.previewLoop !== 'false';
-    el.playsInline = true;
-    /* Warmed BEFORE the first hover (see the warm-up block at the end of this
-       IIFE). It used to be 'metadata' on an element created by the hover
-       itself, which meant the first hover on every row sat on its poster for as
-       long as the fetch + decode took — long enough to read as "the preview
-       doesn't do anything".
+  /* THE sweep. Nothing else in this module may add .is-active, and this always
+     clears the frame first — so a layer belonging to a row you are no longer
+     on cannot survive, whatever raced to light it. Queried off the DOM rather
+     than off `media` on purpose: a layer added later without registering
+     itself is still swept. */
+  const showLayer = (el) => {
+    floatFrame.querySelectorAll('.is-active').forEach((n) => n.classList.remove('is-active'));
+    if (el) el.classList.add('is-active');
+  };
 
-       But warming all four at 'auto' puts SEVEN live video decoders on the page
-       next to the hero flipbook's decoded-frame budget, and that combination is
-       what froze both. The caller decides the level now: the first row buffers
-       fully, the rest take 'metadata' (which still resolves DNS, the connection
-       and the container, i.e. the part hover latency was actually made of) and
-       upgrade themselves the moment a pointer lands on them. */
-    el.preload = preload;
-    el.setAttribute('muted', '');
-    el.setAttribute('playsinline', '');
-    entry = { el, failed: false };
-    videoCache.set(slug, entry);
-    el.addEventListener('error', () => { entry.failed = true; }, { once: true });
-    el.src = row.dataset.preview;
-    floatFrame.appendChild(el);
-    return entry;
+  /* The only place a layer element is ever created. Returns null for a row that
+     has neither a clip nor stills — its poster IS its preview, and that is a
+     legitimate resting state, not an error. */
+  function getMedia(row) {
+    const slug = row.id;
+    let m = media.get(slug);
+    if (m) return m;
+
+    if (row.dataset.preview) {
+      const el = document.createElement('video');
+      el.className = 'worx__float-video';
+      el.muted = true;
+      /* Both remaining clips are frame-locked loops, so no row carries
+         data-preview-loop="false". The opt-out stays wired: it costs a
+         comparison and it is the only way a future non-looping clip can be
+         dropped in without editing this file. */
+      el.loop = row.dataset.previewLoop !== 'false';
+      el.playsInline = true;
+      /* 'auto', unconditionally, for both clips. The staggered metadata/auto
+         split that used to live here existed because FOUR previews plus the two
+         background plates plus the hero flipbook was seven live decoders, and
+         that combination froze the cover and the previews together. Rows 03/04
+         are stills now, so the budget is two previews plus two plates and there
+         is nothing left to ration.
+
+         The preload upgrade + el.load() that used to run on hover went with it,
+         and that deletion is a BUG FIX rather than a simplification: load()
+         resets readyState to 0 and throws away whatever the warm-up had
+         buffered, so the first hover on every non-first row sat on its poster
+         for a full re-fetch — the exact latency the warm-up was built to
+         remove. */
+      el.preload = 'auto';
+      el.setAttribute('muted', '');
+      el.setAttribute('playsinline', '');
+      m = { kind: 'video', el, failed: false };
+      el.addEventListener('error', () => { m.failed = true; }, { once: true });
+      el.src = row.dataset.preview;
+      floatFrame.appendChild(el);
+      media.set(slug, m);
+      return m;
+    }
+
+    /* No clip: cycle the three stills the mobile carousel already lists. They
+       come off the row's SIBLING .worx__media — same <li>. The carousel IIFE
+       below empties that node's innerHTML but never removes its data-shots, so
+       this read is order-independent. Zero new attributes on the page. */
+    const mount = row.parentElement && row.parentElement.querySelector('.worx__media[data-shots]');
+    const shots = mount ? (mount.dataset.shots || '').split(',').map((s) => s.trim()).filter(Boolean) : [];
+    if (!shots.length) return null;
+
+    const imgs = shots.map((src) => {
+      const im = document.createElement('img');
+      im.className = 'worx__float-still';
+      im.decoding = 'async';
+      /* NO alt ATTRIBUTE HERE, deliberately, and do not "fix" this by adding
+         alt="". _verify/redesign/extract-text.js locks
+         querySelectorAll('[alt]') INCLUDING empty values, so even an empty one
+         adds six rows to every index.*.txt and fails the build. createElement
+         leaves the attribute absent, which makes these invisible to the
+         harness — and .worx__float is aria-hidden="true", so they are
+         invisible to a screen reader too. Absent is the correct answer for
+         both readers, not a lapse. */
+      im.src = src;
+      floatFrame.appendChild(im);
+      return im;
+    });
+    m = { kind: 'stills', imgs, idx: 0 };
+    media.set(slug, m);
+    return m;
   }
 
   /* Park the card against the hovered row. clientY is optional: keyboard
@@ -1336,33 +1418,88 @@ if (hero) {
     return y;
   }
 
+  /* pauses EVERY cached clip rather than "the active one" — same reasoning as
+     showLayer: a set of one is how the stale-frame bug got in. Resetting idx
+     is what makes a re-hover restart at shot 01. */
+  const stopMedia = () => {
+    clearInterval(stillTimer);
+    stillTimer = 0;
+    media.forEach((m) => {
+      if (m.kind === 'video') { if (!m.el.paused) m.el.pause(); }
+      else m.idx = 0;
+    });
+  };
+
   function setIdle() {
+    const myGen = ++gen; /* invalidates anything an earlier hover started */
     currentRow = null;
+    clearInterval(stillTimer); /* stop advancing NOW, not when the fade ends */
+    stillTimer = 0;
     if (revealTl) revealTl.kill();
     revealTl = gsap.to(float, {
       autoAlpha: 0, scale: 0.96, rotation: 0,
-      duration: 0.3, ease: 'power2.in'
+      duration: 0.3, ease: 'power2.in',
+      /* layers are cleared AFTER the card has gone, not before — dropping
+         .is-active up front snapped the visible frame back to the bare poster
+         in full view. The gen check covers a re-hover landing mid-fade. */
+      onComplete: () => { if (myGen !== gen) return; showLayer(null); stopMedia(); }
     });
-    if (activeVideo) {
-      activeVideo.el.classList.remove('is-active');
-      activeVideo.el.pause();
-      activeVideo = null;
+  }
+
+  function playVideo(m, myGen) {
+    if (m.failed) return; /* stays on the poster — graceful fallback */
+    /* Readiness is sampled BEFORE the rewind, and that order is load-bearing.
+       Assigning currentTime on a buffered clip starts a seek, which can drop
+       readyState back to 1 for a frame — and `loadeddata` has already fired by
+       then and never fires twice, so a post-seek readyState test waits on an
+       event that is never coming and the clip stays invisible behind its
+       poster. Sampling first means a clip that HAD data keeps its answer; the
+       seek to 0 on something already buffered resolves in the same frame. */
+    const ready = m.el.readyState >= 2;
+    try { m.el.currentTime = 0; } catch (e) { /* not seekable yet — fine, it starts at 0 anyway */ }
+    /* the gen check is the fix for the original bug: a loadeddata that finally
+       resolves two rows later cannot light anything. */
+    const show = () => { if (myGen !== gen) return; showLayer(m.el); };
+    if (ready) show();
+    else {
+      /* canplay as well as loadeddata: whichever arrives first wins, and the
+         pair covers both a cold clip and one interrupted mid-seek. showLayer
+         is idempotent, so a double fire is harmless. */
+      m.el.addEventListener('loadeddata', show, { once: true });
+      m.el.addEventListener('canplay', show, { once: true });
     }
+    const p = m.el.play();
+    if (p && typeof p.catch === 'function') p.catch(() => {});
+  }
+
+  function startStills(m, myGen) {
+    m.idx = 0;
+    showLayer(m.imgs[0]); /* instantly — nobody waits a full interval to see it move */
+    clearInterval(stillTimer);
+    stillTimer = setInterval(() => {
+      /* second belt: a timer that outlived its hover cannot repaint the card */
+      if (myGen !== gen) { clearInterval(stillTimer); stillTimer = 0; return; }
+      m.idx = (m.idx + 1) % m.imgs.length;
+      showLayer(m.imgs[m.idx]);
+    }, STILL_HOLD_MS);
   }
 
   function activate(row, clientY) {
     clearTimeout(leaveTimer);
+    /* Every hover mints a generation. Async work an EARLIER hover started — a
+       loadeddata that finally resolved, a still interval still ticking —
+       carries the token it was born with and returns when it no longer
+       matches. That kills "sweep down the list, end up staring at a frozen
+       frame from row 02" at the source, rather than mopping up after it. */
+    const myGen = ++gen;
     const first = currentRow !== row;
     currentRow = row;
 
     if (capLabel) capLabel.textContent = row.dataset.capLabel || '';
     if (capSrc) capSrc.textContent = row.dataset.capSrc || '';
 
-    if (activeVideo) {
-      activeVideo.el.classList.remove('is-active');
-      activeVideo.el.pause();
-      activeVideo = null;
-    }
+    stopMedia();
+    showLayer(null); /* frame is poster-only for the length of this function */
     if (poster && row.dataset.poster) poster.src = row.dataset.poster;
 
     if (first) {
@@ -1378,22 +1515,12 @@ if (hero) {
       place(row, clientY, true);
     }
 
-    if (!row.dataset.preview) return;
-    const entry = getPreviewVideo(row);
-    activeVideo = entry;
-    if (entry.failed) return; // stays on the poster — graceful fallback
-    /* the upgrade half of the staggered warm-up above: this row is being looked
-       at, so it earns a full buffer */
-    if (entry.el.preload !== 'auto') {
-      entry.el.preload = 'auto';
-      entry.el.load();
-    }
-    try { entry.el.currentTime = 0; } catch (e) { /* not seekable yet — fine, it starts at 0 anyway */ }
-    const show = () => { entry.el.classList.add('is-active'); };
-    if (entry.el.readyState >= 2) show();
-    else entry.el.addEventListener('loadeddata', show, { once: true });
-    const p = entry.el.play();
-    if (p && typeof p.catch === 'function') p.catch(() => {});
+    /* lazy, so a window resized up past 1000px after the warm-up observer has
+       already fired still gets a preview */
+    const m = getMedia(row);
+    if (!m) return; /* no clip, no stills: the poster IS the preview */
+    if (m.kind === 'video') playVideo(m, myGen);
+    else startStills(m, myGen);
   }
 
   function scheduleLeave() {
@@ -1427,31 +1554,51 @@ if (hero) {
   addEventListener('resize', () => { if (currentRow) place(currentRow, null, false); });
 
   /* ---- warm-up ----
-     Build the four clips as #work approaches, so a hover only has to play()
-     something whose connection is already open. 35% lead margin and a 300ms
-     stagger are the same demand-shaping the background plate videos use below
-     (see the note there): #pillars' builder.mp4 and #work's closer.mp4 are 12MB
-     combined and can intersect in the same batch, and four more videos landing
-     on top of that in one tick is exactly what that note was written about.
+     Build every row's layers as #work approaches, so a hover only has to
+     play() or light something that is already there.
 
-     Only the FIRST clip buffers fully. The other three take 'metadata' and
-     upgrade on hover (see enter() above). Four full buffers plus the two plates
-     is seven simultaneous video decoders, arriving right as the hero flipbook
-     is at its own memory peak — that is the pairing that froze the cover and
-     the previews together, and the second half of the fix for it.
+     The metadata/auto tiering that used to live here is gone. Its reason was
+     seven simultaneous video decoders next to the hero flipbook's frame
+     budget; rows 03/04 becoming stills removes two of them outright, so both
+     surviving clips can just buffer.
+
+     What survives is the stagger, and only against the OTHER loader: the
+     shared [data-video] block at the bottom of this file fires on its own 35%
+     margin and stages closer.mp4 / builder.mp4 400ms apart. Starting the
+     clip delays at n=1 keeps these two out of that first tick — the same
+     demand shaping, one decoder class lighter.
+
+     POSTERS are warmed too, and that is not an optimisation. The float has ONE
+     <img> whose src swaps per row, and a browser keeps painting the OLD image
+     until the new one decodes — a second, quieter way a stale project's frame
+     ends up on screen mid-swap. Four cached posters make that swap effectively
+     synchronous.
+
+     Stills are built in this tick rather than on a delay: six webps at ~40KB
+     are cheaper than either mp4. Only shot 01 of each row is decode()d — 02
+     and 03 have 1100ms of runway before they are needed, and forcing three
+     decoded 1000x562 bitmaps per row is the kind of thing the note above was
+     written about.
 
      Gated on canHover() — below 1000px the float is display:none and the rows
-     use the .worx__media carousel instead, so warming these would be four
-     downloads for something that never renders. */
+     use the .worx__media carousel instead. It is evaluated once, so a window
+     resized up from narrow gets nothing here; activate()'s getMedia() call is
+     the fallback, which is why that call stays lazy. */
   if (canHover()) {
-    let warmed = 0;
     const warmIo = new IntersectionObserver((entries) => {
       if (!entries.some((en) => en.isIntersecting)) return;
       warmIo.disconnect();
       rows.forEach((row) => {
-        if (!row.dataset.preview) return;
-        const n = warmed++;
-        setTimeout(() => getPreviewVideo(row, n === 0 ? 'auto' : 'metadata'), n * 300);
+        if (row.dataset.poster) { const p = new Image(); p.src = row.dataset.poster; }
+      });
+      let n = 1;
+      rows.forEach((row) => {
+        const build = () => {
+          const m = getMedia(row);
+          if (m && m.kind === 'stills' && m.imgs[0].decode) m.imgs[0].decode().catch(() => {});
+        };
+        if (row.dataset.preview) setTimeout(build, n++ * 250);
+        else build();
       });
     }, { rootMargin: '35% 0px' });
     warmIo.observe(section);
@@ -1498,9 +1645,12 @@ if (hero) {
     const label = mount.dataset.mediaLabel || '';
     if (!shots.length) return;
 
-    /* slide descriptors: the clip first where present, then the stills */
+    /* slide descriptors: the clip first where present, then the stills.
+       `shot` is the ordinal WITHIN the stills, not within the slides — rows
+       with a clip are offset by one, and the alt text should say "screenshot 1"
+       for the first screenshot either way. */
     const slides = (clip ? [{ type: 'video', src: clip }] : [])
-      .concat(shots.map((src) => ({ type: 'image', src })));
+      .concat(shots.map((src, i) => ({ type: 'image', src, shot: i + 1 })));
     const total = slides.length;
 
     const frag = document.createElement('div');
@@ -1530,9 +1680,16 @@ if (hero) {
         cell.innerHTML = '<div class="bg-placeholder bg-placeholder--builder"></div>';
       } else {
         /* only the first still is eager; the rest are one arrow-press away and
-           must not compete with the row above them for bandwidth */
+           must not compete with the row above them for bandwidth.
+
+           These carry REAL alt text, unlike the desktop float's layers. Below
+           1000px this carousel is the only visual a project gets, so an empty
+           alt would hand a screen-reader user four unlabelled images where a
+           sighted one sees the work. The arrows announce position ("2 of 4"),
+           so the alt says what the picture IS and leaves counting to them. */
         cell.innerHTML =
-          '<img src="' + s.src + '" alt="" width="1000" height="562" decoding="async"' +
+          '<img src="' + s.src + '" alt="' + label + ' — screenshot ' + s.shot +
+          '" width="1000" height="562" decoding="async"' +
           (n <= 1 ? '' : ' loading="lazy"') + '>';
       }
       track.appendChild(cell);
