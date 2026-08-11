@@ -1,0 +1,61 @@
+# Deploy the site to GitHub Pages, but only after it has been checked.
+#
+# The repository root IS the site — there is no build step and no bundler, so
+# "build" here means "verify the thing we are about to publish is internally
+# consistent". The gate is ci/check-refs.mjs: it asserts every local href, src,
+# data-* media path, CSS url() and the full hero frame strip exists on disk.
+# That is this project's characteristic failure (a renamed or moved asset that
+# still exists in the working tree, so it looks fine locally and 404s in
+# production), and it is worth a job of its own.
+#
+# Switching from branch-based Pages to this workflow also makes the deploy
+# atomic: a commit that fails the check is never published at all, rather than
+# published and then noticed.
+#
+# NOTE: after merging this, set Settings -> Pages -> Source to "GitHub Actions".
+# While the source is still "Deploy from a branch", this workflow runs and goes
+# green but nothing it uploads is served.
+
+name: Deploy site
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never let two deploys race. Queue rather than cancel, so a push that lands
+# during a deploy still ends up live instead of being silently dropped.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Check internal references
+        run: node ci/check-refs.mjs
+
+  deploy:
+    needs: check
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+      - id: deployment
+        uses: actions/deploy-pages@v4

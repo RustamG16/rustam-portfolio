@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>404 — Rustam Gurbanov</title>
+<meta name="robots" content="noindex, follow">
+<meta name="theme-color" content="#0A0A0B">
+<!-- DELIBERATELY SELF-CONTAINED: no stylesheet, no font file, no script.
+     GitHub Pages serves this page for a request at ANY depth, and neither kind
+     of path survives that. A relative href (style.css) resolves against the bad
+     URL that got the visitor here and 404s in turn; a root-relative one
+     (/style.css) is wrong for as long as the site lives at the
+     /rustam-portfolio/ project subpath, and would only start working after the
+     custom domain lands. Inlining the twenty lines this page needs sidesteps
+     the choice and guarantees the error page can never itself be broken.
+     The tokens below are copied from style.css on purpose — if the brand
+     colours change, change them here too. -->
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    background:#0A0A0B;color:#F2EDE4;min-height:100svh;
+    display:flex;align-items:center;justify-content:center;
+    padding:clamp(20px,4.6vw,132px);text-align:center;
+    font-family:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+    -webkit-font-smoothing:antialiased;
+  }
+  .code{
+    font-family:Impact,Haettenschweiler,'Arial Narrow Bold',sans-serif;
+    font-size:clamp(80px,18vw,220px);line-height:.85;color:#19E28D;
+    letter-spacing:.02em;
+  }
+  .msg{font-size:11px;letter-spacing:.24em;text-transform:uppercase;
+       color:rgba(242,237,228,.55);margin:22px 0 54px}
+  .back{
+    font-size:12px;letter-spacing:.2em;text-transform:uppercase;
+    color:#F2EDE4;text-decoration:none;border-bottom:1px solid #19E28D;
+    padding-bottom:4px;display:inline-block;
+    transition:color .3s ease;
+  }
+  .back:hover{color:#19E28D}
+  .back:focus-visible{outline:2px solid #19E28D;outline-offset:6px}
+  @media (prefers-reduced-motion:reduce){.back{transition:none}}
+</style>
+</head>
+<body>
+<main>
+  <p class="code">404</p>
+  <p class="msg">Sheet not found</p>
+  <!-- Correct once the custom domain is live, where / IS the site root. While
+       the site is still at github.io/rustam-portfolio/, this link points one
+       level too high — change it to /rustam-portfolio/ if the domain is
+       delayed, or leave it and let the domain fix it. It is on the SITE_URL
+       list in index.html's head comment for exactly this reason. -->
+  <a class="back" href="/">Back to the brief</a>
+</main>
+</body>
+</html>

@@ -1,2 +1,4 @@
 User-agent: *
 Allow: /
+
+Sitemap: https://rustamg16.github.io/rustam-portfolio/sitemap.xml
