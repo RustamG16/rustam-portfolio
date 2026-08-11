@@ -24,6 +24,10 @@
      words — see .spine{--rail-x} below. */
   --spine-w:168px;
   --wrap:100%;
+  /* gap between the viewport edge and the rail itself — was hardcoded to
+     var(--gutter) (132px at 1920), stranding a band as wide as the gutter
+     to the rail's left. Its own scale, so it can stay narrower. */
+  --spine-x:clamp(20px,2.4vw,56px);
 }
 @media (min-width:1600px){ .cv-root{--spine-w:190px} }
 @media (min-width:2200px){ .cv-root{--spine-w:210px} }
@@ -69,26 +73,31 @@
 
 /* ==========================================================================
    THE SPINE — a section index, not a year timeline.
-   Fades in once the reader is past the cover (cv.js toggles .spine-in on
-   <html> from a ScrollTrigger on #cover) so it never competes with that
-   full-bleed composition; invisible AND non-interactive while hidden
+   Fades in as the paper seam enters (cv.js toggles .spine-in) so it never
+   paints over the dark cover. Invisible AND non-interactive while hidden
    (visibility, not just opacity — an invisible-but-clickable rail sitting
    over the cover would be a real keyboard-tab trap).
+
+   Horizontally: sits INSIDE the paper content container — left: var(--gutter)
+   aligns with .cv-wrap, not the viewport edge — so the rail reads as part of
+   the sheet column, not a browser chrome strip.
    ========================================================================== */
 .spine{
-  position:fixed;top:0;left:0;bottom:0;width:var(--spine-w);z-index:90;
+  position:fixed;top:0;left:var(--spine-x);bottom:0;width:var(--spine-w);z-index:90;
   display:none;flex-direction:column;align-items:stretch;
   padding:calc(var(--s6) + 12px) 0 var(--s4);
   border-right:1px solid var(--d-rule);
   background:none;pointer-events:none;
   opacity:0;visibility:hidden;
   transition:border-color .45s ease, color .45s ease,
-    opacity .4s ease, visibility 0s linear .4s;
+    opacity .4s ease, visibility 0s linear .4s,
+    left .45s ease;
 }
 .cv-root.spine-in .spine{
   opacity:1;visibility:visible;
   transition:border-color .45s ease, color .45s ease,
-    opacity .4s ease, visibility 0s linear 0s;
+    opacity .4s ease, visibility 0s linear 0s,
+    left .45s ease;
 }
 .spine a{pointer-events:auto}
 /* The spine is TRANSPARENT and sits on top of each section's own background —
@@ -97,8 +106,9 @@
    boundary at which the rail can go invisible). */
 @media (min-width:1100px){
   .spine{display:flex}
+  /* spine-x (rail left) + spine-w + a breathing gap = content start */
   .cv-wrap,.cv-cover__inner,.cv-seam__head,.cv-cover__hint{
-    padding-left:calc(var(--spine-w) + var(--gutter));
+    padding-left:calc(var(--spine-x) + var(--spine-w) + var(--s3));
   }
 }
 
@@ -265,25 +275,24 @@
    1 · COVER
    ========================================================================== */
 /* The cover's vertical rhythm scales with viewport HEIGHT, not just width.
-   A flat 210px top padding left a dead band above the kicker and pushed the
-   CTAs below the fold on every real laptop viewport. Top padding now only has
-   to clear the topbar (~70px). */
+   Top padding clears the topbar (~70px). Name/ID use min(vw, vh/svh) so a
+   wide short screen (1920x900 with taskbar) cannot blow the stack past 100svh. */
 .cv-cover{min-height:100svh;display:flex;flex-direction:column;justify-content:center;
-  padding:clamp(88px,11vh,148px) 0 clamp(48px,7vh,104px);overflow:hidden}
+  padding:clamp(72px,8vh,120px) 0 clamp(28px,4.5vh,72px);overflow:hidden}
 .cv-cover__inner{
   width:100%;max-width:var(--wrap);margin-inline:auto;padding-inline:var(--gutter);
   display:grid;grid-template-columns:1fr;gap:var(--s5);align-items:center;
 }
 @media (min-width:900px){
-  .cv-cover__inner{grid-template-columns:minmax(0,1.45fr) minmax(260px,.55fr);gap:var(--s6)}
+  .cv-cover__inner{grid-template-columns:minmax(0,1.25fr) minmax(320px,.75fr);gap:clamp(24px,3vw,var(--s6))}
 }
 
 .cv-cover__name{
   font-family:var(--display);font-weight:400;
-  /* cap raised so the vw term still governs on 2K+ — at 232px the name stopped
-     growing while its column kept widening, leaving a dead band mid-cover */
-  font-size:clamp(52px,10.5vw,300px);line-height:.86;letter-spacing:-.005em;
-  text-transform:uppercase;margin:clamp(10px,1.6vh,22px) 0 clamp(12px,2vh,22px);
+  /* vh term is load-bearing — pure vw overflows short wide desktops (1920x1080
+     with chrome). Mirrors .hero__name in style.css. */
+  font-size:clamp(52px,min(10.5vw,21vh),260px);line-height:.86;letter-spacing:-.005em;
+  text-transform:uppercase;margin:clamp(8px,1.2vh,18px) 0 clamp(10px,1.6vh,18px);
 }
 /* same fix as .hero__line in style.css: the reveal mask is the line box, and
    at line-height:.86 that box clips the bottom off every glyph. A full em of
@@ -294,7 +303,7 @@
 .cv-cover__line + .cv-cover__line{margin-top:.04em}
 .cv-cover__line--accent{color:var(--acid)}
 
-.cv-cover__roles{height:1.4em;overflow:hidden;margin-bottom:clamp(24px,3.6vh,54px)}
+.cv-cover__roles{height:1.4em;overflow:hidden;margin-bottom:clamp(16px,2.4vh,36px)}
 .cv-roller{display:block;position:relative;height:1.4em}
 .cv-roller__item{
   display:block;position:absolute;inset:0;
@@ -307,11 +316,11 @@
 /* file metadata strip */
 .cv-meta{
   border-top:1px solid var(--d-rule);
-  max-width:min(100%,52ch);margin-bottom:clamp(24px,3.6vh,54px);
+  max-width:min(100%,52ch);margin-bottom:clamp(16px,2.4vh,36px);
 }
 .cv-meta__row{
   display:grid;grid-template-columns:minmax(88px,.28fr) 1fr;gap:var(--s3);
-  padding:clamp(7px,1.2vh,11px) 0;border-bottom:1px solid var(--d-rule-soft);
+  padding:clamp(5px,.9vh,10px) 0;border-bottom:1px solid var(--d-rule-soft);
 }
 .cv-meta dt,.cv-meta dd{
   font-family:var(--mono);font-size:11px;letter-spacing:.19em;text-transform:uppercase;line-height:1.5;
@@ -323,14 +332,17 @@
 
 /* the ID photo */
 .cv-id{margin:0;max-width:340px;justify-self:start}
-/* capped rather than free — an ID photo that grows to 700px stops reading as
-   an ID photo */
-@media (min-width:900px){ .cv-id{justify-self:end;max-width:min(30vw,560px);width:100%} }
+/* Width AND height capped — a pure vw max lets the 3:4 frame eat half a
+   short 1920 desktop. 36svh width ≈ 48svh frame height. */
+@media (min-width:900px){
+  .cv-id{justify-self:end;max-width:min(34vw,560px,52svh);width:100%}
+}
 .cv-id__frame{
   position:relative;aspect-ratio:3/4;overflow:hidden;
   background:#000;border:1px solid var(--d-rule);
 }
-.cv-id__img{width:100%;height:100%;object-fit:cover;object-position:50% 22%;display:block;
+.cv-id__frame picture{display:block;width:100%;height:100%}
+.cv-id__img,.cv-id__frame img{width:100%;height:100%;object-fit:cover;object-position:50% 22%;display:block;
   filter:contrast(1.06) saturate(.92)}
 .cv-id__corner{position:absolute;width:14px;height:14px;border:1px solid var(--acid);opacity:.8}
 .cv-id__corner--tl{top:9px;left:9px;border-right:0;border-bottom:0}
@@ -344,16 +356,79 @@
 }
 .cv-id__sig{font-family:var(--display);font-size:15px;letter-spacing:.06em;color:var(--d-dim)}
 
+/* Mobile / portrait: shared portrait-forward banner with index.html — photo
+   is the dominant plane, kicker/name/roles overlay the bottom via grid
+   stacking, meta + CTAs sit on the section ground below. display:contents
+   lets the header participate in .cv-cover__inner's grid. Keep in sync with
+   SCRUB_MQ off in cv.js / main.js. */
+@media (max-width:900px),(max-aspect-ratio:13/20){
+  .cv-cover{
+    min-height:auto;justify-content:flex-start;
+    padding:0 0 clamp(40px,7vh,80px);
+  }
+  .cv-cover__inner{
+    gap:0;align-items:stretch;
+  }
+  .cv-cover__type{display:contents}
+  .cv-id{
+    grid-area:1/1;position:relative;z-index:0;justify-self:stretch;
+    max-width:none;width:calc(100% + 2 * var(--gutter));
+    margin-inline:calc(var(--gutter) * -1);
+  }
+  .cv-id__frame{
+    aspect-ratio:4/5;border:0;border-bottom:1px solid var(--d-rule);
+  }
+  .cv-id__frame::after{
+    content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+    background:linear-gradient(to top,rgba(10,10,11,.92) 0%,rgba(10,10,11,.55) 28%,rgba(10,10,11,.12) 52%,transparent 72%);
+  }
+  .cv-id__img,.cv-id__frame img{object-position:50% 18%}
+  /* the banner starts at y=0 under the fixed topbar — "ID · RG-2026" landed
+     under the RG mark and "R.G." under EN/DE. style.css:604 already solved
+     this for .hero__id-cap; this is the same fix for the CV. */
+  .cv-id__cap{display:none}
+  .cv-id__corner--tl,.cv-id__corner--tr{display:none}
+  .cv-cover__header{
+    grid-area:1/1;align-self:end;position:relative;z-index:2;
+    padding:0 clamp(4px,1.2vw,8px) clamp(18px,3.5vh,28px);
+  }
+  .cv-cover__name{
+    font-size:clamp(44px,13vw,72px);
+    margin:clamp(8px,1.4vh,16px) 0 clamp(8px,1.2vh,14px);
+  }
+  .cv-cover__roles{margin-bottom:0}
+  .cv-meta{
+    grid-area:2/1;max-width:none;
+    margin:clamp(22px,3.6vh,36px) 0 clamp(22px,3.4vh,44px);
+  }
+  .cv-cover__actions{grid-area:3/1}
+  .cv-cover__hint{margin-top:clamp(24px,4vh,48px)}
+
+  /* wrapping sized each button to its own label — two unrelated widths and
+     a ragged right edge. Mirrors .hero__actions in style.css. */
+  .cv-cover__actions,.cv-end__actions{
+    display:grid;grid-template-columns:1fr;gap:10px;max-width:min(100%,420px);
+  }
+  .cv-cover__actions .btn,.cv-end__actions .btn{
+    width:100%;justify-content:center;text-align:center;
+  }
+}
+
 /* right-aligned so the scroll affordance ("OPEN FILE") no longer sits inches
    from the spine's state label ("FILE OPEN") — side by side they read as one
    garbled string */
 .cv-cover__hint{
   display:flex;align-items:center;justify-content:flex-end;gap:var(--s2);
-  margin:clamp(28px,4.5vh,86px) auto 0;padding-inline:var(--gutter);
+  margin:clamp(16px,2.5vh,40px) auto 0;padding-inline:var(--gutter);
   width:100%;max-width:var(--wrap);
   font-family:var(--mono);font-size:10px;letter-spacing:.3em;color:var(--d-faint);
 }
 .cv-cover__hint span:first-child{width:52px;height:1px;background:var(--acid);transform-origin:left}
+/* right-aligned reads fine on desktop, but on the portrait banner it lands
+   on the fixed WhatsApp float. Mirrors .hero__hint{left:var(--gutter);right:auto}. */
+@media (max-width:900px),(max-aspect-ratio:13/20){
+  .cv-cover__hint{justify-content:flex-start}
+}
 
 /* ==========================================================================
    2 · SEAM — the printed sheet header
@@ -537,11 +612,15 @@
   display:grid;grid-template-columns:1fr auto;align-items:center;gap:var(--s2) var(--s3);
   padding:var(--s3) 0;border-bottom:1px solid var(--p-rule);
 }
-@media (min-width:760px){
-  /* fixed name column keeps the gauges in one vertical band instead of
-     stranding them at the far right of a very wide row */
-  .cv-lang{grid-template-columns:minmax(0,22ch) auto minmax(0,1fr);gap:var(--s4)}
-}
+/* below 760px: complete explicit placement so nothing auto-places — the
+   gauge used to be pinned to 1/2 while the name defaulted into flow, so
+   auto-flow pushed the native name to the right of the gauge instead of
+   under the language name. */
+.cv-lang__name{grid-area:1/1}
+.cv-lang__native{grid-area:2/1}
+.cv-lang__gauge{grid-area:3/1}
+.cv-lang__lvl{grid-area:1/2}
+
 .cv-lang__name{
   font-size:clamp(17px,1.9vw,24px);font-weight:400;letter-spacing:-.004em;
 }
@@ -549,8 +628,7 @@
   display:block;margin-top:4px;
   font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--p-faint);
 }
-.cv-lang__gauge{display:flex;gap:4px;grid-column:1;grid-row:2}
-@media (min-width:760px){ .cv-lang__gauge{grid-column:2;grid-row:1} }
+.cv-lang__gauge{display:flex;gap:4px}
 .cv-lang__gauge i{
   display:block;width:clamp(20px,3.4vw,34px);height:8px;
   border:1px solid var(--p-rule);background:transparent;
@@ -558,9 +636,18 @@
 .cv-lang__gauge i.is-on{background:var(--acid);border-color:rgba(20,20,15,.28)}
 .cv-lang__lvl{
   font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;
-  color:var(--p-dim);text-align:right;grid-column:2;grid-row:1;
+  color:var(--p-dim);text-align:right;
 }
-@media (min-width:760px){ .cv-lang__lvl{grid-column:3} }
+@media (min-width:760px){
+  /* fixed name column keeps the gauges in one vertical band; the level
+     column is content-sized (a 2-char label), not a 1fr track — that used
+     to strand ~1000px of dead row at 1920. Placed last so it wins over the
+     unconditional base rules above for the properties it overrides. */
+  .cv-lang{grid-template-columns:minmax(0,20ch) auto minmax(90px,auto);
+    justify-content:start;gap:var(--s5)}
+  .cv-lang__gauge{grid-column:2;grid-row:1}
+  .cv-lang__lvl{grid-column:3;text-align:left}
+}
 
 /* ==========================================================================
    8 · THE VAULT
@@ -573,12 +660,13 @@
    spine itself uses, since below it there's no rail to hide behind. */
 @media (min-width:1100px){
   .cv-vault{
+    /* mask tracks the inset spine: clear through gutter+spine, then soft fade */
     -webkit-mask-image:linear-gradient(to right,
-      transparent 0, transparent var(--spine-w),
-      #000 calc(var(--spine-w) + var(--gutter)), #000 100%);
+      transparent 0, transparent calc(var(--spine-x) + var(--spine-w)),
+      #000 calc(var(--spine-x) + var(--spine-w) + var(--gutter)), #000 100%);
     mask-image:linear-gradient(to right,
-      transparent 0, transparent var(--spine-w),
-      #000 calc(var(--spine-w) + var(--gutter)), #000 100%);
+      transparent 0, transparent calc(var(--spine-x) + var(--spine-w)),
+      #000 calc(var(--spine-x) + var(--spine-w) + var(--gutter)), #000 100%);
   }
 }
 .cv-vault__lede{
@@ -693,6 +781,42 @@
 .cv-end__links a:hover,.cv-end__links a:focus-visible{color:var(--acid);border-bottom-color:var(--acid)}
 .cv-end__links a:focus-visible{outline:2px solid var(--acid);outline-offset:3px}
 .cv-footer{margin-top:var(--s5);border-top:1px solid var(--d-rule-soft);padding-top:var(--s3)}
+
+/* ==========================================================================
+   MOBILE LAYER — this file had no breakpoint below 900px of its own; the
+   shared style.css @media(max-width:768px) block is ~95% homepage-only
+   selectors (.hero__*, .vital, .close__*), none of which exist on cv.html,
+   so every mobile fix the homepage already earned was never given to the
+   CV. --s5/--s6/--s7 are declared in style.css :root; overriding them on
+   .cv-root here works because both selectors are (0,1,0) on <html> and
+   cv.css loads second (see cv.css:8-15 / style.css:14-18). Scoping to
+   .cv-root keeps the homepage's own hand-tuned mobile values untouched.
+   ========================================================================== */
+@media (max-width:768px){
+  /* every section padded --s6/--s7 (86/132px) unchanged on a 375px phone —
+     ~400px of dead scroll across the page. */
+  .cv-root{--s5:38px;--s6:56px;--s7:76px}
+
+  .cv-vital{padding:var(--s3) var(--s3) var(--s3) 0}
+  /* 6.4vw = 24px at 375 — the 44px floor won at every phone width, so the
+     vitals ran desktop-sized type in a half-width column. Same bug
+     style.css:1134 already fixed for .vital__n. */
+  .cv-vital__n{font-size:clamp(34px,10vw,52px)}
+  .cv-vital__plus{font-size:clamp(16px,4.4vw,24px)}
+  .cv-vital__label{margin-top:var(--s1);font-size:9.5px;letter-spacing:.16em}
+  .cv-status{margin-top:var(--s4);padding-top:var(--s2)}
+
+  /* full desktop button spec (18px/36px padding, 12px type) unchanged down
+     to 320px. Mirrors style.css:1150. */
+  .cv-cover__actions .btn,.cv-end__actions .btn{
+    padding:12px 18px;font-size:10px;letter-spacing:.14em;min-height:44px;
+  }
+
+  /* the email is 30 mono characters — wrapping orphaned LinkedIn onto its
+     own ragged line. Mirrors .close__links (style.css:1182). */
+  .cv-end__links{flex-direction:column;gap:0}
+  .cv-end__links a{min-height:42px}
+}
 
 /* ==========================================================================
    REVEALS — CSS owns the resting state, JS owns the motion.

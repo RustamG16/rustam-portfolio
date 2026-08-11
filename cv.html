@@ -17,7 +17,8 @@
 <meta property="og:url" content="https://rustamg16.github.io/rustam-portfolio/cv.html">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="preload" as="image" href="media/cv/portrait.webp" fetchpriority="high">
+<link rel="preload" as="image" href="media/portrait-mobile.webp" media="(max-width: 900px), (max-aspect-ratio: 13/20)" fetchpriority="high">
+<link rel="preload" as="image" href="media/cv/portrait.webp" media="(min-width: 901px) and (min-aspect-ratio: 13/20)" fetchpriority="high">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="cv.css">
 <script>document.documentElement.classList.add('js')</script>
@@ -60,15 +61,14 @@
 
 <!-- ============================================================
      THE SPINE — the owned device.
-     Now a SECTION index, not a year timeline: hidden over the cover (it
-     never competes with that full-bleed composition), it fades in once the
-     reader reaches the chaptered body and reads 01 Vitals ... 06 Documents
-     — the exact numbers + names each section already carries on its own
-     heading (.cv-sec__num + data-i18n, reused verbatim below so the two can
-     never drift apart). Real jump-nav (links), decorative rail layers are
-     aria-hidden. Tick position is proportional to each section's REAL
-     height (cv.js `layoutSpineTicks`), not an even split — Vitals and
-     Career are wildly different lengths. -->
+     Section index inside the paper content column (left: gutter, not the
+     viewport edge). Hidden over the dark cover; fades in as the seam enters
+     (cv.js). Reads 01 Vitals ... 06 Documents — the exact numbers + names
+     each section already carries on its own heading (.cv-sec__num +
+     data-i18n, reused verbatim below so the two can never drift apart). Real
+     jump-nav (links), decorative rail layers are aria-hidden. Tick position
+     is proportional to each section's REAL height (cv.js `layoutSpineTicks`),
+     not an even split — Vitals and Career are wildly different lengths. -->
 <nav class="spine" id="spine" aria-label="Jump by section" data-i18n-aria="cv.spine.aria">
   <p class="spine__file" aria-hidden="true">FILE RG&#8209;2026</p>
 
@@ -102,19 +102,21 @@
   <section class="cv-sec cv-sec--dark cv-cover" id="cover">
     <div class="cv-cover__inner">
       <div class="cv-cover__type">
-        <p class="cv-kicker" data-i18n="cv.cover.kicker">PERSONNEL FILE · RG-2026</p>
-        <h1 class="cv-cover__name">
-          <span class="cv-cover__line" data-line>RUSTAM</span>
-          <span class="cv-cover__line cv-cover__line--accent" data-line>GURBANOV</span>
-        </h1>
-        <p class="cv-cover__roles" aria-label="Software Engineer, AI Orchestrator, Designer, Creator">
-          <span class="cv-roller" id="role-roller" aria-hidden="true">
-            <span class="cv-roller__item is-current" data-i18n="cv.role.1">ENGINEER</span>
-            <span class="cv-roller__item" data-i18n="cv.role.2">ORCHESTRATOR</span>
-            <span class="cv-roller__item" data-i18n="cv.role.3">DESIGNER</span>
-            <span class="cv-roller__item" data-i18n="cv.role.4">CREATOR</span>
-          </span>
-        </p>
+        <div class="cv-cover__header">
+          <p class="cv-kicker" data-i18n="cv.cover.kicker">PERSONNEL FILE · RG-2026</p>
+          <h1 class="cv-cover__name">
+            <span class="cv-cover__line" data-line>RUSTAM</span>
+            <span class="cv-cover__line cv-cover__line--accent" data-line>GURBANOV</span>
+          </h1>
+          <p class="cv-cover__roles" aria-label="Software Engineer, AI Orchestrator, Designer, Creator">
+            <span class="cv-roller" id="role-roller" aria-hidden="true">
+              <span class="cv-roller__item is-current" data-i18n="cv.role.1">ENGINEER</span>
+              <span class="cv-roller__item" data-i18n="cv.role.2">ORCHESTRATOR</span>
+              <span class="cv-roller__item" data-i18n="cv.role.3">DESIGNER</span>
+              <span class="cv-roller__item" data-i18n="cv.role.4">CREATOR</span>
+            </span>
+          </p>
+        </div>
 
         <dl class="cv-meta">
           <div class="cv-meta__row"><dt data-i18n="cv.meta.subject">SUBJECT</dt><dd>GURBANOV, RUSTAM</dd></div>
@@ -131,11 +133,16 @@
         </div>
       </div>
 
-      <!-- ID photo: real crop, passport framing, corner marks -->
+      <!-- ID photo: passport framing on desktop; 4:5 portrait-mobile banner on still cover -->
       <figure class="cv-id">
         <div class="cv-id__frame">
-          <img class="cv-id__img" src="media/cv/portrait.webp"
-               alt="Rustam Gurbanov" width="900" height="1200" fetchpriority="high" decoding="async">
+          <picture>
+            <source media="(max-width: 900px), (max-aspect-ratio: 13/20)"
+                    srcset="media/portrait-mobile.webp" type="image/webp"
+                    width="1440" height="1800">
+            <img class="cv-id__img" src="media/cv/portrait.webp"
+                 alt="Rustam Gurbanov" width="1800" height="2400" fetchpriority="high" decoding="async">
+          </picture>
           <span class="cv-id__corner cv-id__corner--tl" aria-hidden="true"></span>
           <span class="cv-id__corner cv-id__corner--tr" aria-hidden="true"></span>
           <span class="cv-id__corner cv-id__corner--bl" aria-hidden="true"></span>

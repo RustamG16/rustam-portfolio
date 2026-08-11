@@ -2,15 +2,13 @@
 
 The Selected Work section's sticky video window (`.worx__panel`, `index.html`
 `#work`) crossfades from each project's poster into a short preview clip when
-its row is hovered/focused. The clips referenced below don't exist yet — the
-section ships working without them; a missing file just leaves the poster
-showing (see the `error` handler in `main.js`'s work-index IIFE).
-
-Drop these three files here to light the previews up. No code change needed —
-`main.js` already points at these exact paths via each row's `data-preview`.
+its row is hovered/focused. All four clips below are live — a missing file
+just leaves the poster showing (see the `error` handler in `main.js`'s
+work-index IIFE), but that's a fallback, not the current state.
 
 | file | project |
 |---|---|
+| `meridian.mp4` | The Meridian |
 | `sonnwerk.mp4` | Sonnwerk |
 | `sr-urologie.mp4` | SR Urologie |
 | `education-hub.mp4` | Education Hub |
@@ -27,4 +25,27 @@ Drop these three files here to light the previews up. No code change needed —
 - **Loop**: per the one-continuous-video house rule
   (`CLAUDE.md` rule 3 / `playbook/LEARNINGS.md` #014) — no hard cut inside the
   clip, and the loop join should be frame-locked (last frame ≈ first frame) so
-  it doesn't stutter while looping under `loop` playback.
+  it doesn't stutter while looping under `loop` playback. All four clips loop;
+  no row carries `data-preview-loop="false"` any more.
+
+## Provenance
+
+`meridian.mp4` and `sonnwerk.mp4` are re-encodes of the agency site's own work
+loops (`lab/005-agency/public/works/<slug>/loop.mp4`, 1440×810/6s), scaled to
+the spec above:
+
+```
+ffmpeg -i loop.mp4 -an -vf "scale=1000:562:flags=lanczos" \
+       -c:v libx264 -preset slow -crf 23 -pix_fmt yuv420p -movflags +faststart out.mp4
+```
+
+Sonnwerk uses `-crf 28` — grass and horse coat are the worst case for x264 and
+crf 23 put it at 2.3MB, over budget.
+
+## Still shots — `../shots/<slug>/0{1,2,3}.webp`
+
+The mobile carousel (`.worx__media`, `<1000px`) steps through these with
+arrows; the desktop hover float still uses `../posters/` + the clips above.
+Derived from `assets-in/work-shots/**` (1920×1080 PNG) at 1000×562 / `-q:v 80`.
+Slug mapping is not 1:1 with the source folder names: `urologie` →
+`sr-urologie`, `edu4students` → `education-hub`.

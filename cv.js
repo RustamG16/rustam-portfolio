@@ -353,6 +353,7 @@ $$('a[href^="#"]').forEach(function (a) {
    The rail's domain is #vitals (0%) through #endcard (100%) — the cover is
    a bookend the rail stays hidden over (see .spine-in toggle below).
    ========================================================================== */
+var spineEl = $('.spine');
 var spinePos = $('#spine-pos');
 var spineFill = $('#spine-fill');
 var ticks = $$('.spine__tick');
@@ -471,15 +472,30 @@ if (hasGSAP && hasST) {
       });
     });
 
-    /* the rail fades in once the reader has scrolled past the cover, and
-       hides again scrolling back up into it — it never competes with the
-       cover's own full-bleed composition */
-    var coverSec = $('#cover');
-    if (coverSec) {
+    /* the rail lives inside the paper container — fade in as the seam
+       (sheet header) enters, so it never paints over the dark cover */
+    var seamSec = $('#seam') || $('#vitals');
+    if (seamSec) {
       ScrollTrigger.create({
-        trigger: coverSec, start: 'bottom top',
+        trigger: seamSec, start: 'top bottom',
         onEnter: function () { root.classList.add('spine-in'); },
         onLeaveBack: function () { root.classList.remove('spine-in'); }
+      });
+
+      /* spine-in alone still let the rail fade in OVER the dark cover for
+         the ~95% of the viewport the seam hadn't reached yet. Clip the rail
+         to the seam's own live top so the rising paper UNCOVERS the rail
+         instead of the rail floating across it — set directly on the
+         element (not a CSS var) since .spine has ~12 descendants and an
+         inherited custom property would recalc all of them every frame. */
+      function clipSpine() {
+        if (!spineEl) return;
+        var y = Math.max(0, Math.min(seamSec.getBoundingClientRect().top, window.innerHeight));
+        spineEl.style.clipPath = y > 0 ? 'inset(' + y + 'px 0 0 0)' : '';
+      }
+      ScrollTrigger.create({
+        trigger: seamSec, start: 'top bottom', end: 'top top',
+        onUpdate: clipSpine, onLeave: clipSpine, onLeaveBack: clipSpine, onRefresh: clipSpine
       });
     }
 
@@ -631,22 +647,6 @@ if (hasGSAP && hasST) {
       }, 2400);
     }
 
-    /* the file opens: paper slides up over the pinned cover */
-    pinST = ScrollTrigger.create({
-      trigger: '#cover', start: 'top top', end: 'bottom top',
-      pin: '.cv-cover__inner', pinSpacing: false, anticipatePin: 1
-    });
-    gsap.to('.cv-cover__inner', {
-      opacity: .12, scale: .965, ease: 'none',
-      scrollTrigger: { trigger: '#cover', start: 'center top', end: 'bottom top', scrub: .5 }
-    });
-
-    /* ID photo parallax */
-    gsap.to('.cv-id__img', {
-      yPercent: -7, ease: 'none',
-      scrollTrigger: { trigger: '#cover', start: 'top top', end: 'bottom top', scrub: .6 }
-    });
-
     /* counters */
     $$('.cv-vital__n').forEach(function (n) {
       var to = parseFloat(n.getAttribute('data-count')) || 0;
@@ -682,6 +682,35 @@ if (hasGSAP && hasST) {
       });
     });
   });
+
+  /* Cover pin/scrub — same gate as homepage SCRUB_MQ. Mobile / portrait get
+     the static portrait-forward banner; pin would invent a tall spacer and
+     fight the still layout. */
+  mm.add(
+    '(prefers-reduced-motion: no-preference) and (min-width: 901px) and (min-aspect-ratio: 13/20)',
+    function () {
+      /* the file opens: paper slides up over the pinned cover */
+      pinST = ScrollTrigger.create({
+        trigger: '#cover', start: 'top top', end: 'bottom top',
+        pin: '.cv-cover__inner', pinSpacing: false, anticipatePin: 1
+      });
+      gsap.to('.cv-cover__inner', {
+        opacity: .12, scale: .965, ease: 'none',
+        scrollTrigger: { trigger: '#cover', start: 'center top', end: 'bottom top', scrub: .5 }
+      });
+
+      /* ID photo parallax */
+      gsap.to('.cv-id__img', {
+        yPercent: -7, ease: 'none',
+        scrollTrigger: { trigger: '#cover', start: 'top top', end: 'bottom top', scrub: .6 }
+      });
+
+      return function () {
+        pinST = null;
+        gsap.set('.cv-cover__inner, .cv-id__img', { clearProps: 'transform,opacity' });
+      };
+    }
+  );
 
   /* ---------- reduced motion: complete, calm, everything final ---------- */
   mm.add('(prefers-reduced-motion: reduce)', function () {

@@ -17,13 +17,29 @@
 const SCRUB_MQ = '(min-width: 901px) and (min-aspect-ratio: 13/20)';
 const scrubMQ = matchMedia(SCRUB_MQ);
 
-/* One directory, two encodings. AVIF is primary: re-derived straight from
-   assets-in/orbit-a.mp4 (1920x1080) and orbit-b(1).mp4 (1280x720) at fps=20,
-   it is both sharper than the old WebP set and a third smaller. The WebP set
-   is the fallback, picked up automatically if frame 0 fails to decode. */
+/* One set, one encoding, and every number in it is load-bearing — see the
+   note above FlipbookScrubber for the reasoning. Re-derived from
+   assets-in/orbit-a.mp4 (1920x1080, 8s) and orbit-b(1).mp4 (1280x720, 10s):
+
+     ffmpeg -y -i assets-in/orbit-a.mp4 \
+       -vf "fps=10,scale=1280:720:flags=lanczos" -q:v 3 \
+       site/frames/hero/frame_%04d.jpg
+     ffmpeg -y -i "assets-in/orbit-b(1).mp4" \
+       -vf "fps=10,scale=1280:720:flags=lanczos" -q:v 3 \
+       -start_number 81 site/frames/hero/frame_%04d.jpg
+
+   fps=10 gives 80 + 100 = 180 frames, so the clip seam lands exactly on 80 and
+   SEAM_CONFIG.seamFrame derives it via FRAME_SCALE with no edit. 9.7MB total.
+
+   BASELINE JPEG on purpose — not AVIF, not WebP. It is the only choice here
+   that optimises decode time rather than bytes, and decode is what a scrubber
+   spends 60x a second. Do not "upgrade" this to AVIF to save 4MB; that is the
+   change that broke this cover.
+
+   w/h are the frames' own pixel size, declared rather than probed: resize()
+   needs them before the first frame has landed. */
 const FRAME_SETS = {
-  desktop:     { path: 'frames/hero/frame_', ext: '.avif', count: 360, pad: 4, poster: 'media/poster.webp' },
-  desktopWebp: { path: 'frames/hero/frame_', ext: '.webp', count: 360, pad: 4, poster: 'media/poster.webp' }
+  desktop: { path: 'frames/hero/frame_', ext: '.jpg', count: 180, pad: 4, w: 1280, h: 720, poster: 'media/poster.webp' }
 };
 
 /* The scrubbed cover is a three-beat sequence on ONE ScrollTrigger-scrubbed
@@ -144,19 +160,18 @@ const mulberry32 = (seed) => {
   };
 };
 
-let _glitchStrip = null;
-let _glitchStripCtx = null;
-
-function drawGlitch(ctx, img, i, seam, cw, ch) {
+/* `geom` is the cover-fit box draw() already computed for this frame — passed
+   in rather than recomputed here, so the ghost and slice draws land exactly on
+   the base image and this function never has to care whether `img` is an
+   ImageBitmap (.width) or an HTMLImageElement (.naturalWidth). */
+function drawGlitch(ctx, img, i, seam, cw, ch, geom) {
   const d = Math.abs(i - seam);
   const g = SEAM_CONFIG.glitch;
   if (d >= g.windowFrames) return;
 
   const t = 1 - d / g.windowFrames;
   const rng = mulberry32(i * 7919);
-  const s = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
-  const w = img.naturalWidth * s, h = img.naturalHeight * s;
-  const dx = (cw - w) / 2, dy = (ch - h) / 2;
+  const { dx, dy, w, h } = geom;
 
   ctx.save();
   ctx.globalCompositeOperation = 'lighter';
@@ -166,26 +181,31 @@ function drawGlitch(ctx, img, i, seam, cw, ch) {
   ctx.drawImage(img, dx + shift, dy, w, h);
   ctx.restore();
 
+  /* Displaced scan slices.
+     This used to copy each band OUT of the canvas into a scratch canvas and
+     back — `drawImage(ctx.canvas, ...)`, i.e. a GPU→CPU→GPU round trip, up to
+     six times per frame across the 17 frames around the seam. Reading back
+     from the surface you are drawing to forces the pipeline to flush and
+     synchronise, and it measured at 9-13ms per frame here against 0.1ms
+     everywhere else on the cover: 4.7% of the frames were 98% of the total
+     draw cost. That is the stall you could feel in the middle of the scroll.
+
+     The same look comes from re-drawing the SOURCE frame offset horizontally
+     and clipped to the band — no readback, no scratch canvas, and it stays on
+     the GPU. The rng() call order is unchanged (sh, sy, offsetX), so every
+     frame's slices land exactly where they always did. */
   const sliceCount = Math.floor(t * g.maxSlices);
-  if (sliceCount > 0) {
-    if (!_glitchStrip) {
-      _glitchStrip = document.createElement('canvas');
-      _glitchStripCtx = _glitchStrip.getContext('2d');
-    }
-    if (_glitchStrip.width !== cw || _glitchStrip.height !== g.maxSliceHeight) {
-      _glitchStrip.width = cw;
-      _glitchStrip.height = g.maxSliceHeight;
-    }
-    const src = ctx.canvas;
-    for (let n = 0; n < sliceCount; n++) {
-      const sh = 8 + Math.floor(rng() * (g.maxSliceHeight - 8 + 1));
-      const maxY = ch - sh;
-      const sy = maxY > 0 ? Math.floor(rng() * maxY) : 0;
-      const offsetX = Math.floor((rng() * 2 - 1) * g.maxSliceOffset * t);
-      _glitchStripCtx.clearRect(0, 0, cw, sh);
-      _glitchStripCtx.drawImage(src, 0, sy, cw, sh, 0, 0, cw, sh);
-      ctx.drawImage(_glitchStrip, 0, 0, cw, sh, offsetX, sy, cw, sh);
-    }
+  for (let n = 0; n < sliceCount; n++) {
+    const sh = 8 + Math.floor(rng() * (g.maxSliceHeight - 8 + 1));
+    const maxY = ch - sh;
+    const sy = maxY > 0 ? Math.floor(rng() * maxY) : 0;
+    const offsetX = Math.floor((rng() * 2 - 1) * g.maxSliceOffset * t);
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, sy, cw, sh);
+    ctx.clip();
+    ctx.drawImage(img, dx + offsetX, dy, w, h);
+    ctx.restore();
   }
 
   ctx.save();
@@ -200,27 +220,74 @@ function drawGlitch(ctx, img, i, seam, cw, ch) {
   ctx.restore();
 }
 
-/* ---------- FlipbookScrubber ---------- */
+/* ---------- FlipbookScrubber ----------
+   Every frame is an <img>, created once, held for the life of the page.
+   Nothing is fetched on demand, nothing is evicted, and there is no second
+   resolution to fall back to. That is GSAP's own imageSequenceScrub shape and
+   it is the shape this cover had when it last worked.
+
+   It is a deliberate rewrite BACK to that. What it replaces was a three-tier
+   windowed loader — compressed blobs, a permanent 640px ladder, an evicted
+   full-res window, two pump queues — and it failed the way every windowed
+   scrubber fails: fine when you scroll slowly, because the decoder keeps up;
+   at speed the playhead outruns it, the cover drops to the blurry tier and the
+   queue thrashes. Measured on that build: 29.7fps, 498 decodes and 687
+   evictions for ONE sweep, while draw() itself cost 0.1ms and the main thread
+   never blocked once. The canvas was never the bottleneck. Asking the decoder
+   for work it could not finish in time was.
+
+   Holding everything is affordable because of the FRAME SET, not this code:
+   180 frames of 1280x720 baseline JPEG, 9.7MB total (see FRAME_SETS). The
+   numbers that matter and why they are what they are:
+
+     · 180 frames over a 290vh scrub = 14.5px/frame at a 900px viewport.
+       Apple's AirPods sequence runs 18.5px/frame; the reference band is
+       18-24. The old 360 ran 7.25 — 2.5x denser than any shipped reference,
+       demanding up to ~90 unique decodes per second of scrolling, more than
+       a display can even present.
+     · Baseline JPEG, not AVIF. AVIF decodes 5-10x slower, and in a scrubber
+       the decode is on the critical path 60x/sec. AVIF was chosen for bytes,
+       which is the wrong axis for this one asset.
+     · 1280x720 is the source's own resolution: orbit-b(1).mp4 is natively
+       720p and was being upscaled to 1600x900 for 200 of the 360 frames —
+       decode and memory spent on invented pixels. resize() below already
+       refuses a backing store the frames cannot fill.
+
+   Also: <img src> is not subject to CORS, so this works when index.html is
+   opened straight off disk as file://, where window.fetch() is rejected
+   outright. The loader this replaces could not run there at all. */
 class FlipbookScrubber {
+  /* How far nearestLoaded() searches for a usable neighbour. Only matters in
+     the first seconds, before the whole strip has landed — after that the
+     exact frame is always there. */
+  static SEARCH_RADIUS = 12;
+  /* Frames requested at high priority. Past this the browser's own scheduler
+     does the ordering that the hand-rolled ladder and six-slot queue existed
+     to do, and does it with knowledge of the actual connection. */
+  static EAGER = 24;
+
   constructor(canvas, cfg, glitchEl = null) {
     this.canvas = canvas;
-    this.ctx = canvas.getContext('2d');
+    /* alpha:false — draw() is cover-fit, so every pixel of the backing store
+       is painted every frame and the alpha channel is dead weight the
+       compositor still has to blend. */
+    this.ctx = canvas.getContext('2d', { alpha: false });
     this.ctx.imageSmoothingEnabled = true;
     this.ctx.imageSmoothingQuality = 'high';
     this.cfg = cfg;
     this.glitchEl = glitchEl;
     this.count = cfg.count;
     this.images = new Array(this.count).fill(null);
-    this.loaded = new Set();
+    this.loaded = new Set();   /* indices that have loaded AND decoded */
     this.targetIdx = 0;
     this.displayIdx = 0;
     this.lastStepIdx = -1;
     this.painted = -1;
     this.poster = null;
-    /* filled in when frame 0 reports its natural size; resize() needs it to
-       know how big a backing store the frames can actually fill */
-    this.frameW = 0;
-    this.frameH = 0;
+    /* the frames' own pixel size, declared on the frame set. resize() needs it
+       to refuse a backing store bigger than the source. */
+    this.frameW = cfg.w || 0;
+    this.frameH = cfg.h || 0;
     this.resize();
     /* ResizeObserver rather than window.resize: it fires on the canvas's own
        box, so a viewport resize that does not change the canvas (and, on the
@@ -246,81 +313,41 @@ class FlipbookScrubber {
     const n = String(i + 1).padStart(this.cfg.pad, '0');
     return `${this.cfg.path}${n}${this.cfg.ext}`;
   }
-  load(i) {
-    if (i < 0 || i >= this.count || this.images[i]) return Promise.resolve();
-    const img = new Image();
-    img.decoding = 'async';
-    this.images[i] = img;
-    const done = () => {
-      this.loaded.add(i);
-      /* the first frame to arrive tells resize() the source resolution, which
-         is what lets it refuse to allocate a canvas bigger than the frames */
-      if (!this.frameW && img.naturalWidth) {
-        this.frameW = img.naturalWidth;
-        this.frameH = img.naturalHeight;
-        this.resize();
-      }
-      const active = Math.round(this.displayIdx);
-      if (this.painted < 0 && i === 0) this.draw(0);
-      else if (i >= active - 2 && i <= active + 2) this.draw(active);
-    };
-    return new Promise((resolve) => {
-      img.onload = () => {
-        const finish = () => { done(); resolve(); };
-        if (img.decode) img.decode().then(finish).catch(finish);
-        else finish();
-      };
-      img.onerror = () => {
-        this.images[i] = null;
-        if (i === 0 && this.cfg.ext === '.avif') {
-          this.fallbackToWebp().then(resolve);
-          return;
-        }
-        resolve();
-      };
-      img.src = this.src(i);
-    });
-  }
-  fallbackToWebp() {
-    if (this._fellBack) return Promise.resolve();
-    this._fellBack = true;
-    const fb = FRAME_SETS.desktopWebp;
-    this.cfg = fb;
-    this.count = fb.count;
-    this.images = new Array(this.count).fill(null);
-    this.loaded = new Set();
-    this.painted = -1;
-    return this.preload();
-  }
+  /* All of them, right now, in index order. No queue: 180 requests is well
+     inside what the browser schedules better than we can, and fetchPriority
+     tells it which end of the strip is needed first.
+
+     decode() is awaited before an index counts as loaded. Without it the first
+     draw of each frame pays its decode on the critical path — the exact stall
+     this class exists to avoid — and with it the browser's decoded-image cache
+     is warm before the playhead ever arrives. */
   preload() {
-    const kick = async () => {
-      await this.load(0);
-      const ahead = Math.min(this.count, 10);
-      for (let i = 1; i < ahead; i++) await this.load(i);
-      let i = ahead;
-      const fill = () => {
-        let n = 0;
-        while (i < this.count && n < 6) { this.load(i); i++; n++; }
-        if (i < this.count) setTimeout(fill, 50);
+    for (let i = 0; i < this.count; i++) {
+      const img = new Image();
+      img.decoding = 'async';
+      if ('fetchPriority' in img) img.fetchPriority = i < FlipbookScrubber.EAGER ? 'high' : 'low';
+      this.images[i] = img;
+      img.onload = () => {
+        const done = () => {
+          this.loaded.add(i);
+          const active = Math.round(this.displayIdx);
+          /* repaint only if this frame is at or near the playhead — or if
+             nothing has been painted yet, so the first frame to land shows */
+          if (this.painted < 0 || Math.abs(i - active) <= FlipbookScrubber.SEARCH_RADIUS) {
+            this.draw(active);
+          }
+        };
+        if (img.decode) img.decode().then(done).catch(done);
+        else done();
       };
-      setTimeout(fill, 80);
-    };
-    return kick();
-  }
-  prefetchAround(i) {
-    const behind = 4;
-    const ahead = 10;
-    for (let d = 0; d <= behind; d++) this.load(i - d);
-    for (let d = 1; d <= ahead; d++) this.load(i + d);
-  }
-  prefetchToEnd(from) {
-    for (let j = from; j < this.count; j++) this.load(j);
+      img.onerror = () => { this.images[i] = null; };
+      img.src = this.src(i);
+    }
   }
   redraw() {
     if (!this.resize()) return;
-    const i = Math.round(this.displayIdx);
     this.lastStepIdx = -1;
-    this.draw(i);
+    this.draw(Math.round(this.displayIdx));
   }
   drawPoster() {
     if (!this.poster) return;
@@ -331,9 +358,13 @@ class FlipbookScrubber {
     this.ctx.clearRect(0, 0, cw, ch);
     this.ctx.drawImage(img, (cw - w) / 2, (ch - h) / 2, w, h);
   }
+  /* Exact frame first, then outward. Once the strip has landed this returns
+     `i` on the first line every time; the search only earns its keep during
+     the opening seconds. */
   nearestLoaded(i) {
     if (this.loaded.has(i)) return i;
-    for (let d = 1; d <= 2; d++) {
+    const r = FlipbookScrubber.SEARCH_RADIUS;
+    for (let d = 1; d <= r; d++) {
       if (this.loaded.has(i - d)) return i - d;
       if (this.loaded.has(i + d)) return i + d;
     }
@@ -346,11 +377,18 @@ class FlipbookScrubber {
 
      The ratio clamp is the important part. This used to take min(dpr, 2)
      unconditionally, so a 1440px laptop at DPR 2 asked for a 2880px-wide
-     canvas and every single draw upscaled a 1600px frame by ~1.8x — over
-     three times the fill rate, for detail the source does not contain.
-     Clamping so the cover-fit scale never exceeds 1 costs nothing visually
-     (the compositor performs the final scale instead of drawImage, with the
-     same filtering) and is the largest single smoothness win on the cover. */
+     canvas and every single draw upscaled the source by ~1.8x — over three
+     times the fill rate, for detail the frames do not contain. Clamping so the
+     cover-fit scale never exceeds 1 costs nothing visually (the compositor
+     performs the final scale instead of drawImage, with the same filtering).
+
+     Note the Math.max(1, …) floor: it caps the backing store at 1 CSS pixel
+     per canvas pixel but will not go BELOW it. So on a display wider than the
+     720p source the clamp is inert and drawImage does a mild upscale (1440x900
+     canvas from a 1280x720 frame = 1.25x). That is deliberate — the seam
+     glitch and scanlines are drawn in canvas space, and shrinking the surface
+     under them would soften those, which is a worse trade than 36% more fill
+     rate on a draw that measures 0.1ms. */
   resize() {
     const cw = this.canvas.clientWidth;
     const chh = this.canvas.clientHeight;
@@ -368,7 +406,20 @@ class FlipbookScrubber {
     this.ctx.setTransform(1, 0, 0, 1, 0, 0);
     this.ctx.imageSmoothingEnabled = true;
     this.ctx.imageSmoothingQuality = 'high';
+    this.buildBloom();
     return true;
+  }
+  /* The seam bloom depends only on canvas size, but it was being rebuilt with
+     createRadialGradient() on EVERY frame inside the seam window. Built here
+     instead, at full opacity — draw() scales it with globalAlpha. */
+  buildBloom() {
+    const { bloomCenterX, bloomCenterY, bloomEdgeAlpha, color } = SEAM_CONFIG;
+    const cw = this.canvas.width, ch = this.canvas.height;
+    const cx = cw * bloomCenterX, cy = ch * bloomCenterY;
+    const g = this.ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.hypot(cw, ch) * 0.55);
+    g.addColorStop(0, rgbaAlpha(color, 1));
+    g.addColorStop(1, rgbaAlpha(color, bloomEdgeAlpha));
+    this.bloom = g;
   }
   draw(i) {
     const j = this.nearestLoaded(i);
@@ -376,29 +427,31 @@ class FlipbookScrubber {
       if (this.poster && this.painted < 0) this.drawPoster();
       return;
     }
-    this.painted = j;
     const img = this.images[j];
+    if (!img) { this.painted = -1; return; }
+    this.painted = j;
     const cw = this.canvas.width, ch = this.canvas.height;
-    const s = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
-    const w = img.naturalWidth * s, h = img.naturalHeight * s;
+    const iw = img.naturalWidth || img.width;
+    const ih = img.naturalHeight || img.height;
+    const s = Math.max(cw / iw, ch / ih);
+    const w = iw * s, h = ih * s;
+    const geom = { dx: (cw - w) / 2, dy: (ch - h) / 2, w, h };
     this.ctx.clearRect(0, 0, cw, ch);
-    this.ctx.drawImage(img, (cw - w) / 2, (ch - h) / 2, w, h);
+    this.ctx.drawImage(img, geom.dx, geom.dy, w, h);
 
     const seam = SEAM_CONFIG.seamFrame;
-    drawGlitch(this.ctx, img, i, seam, cw, ch);
+    drawGlitch(this.ctx, img, i, seam, cw, ch, geom);
 
     const flashAlpha = seamFlashAlpha(i, seam);
     if (flashAlpha > 0) {
-      const { bloomCenterX, bloomCenterY, bloomEdgeAlpha, color } = SEAM_CONFIG;
-      const cx = cw * bloomCenterX, cy = ch * bloomCenterY;
-      const radius = Math.hypot(cw, ch) * 0.55;
       const ctx = this.ctx;
       ctx.save();
       ctx.globalCompositeOperation = 'screen';
-      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
-      g.addColorStop(0, rgbaAlpha(color, flashAlpha));
-      g.addColorStop(1, rgbaAlpha(color, flashAlpha * bloomEdgeAlpha));
-      ctx.fillStyle = g;
+      /* the gradient is built once per canvas size in resize(); only its
+         opacity varies per frame, and globalAlpha scales both stops by the
+         same factor the old per-frame colour stops did */
+      ctx.globalAlpha = flashAlpha;
+      ctx.fillStyle = this.bloom;
       ctx.fillRect(0, 0, cw, ch);
       ctx.restore();
     }
@@ -423,20 +476,16 @@ class FlipbookScrubber {
   }
   setProgress(p) {
     this.targetIdx = p * (this.count - 1);
-    const i = Math.round(this.targetIdx);
-    this.prefetchAround(i);
-    if (p > 0.75) this.prefetchToEnd(i);
   }
-  /* The smoothing lives in ScrollTrigger's scrub now. The old `delta * 0.4`
-     lerp was per-rAF, so it caught up roughly twice as fast on a 120Hz
-     display as on a 60Hz one — the same page felt like two different
-     animations. scrub is time-based and frame-rate normalised. Keeping both
-     would just stack two lags, so this only paints when the index changes. */
+  /* The smoothing lives in ScrollTrigger's scrub. The old `delta * 0.4` lerp
+     was per-rAF, so it caught up roughly twice as fast on a 120Hz display as
+     on a 60Hz one — the same page felt like two different animations. scrub is
+     time-based and frame-rate normalised. Keeping both would stack two lags,
+     so this only paints when the index changes. */
   step() {
     this.displayIdx = this.targetIdx;
     const i = Math.round(this.displayIdx);
-    const needsUpgrade = this.loaded.has(i) && this.painted !== i;
-    if (i !== this.lastStepIdx || needsUpgrade) {
+    if (i !== this.lastStepIdx || this.painted !== i) {
       this.lastStepIdx = i;
       this.draw(i);
     }
@@ -451,6 +500,8 @@ const I18N = {
     'nav.experience': 'Experience',
     'nav.skip': 'Skip to work',
     'nav.langAria': 'Switch language',
+    'nav.menuOpen': 'Open menu',
+    'nav.menuClose': 'Close menu',
     'hero.kicker': 'BRIEF RG-2026 · SHEET 00',
     'hero.sub': 'Software Engineer · AI Orchestrator · Designer · Creator',
     'hero.cv': 'Download CV',
@@ -470,7 +521,7 @@ const I18N = {
     'stats.years': 'Years building',
     'stats.projects': 'Projects shipped',
     'stats.languages': 'Languages spoken',
-    'stats.pipeline': 'Person, whole pipeline',
+    'stats.pipeline': 'Whole pipeline',
     'cap.title': 'Capability',
     'cap.plate': 'PLATE A · STUDIO',
     'work.title': 'Selected work',
@@ -525,6 +576,8 @@ const I18N = {
     'nav.experience': 'Erfahrung',
     'nav.skip': 'Zu den Arbeiten springen',
     'nav.langAria': 'Sprache wechseln',
+    'nav.menuOpen': 'Menü öffnen',
+    'nav.menuClose': 'Menü schließen',
     'hero.kicker': 'DOSSIER RG-2026 · BLATT 00',
     'hero.sub': 'Softwareentwickler · KI-Orchestrator · Designer · Creator',
     'hero.cv': 'Lebenslauf laden',
@@ -544,7 +597,7 @@ const I18N = {
     'stats.years': 'Jahre Erfahrung',
     'stats.projects': 'Projekte geliefert',
     'stats.languages': 'Gesprochene Sprachen',
-    'stats.pipeline': 'Person, ganze Pipeline',
+    'stats.pipeline': 'Ganze Pipeline',
     'cap.title': 'Fähigkeiten',
     'cap.plate': 'TAFEL A · STUDIO',
     'work.title': 'Ausgewählte Arbeiten',
@@ -638,6 +691,187 @@ const orbitCanvas = document.getElementById('orbit-canvas');
 const hero = document.getElementById('hero');
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+/* ---------- mobile/tablet drawer nav (≤1024px) ----------
+   Replaces the sparse mobile topbar (which used to be just "Start a
+   project" + EN/DE) and takes over .sheetbar's section-jump job below the
+   breakpoint (style.css sets .sheetbar{display:none} there).
+
+   Built around GSAP's "Timeline: Clear and Rebuild" technique
+   (https://demos.gsap.com/demo/timeline-clear-and-rebuild/): ONE persistent
+   paused timeline, rebuilt via .clear() + re-added tweens rather than
+   thrown away and recreated, whenever its parameters actually change (here:
+   the stagger timing, derived from measured panel height, which can shift
+   on an in-range resize — a tablet's split-screen mode, a resizable desktop
+   window narrowed into this band — without ever leaving the ≤1024px query
+   gsap.matchMedia() is scoped to below). Raw DOM listeners (toggle, close
+   button, scrim, Escape, Tab-trap) are bound once at the IIFE's top level,
+   outside mm.add() — matchMedia reverts GSAP objects automatically but not
+   plain listeners, and this file already has a documented bug class around
+   that for a different feature, so the drawer doesn't repeat it. */
+(() => {
+  const toggle = document.getElementById('menu-toggle');
+  const drawer = document.getElementById('drawer');
+  const panel = drawer && drawer.querySelector('.drawer__panel');
+  const scrim = document.getElementById('drawer-scrim');
+  const closeBtn = document.getElementById('drawer-close');
+  const langSlot = document.getElementById('drawer-lang-slot');
+  if (!toggle || !drawer || !panel || !scrim || !closeBtn || !gsapReady) return;
+
+  const root = document.documentElement;
+  let tl = null;
+  let isOpen = false;
+  let lastFocused = null;
+  let langHome = null; // { parent, next } — where #lang-toggle lives outside the drawer
+
+  const setToggleLabel = (open) => {
+    const key = open ? 'nav.menuClose' : 'nav.menuOpen';
+    const dict = I18N[currentLang] || I18N.en;
+    toggle.setAttribute('aria-label', dict[key]);
+  };
+
+  function open() {
+    if (isOpen || !tl) return;
+    isOpen = true;
+    lastFocused = document.activeElement;
+    drawer.removeAttribute('inert');
+    drawer.setAttribute('aria-hidden', 'false');
+    drawer.classList.add('is-open');
+    scrim.hidden = false;
+    requestAnimationFrame(() => scrim.classList.add('is-visible'));
+    toggle.setAttribute('aria-expanded', 'true');
+    setToggleLabel(true);
+    root.classList.add('menu-open');
+    document.body.style.overflow = 'hidden';
+    if (lenis) lenis.stop();
+    tl.play();
+    closeBtn.focus();
+  }
+
+  function close() {
+    if (!isOpen || !tl) return;
+    isOpen = false;
+    drawer.setAttribute('aria-hidden', 'true');
+    scrim.classList.remove('is-visible');
+    toggle.setAttribute('aria-expanded', 'false');
+    setToggleLabel(false);
+    root.classList.remove('menu-open');
+    document.body.style.overflow = '';
+    if (lenis) lenis.start();
+    tl.eventCallback('onReverseComplete', () => {
+      drawer.setAttribute('inert', '');
+      drawer.classList.remove('is-open');
+      scrim.hidden = true;
+    });
+    tl.reverse();
+    (lastFocused || toggle).focus();
+  }
+
+  const mm = gsap.matchMedia();
+  mm.add(
+    {
+      isActive: '(max-width: 1024px)',
+      reduceMotion: '(prefers-reduced-motion: reduce)'
+    },
+    (context) => {
+      const { isActive, reduceMotion } = context.conditions;
+      if (!isActive) return; /* desktop: nothing to build; auto-revert cleans up the previous context */
+
+      const items = [...panel.querySelectorAll(
+        '.drawer__jump-link, .drawer__actions .btn, .drawer__lang-slot, .drawer__contact li'
+      )];
+
+      const build = () => {
+        if (!tl) tl = gsap.timeline({ paused: true });
+        tl.clear(); /* strip tweens, keep the same instance/progress semantics */
+        if (reduceMotion) {
+          /* duration:0 keeps the open/close STATE MACHINE intact (play()
+             still reaches "open", reverse() still reaches "closed") — just
+             with no visible motion, so onReverseComplete still fires and
+             inert/aria-hidden restoration still works correctly */
+          tl.fromTo(panel, { xPercent: 100 }, { xPercent: 0, duration: 0 }, 0)
+            .fromTo(items, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0 }, 0);
+          return;
+        }
+        const h = panel.clientHeight || window.innerHeight;
+        const staggerEach = Math.min(0.07, Math.max(0.03, h / 9000));
+        tl.fromTo(panel, { xPercent: 100 }, { xPercent: 0, duration: 0.45, ease: 'power3.out' }, 0)
+          .fromTo(items, { autoAlpha: 0, y: 14 },
+            { autoAlpha: 1, y: 0, duration: 0.4, ease: 'power3.out', stagger: staggerEach }, 0.08);
+      };
+
+      build();
+
+      const onResize = () => {
+        const progress = tl.progress();
+        build(); /* clear + rebuild against the SAME tl instance, fresh stagger timing */
+        tl.progress(isOpen ? 1 : (progress > 0 ? progress : 0));
+      };
+      window.addEventListener('resize', onResize);
+
+      return () => {
+        window.removeEventListener('resize', onResize);
+        if (isOpen) {
+          isOpen = false;
+          root.classList.remove('menu-open');
+          document.body.style.overflow = '';
+          if (lenis) lenis.start();
+          drawer.setAttribute('inert', '');
+          drawer.setAttribute('aria-hidden', 'true');
+          drawer.classList.remove('is-open');
+          scrim.hidden = true;
+          scrim.classList.remove('is-visible');
+          toggle.setAttribute('aria-expanded', 'false');
+          setToggleLabel(false);
+        }
+        if (tl) { tl.kill(); tl = null; }
+      };
+    }
+  );
+
+  toggle.addEventListener('click', () => (isOpen ? close() : open()));
+  closeBtn.addEventListener('click', close);
+  scrim.addEventListener('click', close);
+
+  document.addEventListener('keydown', (e) => {
+    if (!isOpen) return;
+    if (e.key === 'Escape') { close(); return; }
+    if (e.key !== 'Tab') return;
+    /* queried live, not cached — #lang-toggle can be inside or outside the
+       drawer depending on viewport, and a stale snapshot would silently
+       drop it from the trap */
+    const f = [...drawer.querySelectorAll('a, button')].filter((el) => el.offsetParent !== null);
+    if (!f.length) return;
+    const first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  });
+
+  /* close-then-scroll: don't duplicate scroll logic here — the pre-existing
+     global a[href^="#"] handler (below, near EOF) already preventDefaults
+     and runs lenis.scrollTo on these SAME static anchors. This listener
+     only tears the drawer down; both fire on the same click. */
+  drawer.querySelectorAll('a[href^="#"]').forEach((a) => a.addEventListener('click', close));
+
+  /* #lang-toggle: relocate (not clone) into the drawer ≤1024px. applyLang()
+     and its click handler both resolve a single node via
+     getElementById('lang-toggle') — a duplicate id would break that, so the
+     existing node moves instead; appendChild/insertBefore preserve its
+     already-bound listeners. */
+  const relocateMQ = matchMedia('(max-width: 1024px)');
+  const placeLangToggle = (intoDrawer) => {
+    if (!langToggle || !langSlot) return;
+    if (intoDrawer && langToggle.parentElement !== langSlot) {
+      langHome = { parent: langToggle.parentElement, next: langToggle.nextSibling };
+      langSlot.appendChild(langToggle);
+    } else if (!intoDrawer && langHome && langToggle.parentElement === langSlot) {
+      langHome.parent.insertBefore(langToggle, langHome.next);
+      langHome = null;
+    }
+  };
+  placeLangToggle(relocateMQ.matches);
+  if (relocateMQ.addEventListener) relocateMQ.addEventListener('change', (e) => placeLangToggle(e.matches));
+})();
+
 if (hero) {
   document.querySelectorAll('[data-line]').forEach(line => {
     line.innerHTML = [...line.textContent].map(c => `<span class="ch">${c}</span>`).join('');
@@ -704,6 +938,14 @@ if (hero) {
   } else {
     /* ---------- the scrubbed cover ---------- */
     const scrubber = new FlipbookScrubber(orbitCanvas, CONFIG.frames, heroName);
+    /* exposed the same way, and for the same reason, as window.__lenis above:
+       the stutter this loader was rewritten to fix is only observable as a gap
+       between the frame the cover WANTS (displayIdx) and the one it actually
+       painted, and neither is reachable from outside this closure. QA reads
+       Math.round(displayIdx) - painted while scrolling; once the strip has
+       landed it must be 0 at every speed, because there is no coarse tier to
+       fall back to any more. `loaded.size === count` says the strip is in. */
+    window.__scrubber = scrubber;
     if (gaugeTotal) gaugeTotal.textContent = String(scrubber.count);
 
     /* One scrubbed timeline drives everything. The old loop wrote transform
@@ -723,7 +965,16 @@ if (hero) {
         start: 'top top',
         end: () => '+=' + Math.max(1, hero.offsetHeight - heroSticky.offsetHeight),
         scrub: 0.55,
-        invalidateOnRefresh: true
+        invalidateOnRefresh: true,
+        /* First thing on the page, so it refreshes first. ScrollTrigger
+           refreshes in CREATION order unless told otherwise, and this file
+           does not create them in page order — the sheet counter's triggers
+           point at #hero and #stats but are built last, after the #pillars
+           pin has already injected a pin-spacer and changed document height.
+           A refresh fires on document.fonts.ready and on plate-image load,
+           i.e. after first paint, and out-of-order refresh with a pin in the
+           middle is exactly how you get a scroll jump. */
+        refreshPriority: -3
       }
     });
 
@@ -761,23 +1012,46 @@ if (hero) {
 
     /* The canvas rides gsap.ticker — the same clock Lenis and ScrollTrigger
        already share, so there is exactly one rAF loop on the page. Both
-       writes below are gated on an actual change. */
+       writes below are gated on an actual change.
+
+       DO NOT gate this on the trigger's progress. That was tried and it is a
+       guaranteed freeze: ScrollTrigger's `progress` is derived from the SCROLL
+       POSITION and reaches 1 the instant you pass the cover, but `clock.p` is
+       the SCRUBBED value and is still up to `scrub` seconds behind it. Skipping
+       the body once progress hits 1 therefore abandons the catch-up half-done
+       and leaves the canvas stopped on whatever frame it had reached. The work
+       avoided below the fold is a few no-op comparisons; the bug it buys is the
+       cover visibly sticking at the end of every pass. */
     let lastLabel = '';
     let actionsOn = null;
+    /* The try/catch is not defensive padding. gsap.ticker walks ONE callback
+       list, and Lenis and ScrollTrigger are on it (see the setup at the top of
+       this file) — so an exception thrown in here does not just stop the
+       canvas, it takes out smooth scrolling and every animation on the page in
+       the same tick. Reported once: a per-frame console.error is its own
+       freeze. */
+    let tickErrored = false;
     gsap.ticker.add(() => {
-      scrubber.setProgress(clock.p);
-      scrubber.step();
+      try {
+        scrubber.setProgress(clock.p);
+        scrubber.step();
 
-      if (gaugeCur) {
-        const n = Math.min(scrubber.count, Math.round(clock.p * (scrubber.count - 1)) + 1);
-        const label = String(n).padStart(3, '0');
-        if (label !== lastLabel) { lastLabel = label; gaugeCur.textContent = label; }
-      }
-      if (actions) {
-        const on = clock.p > S.actionsRevealAt;
-        if (on !== actionsOn) {
-          actionsOn = on;
-          actions.style.pointerEvents = on ? 'auto' : 'none';
+        if (gaugeCur) {
+          const n = Math.min(scrubber.count, Math.round(clock.p * (scrubber.count - 1)) + 1);
+          const label = String(n).padStart(3, '0');
+          if (label !== lastLabel) { lastLabel = label; gaugeCur.textContent = label; }
+        }
+        if (actions) {
+          const on = clock.p > S.actionsRevealAt;
+          if (on !== actionsOn) {
+            actionsOn = on;
+            actions.style.pointerEvents = on ? 'auto' : 'none';
+          }
+        }
+      } catch (err) {
+        if (!tickErrored) {
+          tickErrored = true;
+          console.error('[hero scrub] tick failed; the cover may stall', err);
         }
       }
     });
@@ -812,6 +1086,17 @@ if (hero) {
   /* clear the latch once a load has stood unchanged for a few seconds, so a
      later genuine rotation still gets its one correction */
   setTimeout(() => { try { sessionStorage.removeItem(RETRY_KEY); } catch (e) {} }, 4000);
+
+  /* Anton/Instrument Sans loading late changes hero.offsetHeight after the
+     scrub ScrollTrigger already measured its `end` from it (main.js above,
+     `end: () => '+=' + (hero.offsetHeight - heroSticky.offsetHeight)`), and
+     nothing else on the page forces a refresh once that happens — the only
+     existing ScrollTrigger.refresh() call is gated on `.plate img` loads,
+     which is unrelated. One refresh once fonts settle keeps the scrub range
+     matched to final layout without adding a second reload path. */
+  if (gsapReady && document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(() => ScrollTrigger.refresh());
+  }
 }
 
 /* ---------- capability sheet: ScrollTrigger pin (one entry per step) ---------- */
@@ -859,6 +1144,10 @@ if (hero) {
           pin: true,
           scrub: true,
           id: 'pillars',
+          /* the pin injects a spacer and changes document height, so it must
+             refresh before anything created later that measures against the
+             page below it (see the note on the cover's refreshPriority) */
+          refreshPriority: -1,
           onUpdate: (self) => {
             if (strip) strip.classList.toggle('is-visible', self.progress >= CONFIG.stripRevealAt);
             const step = Math.min(
@@ -911,6 +1200,7 @@ if (hero) {
           trigger: el,
           start: 'top 85%',
           once: true,
+          refreshPriority: 0,
           onEnter: () => el.classList.add('is-in')
         });
       });
@@ -984,19 +1274,33 @@ if (hero) {
   let lastT = 0;
   let tiltTimer = 0;
 
-  function getPreviewVideo(row) {
+  function getPreviewVideo(row, preload = 'auto') {
     const slug = row.id;
     let entry = videoCache.get(slug);
     if (entry) return entry;
     const el = document.createElement('video');
     el.className = 'worx__float-video';
     el.muted = true;
-    /* THE MERIDIAN's clip is a continuous descent that ends at the resort —
-       looping it back to the clouds would be a cut. data-preview-loop="false"
-       plays it once and holds the last frame. Everything else loops. */
+    /* All four clips are frame-locked loops now (The Meridian's one-way
+       descent was replaced by the agency site's own loop), so no row carries
+       data-preview-loop="false" any more. The opt-out stays wired: it costs a
+       comparison and it is the only way a future non-looping clip can be
+       dropped in without editing this file. */
     el.loop = row.dataset.previewLoop !== 'false';
     el.playsInline = true;
-    el.preload = 'auto'; /* created lazily on first hover of THIS row — the row is already being hovered, so start fetching immediately */
+    /* Warmed BEFORE the first hover (see the warm-up block at the end of this
+       IIFE). It used to be 'metadata' on an element created by the hover
+       itself, which meant the first hover on every row sat on its poster for as
+       long as the fetch + decode took — long enough to read as "the preview
+       doesn't do anything".
+
+       But warming all four at 'auto' puts SEVEN live video decoders on the page
+       next to the hero flipbook's decoded-frame budget, and that combination is
+       what froze both. The caller decides the level now: the first row buffers
+       fully, the rest take 'metadata' (which still resolves DNS, the connection
+       and the container, i.e. the part hover latency was actually made of) and
+       upgrade themselves the moment a pointer lands on them. */
+    el.preload = preload;
     el.setAttribute('muted', '');
     el.setAttribute('playsinline', '');
     entry = { el, failed: false };
@@ -1078,6 +1382,12 @@ if (hero) {
     const entry = getPreviewVideo(row);
     activeVideo = entry;
     if (entry.failed) return; // stays on the poster — graceful fallback
+    /* the upgrade half of the staggered warm-up above: this row is being looked
+       at, so it earns a full buffer */
+    if (entry.el.preload !== 'auto') {
+      entry.el.preload = 'auto';
+      entry.el.load();
+    }
     try { entry.el.currentTime = 0; } catch (e) { /* not seekable yet — fine, it starts at 0 anyway */ }
     const show = () => { entry.el.classList.add('is-active'); };
     if (entry.el.readyState >= 2) show();
@@ -1115,6 +1425,178 @@ if (hero) {
 
   /* a resize mid-hover would leave the card measured against the old grid */
   addEventListener('resize', () => { if (currentRow) place(currentRow, null, false); });
+
+  /* ---- warm-up ----
+     Build the four clips as #work approaches, so a hover only has to play()
+     something whose connection is already open. 35% lead margin and a 300ms
+     stagger are the same demand-shaping the background plate videos use below
+     (see the note there): #pillars' builder.mp4 and #work's closer.mp4 are 12MB
+     combined and can intersect in the same batch, and four more videos landing
+     on top of that in one tick is exactly what that note was written about.
+
+     Only the FIRST clip buffers fully. The other three take 'metadata' and
+     upgrade on hover (see enter() above). Four full buffers plus the two plates
+     is seven simultaneous video decoders, arriving right as the hero flipbook
+     is at its own memory peak — that is the pairing that froze the cover and
+     the previews together, and the second half of the fix for it.
+
+     Gated on canHover() — below 1000px the float is display:none and the rows
+     use the .worx__media carousel instead, so warming these would be four
+     downloads for something that never renders. */
+  if (canHover()) {
+    let warmed = 0;
+    const warmIo = new IntersectionObserver((entries) => {
+      if (!entries.some((en) => en.isIntersecting)) return;
+      warmIo.disconnect();
+      rows.forEach((row) => {
+        if (!row.dataset.preview) return;
+        const n = warmed++;
+        setTimeout(() => getPreviewVideo(row, n === 0 ? 'auto' : 'metadata'), n * 300);
+      });
+    }, { rootMargin: '35% 0px' });
+    warmIo.observe(section);
+  }
+})();
+
+/* ---------- 03 · selected work: the mobile media carousel ----------
+   Below 1000px the floating hover card is display:none and there is no pointer
+   to follow, so each row's .worx__media becomes a stepped carousel instead of
+   the single static poster it used to be: the project's three stills, preceded
+   by its preview clip where one exists (data-clip).
+
+   Two constraints shaped this:
+
+   1. The buttons are real <button>s, and .worx__media is a SIBLING of the
+      row's <a> (see index.html) — interactive controls inside a link is
+      invalid, and on touch it means every arrow tap also navigates away.
+
+   2. Nothing here may add VISIBLE TEXT. _verify/redesign/extract-text.js locks
+      every word on the page and reads it with body.innerText — which still
+      sees clip-rect'd "visually hidden" copy (that is why the pre-existing
+      .xref__body shows up in the baseline). So there is no live region here:
+      the arrows are SVG chevrons, and the position rides in each button's
+      OWN aria-label, which the harness collects into a separate block. A
+      screen reader gets "Next image, Sonnwerk, 2 of 4"; innerText gets
+      nothing at all.
+
+   The clip slide is handed to the shared [data-video] machinery further down
+   (it carries data-video, and that querySelectorAll runs after this IIFE) so
+   it inherits lazy loading, the load stagger, iOS autoplay attributes and the
+   low-power retry rather than growing a second copy of all of that. */
+(() => {
+  const mounts = [...document.querySelectorAll('.worx__media[data-shots]')];
+  if (!mounts.length) return;
+
+  const CHEVRON =
+    '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
+    '<path d="M15 4L7 12l8 8" fill="none" stroke="currentColor" stroke-width="1.6" ' +
+    'stroke-linecap="square"/></svg>';
+
+  mounts.forEach((mount) => {
+    const shots = (mount.dataset.shots || '').split(',').map((s) => s.trim()).filter(Boolean);
+    const clip = mount.dataset.clip || '';
+    const label = mount.dataset.mediaLabel || '';
+    if (!shots.length) return;
+
+    /* slide descriptors: the clip first where present, then the stills */
+    const slides = (clip ? [{ type: 'video', src: clip }] : [])
+      .concat(shots.map((src) => ({ type: 'image', src })));
+    const total = slides.length;
+
+    const frag = document.createElement('div');
+    frag.className = 'worx__car';
+    frag.innerHTML =
+      '<div class="worx__car-window plate__frame plate__frame--wide">' +
+        '<div class="worx__car-track"></div>' +
+      '</div>' +
+      '<div class="worx__car-bar">' +
+        '<button type="button" class="worx__car-btn worx__car-btn--prev">' + CHEVRON + '</button>' +
+        '<ol class="worx__car-dots"></ol>' +
+        '<button type="button" class="worx__car-btn worx__car-btn--next">' + CHEVRON + '</button>' +
+      '</div>';
+
+    const track = frag.querySelector('.worx__car-track');
+    const dotList = frag.querySelector('.worx__car-dots');
+    const prev = frag.querySelector('.worx__car-btn--prev');
+    const next = frag.querySelector('.worx__car-btn--next');
+
+    slides.forEach((s, n) => {
+      const cell = document.createElement('div');
+      cell.className = 'worx__car-cell';
+      if (s.type === 'video') {
+        /* data-video, not a <video> — the shared loader below owns the src.
+           .bg-placeholder is what shows until it has decoded a frame. */
+        cell.dataset.video = s.src;
+        cell.innerHTML = '<div class="bg-placeholder bg-placeholder--builder"></div>';
+      } else {
+        /* only the first still is eager; the rest are one arrow-press away and
+           must not compete with the row above them for bandwidth */
+        cell.innerHTML =
+          '<img src="' + s.src + '" alt="" width="1000" height="562" decoding="async"' +
+          (n <= 1 ? '' : ' loading="lazy"') + '>';
+      }
+      track.appendChild(cell);
+
+      const dot = document.createElement('li');
+      dot.className = 'worx__car-dot';
+      dotList.appendChild(dot);
+    });
+    const dots = [...dotList.children];
+    const cells = [...track.children];
+
+    mount.innerHTML = '';
+    mount.appendChild(frag);
+
+    let idx = 0;
+    const clipCell = clip ? cells[0] : null;
+
+    const render = () => {
+      track.style.transform = 'translate3d(' + (-idx * 100) + '%,0,0)';
+      dots.forEach((d, n) => d.classList.toggle('is-live', n === idx));
+      cells.forEach((c, n) => c.setAttribute('aria-hidden', n === idx ? 'false' : 'true'));
+      prev.disabled = idx === 0;
+      next.disabled = idx === total - 1;
+      /* the clip is only worth decoding while it is the slide on screen */
+      if (clipCell) {
+        const v = clipCell.querySelector('video');
+        if (v) {
+          if (idx === 0) { const p = v.play(); if (p && p.catch) p.catch(() => {}); }
+          else if (!v.paused) v.pause();
+        }
+      }
+      /* the position lives here rather than in a live region — see the note at
+         the top of this IIFE. Focus stays on the button across a press, so an
+         updated label is what actually gets re-announced. */
+      const at = ', ' + (idx + 1) + ' of ' + total;
+      prev.setAttribute('aria-label', 'Previous image, ' + label + at);
+      next.setAttribute('aria-label', 'Next image, ' + label + at);
+    };
+
+    const go = (n) => {
+      const clamped = Math.max(0, Math.min(total - 1, n));
+      if (clamped === idx) return;
+      idx = clamped;
+      render();
+    };
+
+    prev.addEventListener('click', () => go(idx - 1));
+    next.addEventListener('click', () => go(idx + 1));
+
+    /* horizontal swipe, since this only ever renders on a touch-shaped
+       viewport. Deliberately NOT pointer-capture based — see the note on the
+       float above; a plain threshold on pointerup is enough here and cannot
+       swallow the buttons' own clicks. */
+    let x0 = null;
+    frag.addEventListener('pointerdown', (e) => { x0 = e.clientX; }, { passive: true });
+    frag.addEventListener('pointerup', (e) => {
+      if (x0 === null) return;
+      const dx = e.clientX - x0;
+      x0 = null;
+      if (Math.abs(dx) > 40) go(idx + (dx < 0 ? 1 : -1));
+    }, { passive: true });
+
+    render();
+  });
 })();
 
 /* ---------- the sheet counter: page progress + live sheet + theme flip ----------
@@ -1133,7 +1615,11 @@ if (hero) {
     gsap.to(fill, {
       scaleX: 1,
       ease: 'none',
-      scrollTrigger: { trigger: document.body, start: 'top top', end: 'bottom bottom', scrub: 0.3 }
+      /* measures the whole document, so it must refresh LAST — after every pin
+         above it has settled its spacer and stopped changing the height it is
+         measuring against */
+      scrollTrigger: { trigger: document.body, start: 'top top', end: 'bottom bottom', scrub: 0.3,
+                       refreshPriority: 2 }
     });
   }
 
@@ -1159,11 +1645,17 @@ if (hero) {
     ticks.forEach((t) => t.classList.toggle('is-live', +t.dataset.sheet === idx));
   };
 
+  /* These are created LAST but point at elements spanning the whole page,
+     #hero and #stats included — i.e. above the #pillars pin that has already
+     been built. refreshPriority puts them back in page order so a refresh
+     (fonts.ready, plate-image load) recalculates the pin before the triggers
+     that sit around it. */
   sheets.forEach((s, i) => {
     ScrollTrigger.create({
       trigger: s.el,
       start: 'top center',
       end: 'bottom center',
+      refreshPriority: 1,
       onToggle: (self) => { if (self.isActive) setLive(i); }
     });
   });
@@ -1185,6 +1677,7 @@ if (hero) {
       start: 'bottom top',
       endTrigger: contact,
       end: 'top center',
+      refreshPriority: 1,
       onToggle: (self) => { root.classList.toggle('chrome-paper', self.isActive); }
     });
   }
@@ -1198,6 +1691,7 @@ if (hero) {
     ScrollTrigger.create({
       trigger: hero,
       start: 'bottom top',
+      refreshPriority: 1,
       onEnter: () => root.classList.add('past-hero'),
       onLeaveBack: () => root.classList.remove('past-hero')
     });
@@ -1326,17 +1820,32 @@ document.querySelectorAll('[data-video]').forEach(holder => {
   v.addEventListener('stalled', () => playBgVideo(v));
 });
 /* defer video downloads until their section approaches — they'd otherwise
-   compete with the hero frame set for bandwidth on page load */
+   compete with the hero frame set for bandwidth on page load.
+
+   150% was measured as the actual bug behind "the sticky plate looks
+   frozen" and "previews only work for one row, randomly": #pillars (builder
+   video, 7.2MB) and #work (closer video, 4.8MB) are one section apart, so a
+   150%-viewport margin put both of their triggers inside the SAME
+   intersection batch on ordinary scroll speed. Both v.load()s fired in the
+   same tick — 12MB hitting the network/decoder together, right as the
+   hero's own frame set (up to 37MB of AVIF/WebP) could still be mid-flight —
+   and whichever finished last just sat on its placeholder looking stuck.
+   Direct testing confirms both files decode in single-digit milliseconds
+   once actually requested, so the fix is demand shaping, not the files
+   themselves: a smaller lead margin plus an explicit stagger so two videos
+   that intersect together never load together. */
+let pendingBgLoads = 0;
 const lazyVideoIo = new IntersectionObserver((entries) => {
   entries.forEach(en => {
     if (!en.isIntersecting) return;
     lazyVideoIo.unobserve(en.target);
     const v = bgVideos.get(en.target);
     if (!v) return;
-    v.src = en.target.dataset.video;
-    v.load();
+    const delay = pendingBgLoads * 400;
+    pendingBgLoads++;
+    setTimeout(() => { v.src = en.target.dataset.video; v.load(); }, delay);
   });
-}, { rootMargin: '150% 0px' });
+}, { rootMargin: '35% 0px' });
 bgVideos.forEach((_, holder) => lazyVideoIo.observe(holder));
 const resumeBgVideos = () => bgVideos.forEach(v => { if (videoVisible.get(v)) playBgVideo(v); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) resumeBgVideos(); });
@@ -1361,9 +1870,14 @@ bgVideos.forEach((_, holder) => videoIo.observe(holder));
    that is otherwise precise. cv.html had already opted out. */
 
 /* ---------- topbar: retract while reading down, return on scroll up ----------
-   The bar is a solid chip on this page too, so it would otherwise sit on top
-   of body copy. Deliberately not a theme flip: that is what made the header
-   vanish at section boundaries in lab/005. */
+   The bar is a solid chip on this page too, so it would otherwise sit on
+   top of body copy. Deliberately not a theme flip: that is what made the
+   header vanish at section boundaries in lab/005.
+
+   .sheetbar used to join this same listener on phones (it's display:none
+   there now — the ≤1024px drawer nav owns that job, see style.css and the
+   drawer IIFE above — so its half of this listener was removed rather than
+   left toggling a class on a permanently-hidden element). */
 (() => {
   const root = document.documentElement;
   const bar = document.querySelector('.brief-topbar');
@@ -1372,7 +1886,10 @@ bgVideos.forEach((_, holder) => videoIo.observe(holder));
   addEventListener('scroll', () => {
     const y = window.scrollY;
     if (Math.abs(y - last) < 6) return;
-    root.classList.toggle('bar-hidden', y > last && y > 220);
+    /* !menu-open: the drawer's own toggle button lives in this bar — it
+       must never auto-hide out from under an open drawer */
+    const hide = y > last && y > 220 && !root.classList.contains('menu-open');
+    root.classList.toggle('bar-hidden', hide);
     last = y;
   }, { passive: true });
   /* never hide the bar from a keyboard user tabbing into it */

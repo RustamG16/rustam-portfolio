@@ -57,8 +57,12 @@
   --sec-pad:clamp(56px,9vh,120px);
 
   /* the sheet counter is position:fixed over the bottom of the page; anything
-     that ends the document has to clear it */
-  --bar-h:56px;
+     that ends the document has to clear it. 64px is the bar's real rendered
+     height (10px padding top/bottom + the 44px min-height touch target on
+     each tick) — the token used to say 56px, 8px short of what .close
+     actually needed to clear. Mobile overrides this to match its own
+     shorter bar; see the mobile block. */
+  --bar-h:64px;
 
   /* no fixed max-width box: the page fills the viewport and the gutter grows
      with it. Individual measures carry their own ch-based caps. */
@@ -279,6 +283,90 @@ html[lang="en"] .topbar__lang [data-lang-alt]{color:var(--text-dim)}
 .brief-root[lang="en"] .brief-topbar .topbar__lang [data-lang-label],
 .brief-root[lang="de"] .brief-topbar .topbar__lang [data-lang-alt]{color:var(--topbar-fg)}
 
+/* ==========================================================================
+   MOBILE/TABLET DRAWER NAV (≤1024px, index.html only)
+   Burger lives in .topbar__nav; the drawer itself is a sibling of <header>,
+   not nested in .topbar (which is pointer-events:none with only
+   .topbar__mark/.topbar__nav opted back in — nesting here would inherit
+   that trap). Open/close animation lives in main.js, gated behind
+   gsap.matchMedia(); this file only owns resting/hidden state, the CSS
+   attribute-driven burger icon, and the ≤1024px topbar restructure.
+   ========================================================================== */
+.topbar__burger{
+  display:none; /* shown ≤1024px below */
+  appearance:none;background:none;border:none;cursor:pointer;color:var(--topbar-fg);
+  width:44px;height:44px;padding:0;position:relative;flex:none;
+}
+.topbar__burger-bar{
+  position:absolute;left:50%;top:50%;width:22px;height:2px;background:currentColor;
+  transform:translate(-50%,-50%) translateY(-4px);
+  transition:transform .3s cubic-bezier(.2,.8,.2,1);
+}
+.topbar__burger-bar:last-child{transform:translate(-50%,-50%) translateY(4px)}
+.topbar__burger[aria-expanded="true"] .topbar__burger-bar{transform:translate(-50%,-50%) rotate(45deg)}
+.topbar__burger[aria-expanded="true"] .topbar__burger-bar:last-child{transform:translate(-50%,-50%) rotate(-45deg)}
+
+.drawer-scrim{
+  position:fixed;inset:0;z-index:9499;
+  background:rgba(10,10,11,.6);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);
+  opacity:0;pointer-events:none;transition:opacity .3s;
+}
+.drawer-scrim.is-visible{opacity:1;pointer-events:auto}
+.drawer{
+  position:fixed;top:0;right:0;bottom:0;z-index:9500;
+  width:min(86vw,400px);height:100dvh;
+  pointer-events:none; /* mirrors .topbar's own pointer-events pattern above */
+}
+.drawer.is-open{pointer-events:auto}
+.drawer__panel{
+  height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  background:rgba(10,10,11,.97);color:var(--text);
+  border-left:1px solid var(--d-rule);
+  padding:var(--s5) var(--s4) var(--s4);
+  display:flex;flex-direction:column;gap:var(--s5);
+  /* No CSS transform here on purpose — GSAP's xPercent (main.js) sets the
+     hidden position via immediateRender as soon as it runs. A CSS-authored
+     transform on the same property fights GSAP: it gets preserved as a
+     separate, un-animated prefix in the composed transform string, so the
+     panel visually gets stuck partway even though xPercent itself reaches
+     0. Same convention as .worx__float elsewhere in this file — CSS owns
+     the plain/visible layout, JS's gsap.set()/immediateRender owns hidden. */
+}
+.drawer__close{
+  align-self:flex-end;appearance:none;background:none;border:none;color:var(--text);
+  width:44px;height:44px;font-size:18px;cursor:pointer;
+}
+.drawer__close:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.drawer__jump{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.drawer__jump-link{
+  display:flex;align-items:center;min-height:44px;
+  font-family:var(--display);font-size:22px;text-transform:uppercase;
+  color:var(--text);border-bottom:1px solid var(--d-rule-soft);
+}
+.drawer__jump-link:hover,.drawer__jump-link:focus-visible{color:var(--acid)}
+.drawer__actions{display:flex;flex-direction:column;gap:var(--s2)}
+.drawer__lang-slot .topbar__lang{color:var(--text);min-height:44px}
+.drawer__contact{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.drawer__contact a{
+  display:inline-flex;align-items:center;min-height:44px;
+  font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--d-dim);
+}
+.drawer__contact a:hover,.drawer__contact a:focus-visible{color:var(--acid)}
+
+/* the existing shared ≤768px block (below, in the MOBILE section) stays
+   untouched — it's shared with cv.html. These rules are additive and
+   .brief-topbar-scoped so they only ever fire on the homepage.
+   .sheetbar's own display:none override lives next to its base rule
+   further down (source order matters against an equal-specificity
+   .sheetbar{display:flex} declared later in the cascade otherwise). */
+@media (max-width:1024px){
+  .brief-topbar .topbar__cta--desk{display:none}
+  .topbar__burger{display:block}
+}
+@media (min-width:1025px){
+  .drawer,.drawer-scrim{display:none}
+}
+
 /* ---------- sheet scaffolding ---------- */
 .sheet{position:relative}
 .sheet__wrap{width:100%;padding-inline:var(--gutter)}
@@ -377,7 +465,13 @@ html[lang="en"] .topbar__lang [data-lang-alt]{color:var(--text-dim)}
    drag whatever follows the name up into it. */
 .hero__line{display:block;overflow:hidden;line-height:1}
 .hero__line + .hero__line{margin-top:.04em}
-.hero__name.is-glitching{transform:skewX(1.5deg);text-shadow:-2px 0 rgba(80,255,190,.85),2px 0 rgba(255,60,180,.85)}
+/* will-change only WHILE glitching, never at rest: this is a clamp(52px,…,260px)
+   Anton heading, and a text-shadow on it repaints the whole text layer on every
+   one of the ~17 frames the seam is active. Promoting it for that window keeps
+   the repaint off the main surface; leaving will-change on permanently would
+   cost a standing layer for a heading that is static 95% of the scroll. */
+.hero__name.is-glitching{transform:skewX(1.5deg);text-shadow:-2px 0 rgba(80,255,190,.85),2px 0 rgba(255,60,180,.85);
+  will-change:transform}
 .hero__line--accent{-webkit-text-stroke:2px var(--text);-webkit-text-fill-color:transparent;color:transparent;
   paint-order:stroke fill;text-shadow:none;transition:-webkit-text-stroke-color .5s ease}
 .hero__name.is-post-seam{color:var(--accent);text-shadow:none}
@@ -453,6 +547,7 @@ html[lang="en"] .topbar__lang [data-lang-alt]{color:var(--text-dim)}
 .hero__id{display:none;margin:clamp(18px,3vh,30px) 0 0;max-width:clamp(132px,38vw,200px)}
 .hero__id-frame{position:relative;aspect-ratio:3/4;overflow:hidden;background:#000;
   border:1px solid var(--d-rule)}
+.hero__id-frame picture{display:block;width:100%;height:100%}
 .hero__id-frame img{width:100%;height:100%;object-fit:cover;object-position:50% 22%;
   display:block;filter:contrast(1.06) saturate(.92)}
 .hero__id-corner{position:absolute;width:12px;height:12px;border:1px solid var(--acid);opacity:.8}
@@ -479,11 +574,66 @@ html[lang="en"] .topbar__lang [data-lang-alt]{color:var(--text-dim)}
   .hero{height:auto;min-height:100svh}
   .hero__sticky{position:relative;height:auto;min-height:100svh;overflow:visible}
   #orbit-canvas,.hero__gauge,.hero__mark{display:none}
-  .hero__content{position:relative;inset:auto;justify-content:center;
-    padding-top:clamp(80px,11vh,118px)}
-  /* the ID photo only earns its place where the flipbook is absent — on a
-     wide cover the moving frame IS the picture */
-  .hero__id{display:block}
+  /* Portrait-forward cover: photo is the hero plane; type sits on a bottom
+     scrim; meta + CTAs land on the section ground below. padding-top:0 so the
+     banner can go edge-to-edge under the fixed topbar (which already carries
+     its own gradient). */
+  .hero__content,.hero--still .hero__content,.brief-root:not(.js) .hero__content{
+    position:relative;inset:auto;justify-content:flex-start;
+    padding-top:0;padding-bottom:clamp(48px,8vh,96px);
+  }
+  .hero__lockup,
+  .brief-root:not(.js) .hero__lockup,
+  .hero--still .hero__lockup{
+    display:grid;grid-template-columns:minmax(0,1fr);align-items:stretch;
+  }
+  /* Full-bleed 4:5 banner — breaks out of the content gutter */
+  .hero__id{
+    display:block;grid-area:1/1;position:relative;z-index:0;
+    margin:0;max-width:none;width:calc(100% + 2 * var(--gutter));
+    margin-inline:calc(var(--gutter) * -1);
+  }
+  .hero__id-frame{
+    aspect-ratio:4/5;border:0;border-bottom:1px solid var(--d-rule);
+  }
+  .hero__id-frame::after{
+    content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+    background:linear-gradient(to top,rgba(10,10,11,.92) 0%,rgba(10,10,11,.55) 28%,rgba(10,10,11,.12) 52%,transparent 72%);
+  }
+  .hero__id-frame img{object-position:50% 18%}
+  /* The cap used to ride inside the image's top corner. On a phone the banner
+     is full-bleed and starts at y=0, so "ID · RG-2026" and the R.G. signature
+     landed directly under the fixed topbar — two lines of mono type meshed
+     into the RG mark and the burger. There is nowhere on this banner to put
+     it (the bottom is the name lockup's), and the same information is in
+     .hero__meta one block down, so it simply doesn't render here. */
+  .hero__id-cap{display:none}
+  /* Name lockup stacked over the banner bottom */
+  .hero__lead{
+    grid-area:1/1;align-self:end;position:relative;z-index:2;
+    padding:0 clamp(4px,1.2vw,8px) clamp(18px,3.5vh,28px);
+  }
+  .hero__lead .hero__kicker,
+  .hero__lead .hero__sub{opacity:1}
+  .hero__name{font-size:clamp(44px,13vw,72px);margin:clamp(8px,1.4vh,16px) 0 clamp(8px,1.2vh,14px)}
+  .hero__sub{margin-top:0;max-width:none}
+  /* Meta + actions sit on the section ground below the banner */
+  .hero__file{grid-area:2/1;margin-top:clamp(22px,3.6vh,36px)}
+  .hero__meta{margin-top:0}
+  .hero__meta-row,.hero__actions{opacity:1}
+  /* One column, not a wrapping flex row. Wrapping sized each button to its own
+     label, so "Download CV" and "Experience & documents →" came out at wildly
+     different widths and read as two unrelated controls. Full-bleed rows of
+     equal width read as a stack of equal choices, which is what they are. */
+  .hero__actions{
+    pointer-events:auto;display:grid;grid-template-columns:1fr;gap:10px;
+    /* min(), so one declaration covers the whole range this block spans: on a
+       phone 100% wins and the buttons are genuinely full-bleed; on a portrait
+       tablet (this query reaches 900px) the 420px cap wins, because a 680px
+       button is not "full width", it is a stretched one. */
+    max-width:min(100%,420px);
+  }
+  .hero__actions .btn{width:100%;justify-content:center;text-align:center}
 }
 
 /* no JS: the canvas can never be painted, so 390vh of empty dark was just a
@@ -496,7 +646,11 @@ html[lang="en"] .topbar__lang [data-lang-alt]{color:var(--text-dim)}
 .brief-root:not(.js) .hero__content{position:relative;inset:auto;justify-content:center;
   padding-top:clamp(80px,11vh,118px)}
 .brief-root:not(.js) .hero__id{display:block}
-.brief-root:not(.js) .hero__lockup{display:block}
+/* Desktop still: collapse the 1100px two-col lockup. Mobile MQ below
+   re-asserts grid for the portrait-forward banner (higher specificity). */
+@media (min-width:901px) and (min-aspect-ratio:13/20){
+  .brief-root:not(.js) .hero__lockup{display:block}
+}
 
 /* ---------- 01 · SUMMARY ---------- */
 /* Summary and Capability are both cream, so the boundary between them is
@@ -504,29 +658,49 @@ html[lang="en"] .topbar__lang [data-lang-alt]{color:var(--text-dim)}
    empty stretch on the page. Capability brings its own top clearance (it is
    a pinned sheet), so Summary gives half of its bottom back. */
 #stats{padding:var(--sec-pad) 0 calc(var(--sec-pad) * .5)}
-.vitals{list-style:none;display:grid;grid-template-columns:repeat(2,1fr)}
-@media (min-width:900px){ .vitals{grid-template-columns:repeat(4,1fr)} }
-.vital{
-  display:flex;flex-wrap:wrap;align-items:baseline;
-  padding:var(--s4) var(--s3) var(--s4) 0;border-bottom:1px solid var(--p-rule);
+.vitals{
+  list-style:none;display:grid;width:100%;
+  grid-template-columns:repeat(2,max-content);
+  justify-content:space-between;column-gap:var(--s4);
 }
 @media (min-width:900px){
-  .vital + .vital{border-left:1px solid var(--p-rule);padding-left:var(--s4)}
+  .vitals{
+    grid-template-columns:repeat(4,max-content);
+    column-gap:0;
+  }
 }
+.vital{
+  display:flex;flex-direction:column;align-items:center;
+  padding:var(--s4) 0;
+}
+.vital__num{display:flex;align-items:baseline;justify-content:center;gap:0}
 .vital__n{
   font-family:var(--display);font-size:clamp(44px,6.4vw,96px);line-height:.82;
   letter-spacing:-.01em;font-variant-numeric:tabular-nums;
 }
 .vital__plus{font-family:var(--display);font-size:clamp(20px,2.6vw,38px);line-height:1;color:var(--ink-green)}
 .vital__label{
-  flex:1 0 100%;margin-top:var(--s2);
+  margin-top:var(--s2);text-align:center;
   font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--p-dim);
 }
-.status{display:flex;flex-wrap:wrap;gap:var(--s2) var(--s3);align-items:baseline;margin-top:var(--s5);padding-top:var(--s3)}
-.status__key{font-family:var(--mono);font-size:10px;letter-spacing:.24em;color:var(--p-faint)}
+/* block, not flex. Flex BLOCKIFIES its children, so .status__val could never
+   be the inline box its per-line highlight below needs — and the wrap the
+   flex row produced put STATUS on a line of its own with the value orphaned
+   under it. Normal inline flow gives both: key and value read as one line,
+   and the value's highlight fragments with the text. */
+.status{margin-top:var(--s5);padding-top:var(--s3)}
+.status__key{display:inline-block;margin-right:var(--s3);
+  font-family:var(--mono);font-size:10px;letter-spacing:.24em;color:var(--p-faint)}
+/* A box-shadow is drawn against the element's BOX, so once this string wrapped
+   (it does at every phone width) the highlight became one full-width bar under
+   the last line only. A background-image plus box-decoration-break:clone is
+   painted per line fragment, so it tracks the actual text on both. */
 .status__val{
   font-family:var(--mono);font-size:clamp(11px,1.15vw,13px);letter-spacing:.16em;text-transform:uppercase;
-  color:var(--p-ink);box-shadow:inset 0 -.42em 0 rgba(25,226,141,.4);
+  color:var(--p-ink);
+  background-image:linear-gradient(rgba(25,226,141,.4),rgba(25,226,141,.4));
+  background-size:100% .42em;background-position:0 100%;background-repeat:no-repeat;
+  -webkit-box-decoration-break:clone;box-decoration-break:clone;
 }
 
 /* ---------- 02 · CAPABILITY (pinned) ---------- */
@@ -589,6 +763,10 @@ html[lang="en"] .topbar__lang [data-lang-alt]{color:var(--text-dim)}
 .plate__frame video,.plate__frame img{width:100%;height:100%;object-fit:cover;display:block}
 .plate__frame--land{aspect-ratio:16/10}
 .plate__frame--port{aspect-ratio:3/4}
+/* every work source — the four preview clips and all twelve stills — is 16:9.
+   The work rows use this so a cover-fit is a no-op; --land keeps its two other
+   consumers (the Capability plate, the desktop sticky Work plate) unchanged. */
+.plate__frame--wide{aspect-ratio:16/9}
 .plate__corner{position:absolute;width:13px;height:13px;border:1px solid var(--acid);opacity:.8;z-index:2}
 .plate__corner--tl{top:8px;left:8px;border-right:0;border-bottom:0}
 .plate__corner--tr{top:8px;right:8px;border-left:0;border-bottom:0}
@@ -656,8 +834,11 @@ html[lang="en"] .topbar__lang [data-lang-alt]{color:var(--text-dim)}
   position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;
 }
 /* the clip crossfades in over its own poster once it has a frame to show;
-   a missing file simply never reaches opacity 1 */
-.worx__float-video{opacity:0;z-index:1;transition:opacity .4s ease}
+   a missing file simply never reaches opacity 1.
+   180ms, not 400: the clips are pre-warmed now (see main.js), so this fade IS
+   the perceived response to the hover rather than cover for a fetch — and
+   400ms is well past the point a UI transition stops reading as immediate. */
+.worx__float-video{opacity:0;z-index:1;transition:opacity .18s cubic-bezier(.23,1,.32,1)}
 .worx__float-video.is-active{opacity:1}
 .worx__float-cap{
   display:flex;justify-content:space-between;align-items:baseline;gap:var(--s2);margin-top:9px;
@@ -666,16 +847,23 @@ html[lang="en"] .topbar__lang [data-lang-alt]{color:var(--text-dim)}
 .worx__float-src{color:var(--ink-green)}
 
 .worx__list{list-style:none}
-.worx__row{
-  display:block;padding:var(--s5) 0;border-top:1px solid var(--p-rule);color:inherit;
-}
+/* The rules and the padding belong to the <li>, not the <a>. The carousel is
+   now a SIBLING of the row (it owns <button>s, which cannot live inside a
+   link), so a border-bottom on the last .worx__row would draw a line ACROSS
+   the list — above that row's own carousel instead of under it.
+
+   Direct child, not a descendant: every row also contains a .worx__tags <li>
+   list, and `.worx__list li` matched those chips at equal specificity — a
+   54px vertical pad and a rule across each of them. */
+.worx__list > li{padding:var(--s5) 0;border-top:1px solid var(--p-rule)}
+.worx__row{display:block;color:inherit}
 /* reserve the lane the float parks in, so a long title can never run under
    the card. Slightly wider than the card itself for breathing room. */
 @media (min-width:1000px){
   .worx__row{padding-right:clamp(220px,23.5vw,366px)}
 }
-.worx__list li:first-child .worx__row{border-top:0;padding-top:0}
-.worx__list li:last-child .worx__row{border-bottom:1px solid var(--p-rule)}
+.worx__list > li:first-child{border-top:0;padding-top:0}
+.worx__list > li:last-child{border-bottom:1px solid var(--p-rule)}
 .worx__row:focus-visible{outline:2px solid var(--acid);outline-offset:6px}
 .worx__index{
   display:inline-block;font-family:var(--mono);font-weight:500;font-size:clamp(15px,1.5vw,19px);
@@ -698,14 +886,53 @@ html[lang="en"] .topbar__lang [data-lang-alt]{color:var(--text-dim)}
 }
 .worx__row:hover .worx__go,.worx__row:focus-visible .worx__go{border-bottom-color:var(--ink-green);transform:translateX(4px)}
 
-/* mobile/tablet fallback: an inline poster per row instead of the sticky
-   panel — same sizing logic the old .project__plate used, so a portrait
-   and a landscape poster still read as comparable sheets. */
-.worx__media{display:block;margin-top:var(--s4)}
-.worx__media .plate__frame{display:block;max-width:min(100%,620px)}
-.worx__media .plate__frame--land{max-width:min(100%,720px)}
-.worx__media .plate__frame--port{max-width:min(100%,440px)}
+/* ---------- mobile/tablet: the stepped media carousel ----------
+   Replaces the single static poster each row used to carry. Below 1000px the
+   floating hover card is display:none and there is no pointer to follow, so
+   the only way to say "there are more shots than this" is to show a control
+   that steps them. Built by main.js from data-shots / data-clip; the lone
+   <img> in the markup is the no-JS resting state. */
+.worx__media{display:block;margin-top:var(--s4);max-width:min(100%,720px)}
+.worx__media .plate__frame{display:block}
 @media (min-width:1000px){ .worx__media{display:none} }
+
+.worx__car-window{position:relative;display:block}
+.worx__car-track{
+  position:absolute;inset:0;display:flex;
+  /* strong ease-out: the slide should be under the thumb immediately, not
+     ramp up. Transform only — nothing here can invalidate layout. */
+  transition:transform 240ms cubic-bezier(.23,1,.32,1);
+  will-change:transform;
+}
+.worx__car-cell{flex:0 0 100%;width:100%;height:100%;position:relative}
+/* the .plate__frame img/video rule already covers object-fit:cover here */
+
+.worx__car-bar{display:flex;align-items:center;gap:var(--s2);margin-top:10px}
+.worx__car-btn{
+  appearance:none;background:none;cursor:pointer;color:var(--ink-green);
+  width:44px;height:44px;flex:none;padding:0;
+  display:inline-flex;align-items:center;justify-content:center;
+  border:1px solid var(--p-rule);
+  transition:border-color .2s ease,color .2s ease,opacity .2s ease;
+}
+.worx__car-btn svg{width:18px;height:18px;display:block}
+.worx__car-btn--next svg{transform:rotate(180deg)}
+.worx__car-btn:disabled{opacity:.28;cursor:default}
+.worx__car-btn:not(:disabled):active{transform:scale(.97);transition:transform 100ms cubic-bezier(.23,1,.32,1)}
+.worx__car-btn:focus-visible{outline:2px solid var(--ink-green);outline-offset:3px}
+@media (hover:hover) and (pointer:fine){
+  .worx__car-btn:not(:disabled):hover{border-color:var(--ink-green)}
+}
+/* squares, not circles — the page's registration-mark language */
+.worx__car-dots{list-style:none;display:flex;gap:6px;margin-right:auto;padding-left:2px}
+.worx__car-dot{width:16px;height:2px;background:var(--p-rule);transition:background .2s ease}
+.worx__car-dot.is-live{background:var(--ink-green)}
+
+/* NB: there is deliberately no .visually-hidden utility here. The obvious
+   place to want one is the carousel's "2 of 4" readout, but the content lock
+   (_verify/redesign/extract-text.js) reads body.innerText, and innerText still
+   sees clip-rect'd text — so a hidden readout would silently enter the locked
+   copy. The position rides in the arrows' aria-labels instead (main.js). */
 
 /* ---------- 04 · CLOSE ---------- */
 /* min-height:88svh is gone. Forcing the last sheet to fill 88% of the screen
@@ -725,49 +952,37 @@ html[lang="en"] .topbar__lang [data-lang-alt]{color:var(--text-dim)}
 .close__title>span{display:block}
 .close__title .accent{color:var(--acid)}
 
-.close__grid{display:grid;grid-template-columns:1fr;gap:var(--s5)}
-
-/* At wide viewports the close sheet was a tall left-hand column with a void
-   down its whole right side. The xref card now fills it — via display:contents,
-   so the card becomes a grid item of the wrap without touching the markup.
-
-   The card sits on the ACTIONS row, top-aligned with the buttons, rather than
-   centred against the title. Centring gave it no relationship to anything and
-   it read as floating; on the actions row the sheet resolves into one line of
-   "do something next", with the buttons left and the cross-reference right.
-   Rows are assigned explicitly — auto-placement would put the kicker and the
-   title side by side. */
-@media (min-width:1000px){
-  .close .sheet__wrap{
-    display:grid;
-    grid-template-columns:minmax(0,1fr) minmax(300px,.5fr);
-    column-gap:var(--s6);
-    align-items:start;
-  }
-  .close .sheet__wrap > .kicker{grid-column:1;grid-row:1}
-  .close__title{grid-column:1;grid-row:2}
-  .close__grid{display:contents}
-  .close__col{grid-column:1;grid-row:3}
-  .xref{grid-column:2;grid-row:3;align-self:start}
-  .close__footer{grid-column:1 / -1;grid-row:4}
-}
+/* .close__grid used to hold two grid children — .close__col and the .xref
+   card — side by side at desktop widths (see git history for that layout).
+   Now that .xref lives inside .close__actions as a third action, .close__grid
+   wraps a single child and needs no grid of its own; the whole .close
+   section is one flowing column at every width. */
+.close__grid{display:block}
 .close__col{display:flex;flex-direction:column;gap:var(--s5)}
-.close__actions{display:flex;flex-wrap:wrap;gap:var(--s2)}
+.close__actions{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s2)}
 
-/* the cross-reference — this is what makes the two pages one document */
+/* the cross-reference — this is what makes the two pages one document.
+   Sized to match .btn (same padding/min-height) so it reads as a third
+   action, not a separate card. .xref__body (the "FILE RG-2026 / 4 roles…"
+   detail) stays in the accessible name for screen readers but is visually
+   hidden — visible content is just "SEE ALSO →", matched to the buttons'
+   two-to-three-word weight either side of it. */
 .xref{
-  display:flex;align-items:center;gap:var(--s3);flex-wrap:wrap;
-  max-width:min(100%,64ch);padding:var(--s3);
-  background:rgba(25,226,141,.09);border-left:2px solid var(--acid);
+  position:relative; /* containing block for .xref__body's absolute
+    visually-hidden positioning below — without this it positions against
+    whatever ancestor IS positioned (or the initial containing block), which
+    on this page put it hundreds of pixels off to the side */
+  display:inline-flex;align-items:center;gap:var(--s1);
+  padding:18px 24px;border:1px solid var(--acid);
   transition:background .3s;
 }
-@media (min-width:1000px){ .xref{max-width:none} }
-.xref:hover{background:rgba(25,226,141,.16)}
-.xref__key{font-family:var(--mono);font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--acid);flex:none}
-.xref__body{flex:1;min-width:0}
-.xref__title{display:block;font-family:var(--mono);font-weight:500;font-size:12px;letter-spacing:.18em;color:var(--d-text)}
-.xref__desc{display:block;margin-top:4px;font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--d-dim)}
-.xref__go{color:var(--acid);font-size:16px;flex:none;transition:transform .3s cubic-bezier(.2,.8,.2,1)}
+.xref:hover{background:rgba(25,226,141,.12)}
+.xref__key{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--acid);flex:none}
+.xref__body{
+  position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+  overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;
+}
+.xref__go{color:var(--acid);font-size:15px;flex:none;transition:transform .3s cubic-bezier(.2,.8,.2,1)}
 .xref:hover .xref__go{transform:translateX(4px)}
 
 .close__links{list-style:none;display:flex;flex-wrap:wrap;gap:var(--s2) var(--s4);padding-top:var(--s3);border-top:1px solid var(--d-rule)}
@@ -791,7 +1006,14 @@ html[lang="en"] .topbar__lang [data-lang-alt]{color:var(--text-dim)}
   background:rgba(10,10,11,.88);border-top:1px solid var(--d-rule);
   -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
   font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--d-faint);
-  transition:background .45s ease,border-color .45s ease,color .45s ease;
+  transition:background .45s ease,border-color .45s ease,color .45s ease,
+    transform .38s cubic-bezier(.2,.8,.2,1),opacity .3s;
+}
+/* the drawer nav (above, homepage-only section) owns section-jump duty
+   ≤1024px now — placed here, after the base rule, so this equal-specificity
+   override actually wins the cascade tie against it */
+@media (max-width:1024px){
+  .sheetbar{display:none}
 }
 .brief-root.chrome-paper .sheetbar{
   background:rgba(239,233,222,.9);border-top-color:var(--p-rule);color:var(--p-faint);
@@ -828,8 +1050,13 @@ html[lang="en"] .topbar__lang [data-lang-alt]{color:var(--text-dim)}
 /* The float has to clear the counter. Scoped to .brief-page and given the
    extra specificity deliberately: the base .whatsapp-float rule is declared
    LATER in this file (it is shared with cv.html, which has no counter to
-   clear), so an equal-specificity override here would lose. */
-.brief-page .whatsapp-float{bottom:88px}
+   clear), so an equal-specificity override here would lose.
+   min-width:1025px: the sheetbar only ever renders above the drawer-nav
+   breakpoint now (it's display:none ≤1024px, see the drawer nav block
+   above) — below that, WhatsApp has nothing to clear. */
+@media (min-width:1025px){
+  .brief-page .whatsapp-float{bottom:88px}
+}
 
 /* ==========================================================================
    REVEALS — CSS owns the resting state, JS owns the motion.
@@ -837,7 +1064,13 @@ html[lang="en"] .topbar__lang [data-lang-alt]{color:var(--text-dim)}
    ========================================================================== */
 .brief-root.js .reveal{opacity:0;transform:translateY(20px)}
 .brief-root.js .reveal.is-in{opacity:1;transform:none}
-.btn{font-size:12px;letter-spacing:.24em;text-transform:uppercase;padding:18px 36px;border:1px solid var(--accent);transition:all .3s;display:inline-flex;align-items:center;justify-content:center}
+/* named properties, not `all`: `all` also animates the transform below, so
+   every press had its 97% scale smeared over 300ms instead of landing */
+.btn{font-size:12px;letter-spacing:.24em;text-transform:uppercase;padding:18px 36px;border:1px solid var(--accent);
+  transition:background .3s ease,color .3s ease,border-color .3s ease;display:inline-flex;align-items:center;justify-content:center}
+/* press feedback — the buttons had none, so a tap on a phone gave nothing
+   back until the navigation itself resolved */
+.btn:active{transform:scale(.97);transition:transform 100ms cubic-bezier(.23,1,.32,1)}
 .btn:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 .btn--solid{background:var(--accent);color:var(--ink)}
 .btn--solid:hover{background:transparent;color:var(--text)}
@@ -850,8 +1083,11 @@ html[lang="en"] .topbar__lang [data-lang-alt]{color:var(--text-dim)}
 .footer nav{display:flex;gap:26px}
 .footer a:hover{color:var(--accent)}
 
-/* floating whatsapp — brand mint / charcoal, not stock WA green */
-.whatsapp-float{position:fixed;right:28px;bottom:28px;z-index:200;width:56px;height:56px;border-radius:50%;
+/* floating whatsapp — brand mint / charcoal, not stock WA green.
+   bottom carries env(safe-area-inset-bottom) at every width — 0 on devices
+   without a gesture bar/home indicator, so this changes nothing there, and
+   clears the indicator where one exists. */
+.whatsapp-float{position:fixed;right:28px;bottom:calc(28px + env(safe-area-inset-bottom));z-index:200;width:56px;height:56px;border-radius:50%;
   background:#141516;color:var(--text-dim);border:1px solid rgba(242,237,228,.18);
   display:flex;align-items:center;justify-content:center;
   box-shadow:0 8px 28px rgba(0,0,0,.45);transition:transform .35s cubic-bezier(.2,.8,.2,1),background .3s,color .3s,border-color .3s,box-shadow .3s}
@@ -864,9 +1100,14 @@ html[lang="en"] .topbar__lang [data-lang-alt]{color:var(--text-dim)}
 @media (max-width:768px){
   /* --- shared with cv.html: do not remove --- */
   .footer{flex-direction:column;text-align:center}
-  .whatsapp-float{right:20px;width:50px;height:50px}
-  .whatsapp-float svg{width:24px;height:24px}
-  .topbar{padding:14px 16px}
+  /* 44px matches the touch-target floor used everywhere else on the page
+     (.btn, .sheetbar__tick, .close__links a) instead of exceeding it for no
+     reason */
+  .whatsapp-float{right:16px;width:44px;height:44px}
+  .whatsapp-float svg{width:20px;height:20px}
+  /* var(--gutter) instead of a hardcoded 16px — the topbar was the one
+     fixed element on the page not aligned to the shared content gutter */
+  .topbar{padding:14px var(--gutter)}
   .topbar__nav{gap:10px}
   .topbar__cta{font-size:12px;letter-spacing:.12em;padding:10px 2px;min-height:44px;display:inline-flex;align-items:center}
   /* covers 561–768px, where cv.css's own ≤560px rule does not reach */
@@ -874,7 +1115,10 @@ html[lang="en"] .topbar__lang [data-lang-alt]{color:var(--text-dim)}
   .topbar__lang{font-size:12px;letter-spacing:.12em;margin-left:0;min-height:44px}
 
   /* --- homepage only --- */
-  .whatsapp-float{bottom:84px}
+  /* no WhatsApp bottom override needed here anymore — .sheetbar is
+     display:none for the whole ≤1024px range (drawer nav owns that job
+     now), so the plain base .whatsapp-float bottom (28px + safe-area,
+     declared above) applies with nothing left to clear. */
   .hero__gauge{display:none}
   .hero__mark{width:12px;height:12px}
   .hero__content{padding-bottom:clamp(64px,11vh,110px)}
@@ -882,17 +1126,52 @@ html[lang="en"] .topbar__lang [data-lang-alt]{color:var(--text-dim)}
   .hero__meta{max-width:100%}
   .hero__meta-row{grid-template-columns:minmax(72px,.34fr) 1fr;gap:var(--s2)}
   .hero__actions{gap:10px}
-  .hero__actions .btn{padding:14px 20px;font-size:10px;letter-spacing:.16em}
   .hero__hint{left:var(--gutter);right:auto}
 
-  .pillars__sticky{padding:clamp(64px,9vh,96px) 0 clamp(56px,8vh,84px)}
+  /* --- 01 · SUMMARY on a phone ---
+     This sheet was eating a whole screen. Every number in it was authored for
+     a desktop column and then floored, not scaled: .vital__n's
+     clamp(44px,6.4vw,96px) resolves 6.4vw to 24px at 375, so the 44px FLOOR
+     won at every phone width — the type never got smaller than a laptop's
+     while the column it sits in halved. Around it, .vital's var(--s4) padding
+     (34px a side, twice over for a 2x2 grid) and .status's var(--s5) top
+     margin were likewise unscaled. Together: ~200px of pure air. */
+  .vital{padding:var(--s3) 0}
+  .vital__n{font-size:clamp(34px,10vw,52px)}
+  .vital__plus{font-size:clamp(16px,4.4vw,24px)}
+  .vital__label{margin-top:var(--s1);font-size:9.5px;letter-spacing:.16em}
+  .status{margin-top:var(--s4);padding-top:var(--s2)}
+
+  /* --- the Summary → Capability gap ---
+     Two full section paddings meeting head to head, and then a pinned box
+     that centres its content inside 100svh. Both ends give some back. */
+  #stats{padding-bottom:calc(var(--sec-pad) * .3)}
+
+  /* .close__actions used to inherit the full desktop .btn spec (18px/36px
+     padding, 12px type) unchanged all the way down to 320px — three or four
+     words of button label at that size is most of the viewport width. Both
+     action rows share one compact spec now instead of only the hero having
+     one; min-height is explicit rather than incidental, matching how
+     .sheetbar__tick and .close__links a already state their touch target. */
+  .hero__actions .btn,.close__actions .btn,.xref{
+    padding:12px 18px;font-size:10px;letter-spacing:.14em;min-height:44px;
+  }
+  /* the Close sheet's actions get the same one-per-row treatment the hero's
+     do (see the portrait-cover block above) — same three controls, so they
+     must not read as two different button systems on the same scroll */
+  .close__actions{display:grid;grid-template-columns:1fr;gap:10px;max-width:min(100%,420px)}
+  .close__actions .btn,.close__actions .xref{width:100%;justify-content:center}
+  .xref__key{font-size:10px;letter-spacing:.16em}
+  .xref__go{font-size:13px}
+
+  .pillars__sticky{padding:clamp(52px,6.5vh,76px) 0 clamp(44px,6vh,72px)}
   /* align-content:center, not start. With the plate restored below the rail
      the stage nearly fills the pinned box, and whatever slack is left splits
      evenly top and bottom instead of pooling into one dead band underneath. */
-  .pillars__stage{grid-template-columns:1fr;align-content:center;gap:var(--s3)}
+  .pillars__stage{grid-template-columns:1fr;align-content:center;gap:var(--s2)}
   /* the stepper only has to be as tall as its tallest entry now that it is no
      longer the only thing holding the box open */
-  .pillars__list{min-height:clamp(168px,25vh,225px)}
+  .pillars__list{min-height:clamp(140px,20vh,190px)}
   .pillar h3{font-size:clamp(34px,11vw,64px)}
   /* The plate used to be display:none here, which left ~170px of empty paper
      under the stepper AND dropped the one moving image on the sheet. It comes
@@ -909,15 +1188,28 @@ html[lang="en"] .topbar__lang [data-lang-alt]{color:var(--text-dim)}
   .close__links{flex-direction:column;gap:0}
   .close__links a{min-height:42px}
   .close__col{gap:var(--s4)}
-  /* the WhatsApp button is fixed to the bottom-right and landed exactly on
-     this arrow. The arrow is aria-hidden decoration and the whole card is the
-     link, so it simply goes. */
-  .xref__go{display:none}
+  /* .xref__go used to be hidden here because the WhatsApp float landed
+     directly on it — that was true when .xref was a full-width card with
+     the arrow pinned to one predictable spot. Now it's a compact pill that
+     wraps inline with the two buttons like any other .close__actions item,
+     so the collision this worked around no longer applies. */
 
   .sheetbar__ticks{gap:0}
   .sheetbar__tick{padding:0 8px}
   .sheetbar__tick-t{display:none}
   .sheetbar__id{display:none}
+  /* the tick itself keeps its 44px touch target (a11y floor, not
+     negotiable) — the padding around it is what shrinks, from 64px total
+     down to 52px. --bar-h moves with it so .close's bottom clearance and
+     the WhatsApp float's rest position (above) stay accurate. */
+  .sheetbar{padding:4px var(--gutter)}
+  :root{--bar-h:52px}
+
+  /* the desktop chip spec (5x9px padding, 8px gap) was unchanged all the
+     way to 320px — tightened so ASTRO/GSAP/CANVAS SCRUB/FLIP wrap into a
+     denser cluster instead of stretching the row wide */
+  .tags,.cv-tags{gap:6px}
+  .tags li,.cv-tags li{padding:4px 7px}
 }
 @media (max-width:420px){
   .sheetbar__count{display:none}
@@ -942,13 +1234,22 @@ html[lang="en"] .topbar__lang [data-lang-alt]{color:var(--text-dim)}
 
   .brief-root.js .reveal{opacity:1;transform:none}
   .plate__frame,.worx__go,.worx__name,.xref,.sheetbar__tick{transition:none}
+  /* the carousel still STEPS under reduced motion — losing the slide would
+     lose the feature. Only the sliding itself goes. */
+  .worx__car-track,.worx__car-btn,.worx__car-dot{transition:none}
   .sheetbar__tick.is-live{animation:none}
+
+  /* main.js still handles open/close logic under reduced motion (instant,
+     no slide/stagger) — this just kills any residual CSS transition so
+     nothing snaps or fades on its own */
+  .drawer__panel,.drawer-scrim,.topbar__burger-bar{transition:none}
 }
 
 /* the CV page owns its own styles in cv.css */
 
 @media print{
-  .grain,.topbar,.whatsapp-float,.btn,.skip-link,.sheetbar,.hero__gauge,.hero__mark{display:none!important}
+  .grain,.topbar,.whatsapp-float,.btn,.skip-link,.sheetbar,.hero__gauge,.hero__mark,
+  .drawer,.drawer-scrim,.topbar__burger{display:none!important}
   /* cv.css sets .cv-page{background:#fff} without !important, so THIS rule is
      what actually gives the CV a white print background. Do not remove. */
   body{background:#fff!important;color:#000!important;cursor:auto}

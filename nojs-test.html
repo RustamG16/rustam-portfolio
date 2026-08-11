@@ -23,8 +23,8 @@
      so a browser without support skips the fetch instead of wasting it. -->
 <link rel="preload" as="image" href="frames/hero/frame_0001.avif" type="image/avif" media="(min-width: 901px) and (min-aspect-ratio: 13/20)">
 <link rel="preload" as="image" href="media/poster.webp" media="(min-width: 901px) and (min-aspect-ratio: 13/20)">
-<link rel="preload" as="image" href="media/cv/portrait.webp" media="(max-width: 900px), (max-aspect-ratio: 13/20)">
-<link rel="stylesheet" href="style.css?v=brief-2">
+<link rel="preload" as="image" href="media/portrait-mobile.webp" media="(max-width: 900px), (max-aspect-ratio: 13/20)">
+<link rel="stylesheet" href="style.css?v=brief-3">
 <!-- CSS owns every resting state; this lets it know JS will animate them -->
 <script>0&&document.documentElement.classList.add('js')</script>
 <script type="application/ld+json">
@@ -107,8 +107,13 @@
              .cv-id, and it reuses that page's already-shipped portrait. -->
         <figure class="hero__id">
           <div class="hero__id-frame">
-            <img src="media/cv/portrait.webp" alt="Rustam Gurbanov"
-                 width="900" height="1200" decoding="async">
+            <picture>
+              <source media="(max-width: 900px), (max-aspect-ratio: 13/20)"
+                      srcset="media/portrait-mobile.webp" type="image/webp"
+                      width="1440" height="1800">
+              <img src="media/cv/portrait.webp" alt="Rustam Gurbanov"
+                   width="1800" height="2400" decoding="async">
+            </picture>
             <span class="hero__id-corner hero__id-corner--tl" aria-hidden="true"></span>
             <span class="hero__id-corner hero__id-corner--tr" aria-hidden="true"></span>
             <span class="hero__id-corner hero__id-corner--bl" aria-hidden="true"></span>
@@ -150,20 +155,20 @@
 
     <ul class="vitals">
       <li class="vital">
-        <span class="vital__n" data-count="10">10</span><span class="vital__plus">+</span>
+        <span class="vital__num"><span class="vital__n" data-count="10">10</span><span class="vital__plus">+</span></span>
         <span class="vital__label" data-i18n="stats.years">Years building</span>
       </li>
       <li class="vital">
-        <span class="vital__n" data-count="20">20</span><span class="vital__plus">+</span>
+        <span class="vital__num"><span class="vital__n" data-count="20">20</span><span class="vital__plus">+</span></span>
         <span class="vital__label" data-i18n="stats.projects">Projects shipped</span>
       </li>
       <li class="vital">
-        <span class="vital__n" data-count="5">5</span><span class="vital__plus"></span>
+        <span class="vital__num"><span class="vital__n" data-count="5">5</span><span class="vital__plus"></span></span>
         <span class="vital__label" data-i18n="stats.languages">Languages spoken</span>
       </li>
       <li class="vital">
-        <span class="vital__n" data-count="1">1</span><span class="vital__plus"></span>
-        <span class="vital__label" data-i18n="stats.pipeline">Person, whole pipeline</span>
+        <span class="vital__num"><span class="vital__n" data-count="1">1</span><span class="vital__plus"></span></span>
+        <span class="vital__label" data-i18n="stats.pipeline">Whole pipeline</span>
       </li>
     </ul>
 
@@ -445,7 +450,7 @@
 <script data-off type="text/plain" src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
 <script data-off type="text/plain" src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollToPlugin.min.js"></script>
 <script data-off type="text/plain" src="https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js"></script>
-<script data-off type="text/plain" src="main.js?v=brief-2"></script>
+<script data-off type="text/plain" src="main.js?v=brief-3"></script>
 <script data-off type="text/plain" src="cursor.js?v=brief-2"></script>
 </body>
 </html>
