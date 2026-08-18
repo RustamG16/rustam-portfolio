@@ -1165,7 +1165,7 @@ html[lang="en"] .topbar__lang [data-lang-alt]{color:var(--text-dim)}
 /* ============ MOBILE ============ */
 @media (max-width:768px){
   /* --- shared with cv.html: do not remove --- */
-  .footer{flex-direction:column;text-align:center}
+  .footer{flex-direction:column;text-align:center;padding:18px 0;gap:10px}
   /* 44px matches the touch-target floor used everywhere else on the page
      (.btn, .sheetbar__tick, .close__links a) instead of exceeding it for no
      reason */
@@ -1254,6 +1254,15 @@ html[lang="en"] .topbar__lang [data-lang-alt]{color:var(--text-dim)}
   .close__links{flex-direction:column;gap:0}
   .close__links a{min-height:42px}
   .close__col{gap:var(--s4)}
+  /* --bar-h reserved 52px to clear .sheetbar — which is display:none for the
+     whole ≤1024px range (see above). Nothing is down there to clear, so the
+     token drops out of the sum and the sheet ends where its content does.
+     .55 not .65: the WhatsApp float rests 28px up and is right-aligned, the
+     footer nav is centred, so they pass each other. */
+  .close{padding-bottom:calc(var(--sec-pad) * .55)}
+  .close__title{margin-bottom:var(--s4)}
+  .close__links{padding-top:var(--s2)}
+  .close__footer{margin-top:var(--s3)}
   /* .xref__go used to be hidden here because the WhatsApp float landed
      directly on it — that was true when .xref was a full-width card with
      the arrow pinned to one predictable spot. Now it's a compact pill that

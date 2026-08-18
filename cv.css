@@ -25,12 +25,25 @@
   --spine-w:168px;
   --wrap:100%;
   /* gap between the viewport edge and the rail itself — was hardcoded to
-     var(--gutter) (132px at 1920), stranding a band as wide as the gutter
-     to the rail's left. Its own scale, so it can stay narrower. */
+     var(--gutter) (88px at 1920 — NOT 132px, that's the 2870px+ cap), stranding
+     a band as wide as the gutter to the rail's left. Its own scale, so it can
+     stay narrower. */
   --spine-x:clamp(20px,2.4vw,56px);
+  /* rail's own right edge, and the content's left inset off of it. Split into
+     tokens so every offset consumer (.cv-wrap, .cv-seam__head, the vault mask)
+     reads the same number instead of redeclaring the sum and drifting — that
+     drift used to leave .cv-seam__head at 22px left-inset while every section
+     below sat at 22px + spine-w, and left the vault mask fading past where its
+     own text started. Below 1100px there's no fixed rail, so the inset is just
+     the gutter. */
+  --cv-rail:calc(var(--spine-x) + var(--spine-w));
+  --cv-inset-l:var(--gutter);
 }
 @media (min-width:1600px){ .cv-root{--spine-w:190px} }
 @media (min-width:2200px){ .cv-root{--spine-w:210px} }
+@media (min-width:1100px){
+  .cv-root{--cv-inset-l:calc(var(--cv-rail) + var(--gutter))}
+}
 
 /* ---------- page base ----------
    The two cursor opt-outs that used to live here (`cursor:auto` and
@@ -42,7 +55,7 @@
 
 .cv-wrap{
   width:100%;max-width:var(--wrap);margin-inline:auto;
-  padding-inline:var(--gutter);
+  padding-inline:var(--cv-inset-l) var(--gutter);
 }
 
 /* .cv-sec / .cv-sec--dark / .cv-sec--paper surfaces, the paper-fibre ::after
@@ -90,14 +103,12 @@
   background:none;pointer-events:none;
   opacity:0;visibility:hidden;
   transition:border-color .45s ease, color .45s ease,
-    opacity .4s ease, visibility 0s linear .4s,
-    left .45s ease;
+    opacity .4s ease, visibility 0s linear .4s;
 }
 .cv-root.spine-in .spine{
   opacity:1;visibility:visible;
   transition:border-color .45s ease, color .45s ease,
-    opacity .4s ease, visibility 0s linear 0s,
-    left .45s ease;
+    opacity .4s ease, visibility 0s linear 0s;
 }
 .spine a{pointer-events:auto}
 /* The spine is TRANSPARENT and sits on top of each section's own background —
@@ -106,10 +117,10 @@
    boundary at which the rail can go invisible). */
 @media (min-width:1100px){
   .spine{display:flex}
-  /* spine-x (rail left) + spine-w + a breathing gap = content start */
-  .cv-wrap,.cv-cover__inner,.cv-seam__head,.cv-cover__hint{
-    padding-left:calc(var(--spine-x) + var(--spine-w) + var(--s3));
-  }
+  /* .cv-wrap's left inset now comes from --cv-inset-l (set on .cv-root above),
+     so it survives no matter what order rules land in the file. .cv-cover__inner
+     and .cv-cover__hint are deliberately NOT offset — the spine is opacity:0
+     over the dark cover, so the cover stays full-bleed under it. */
 }
 
 .cv-root.chrome-paper .spine{border-right-color:var(--p-rule)}
@@ -143,7 +154,11 @@
    through by it. --rail-x is the line's offset in the spine. Widened to fit
    full section names ("Capabilities", "Experience") on one line, not the
    old 4-digit years. */
-.spine{--rail-x:136px}
+/* was hardcoded to 136px while --spine-w scales to 190/210px at 1600/2200 —
+   the label column never grew with it, so widening the spine only stranded
+   more dead space (54px, then 74px) between the labels and the rail's
+   border. Tied to --spine-w (inherited from .cv-root) so it scales too. */
+.spine{--rail-x:calc(var(--spine-w) - 32px)}
 .spine__rail{position:relative;flex:1;width:100%}
 .spine__track{
   position:absolute;top:0;bottom:0;left:var(--rail-x);width:1px;
@@ -270,6 +285,20 @@
 .cv-root[lang="en"] .cv-topbar .topbar__lang [data-lang-label],
 .cv-root[lang="de"] .cv-topbar .topbar__lang [data-lang-alt]{color:var(--topbar-fg)}
 @media (max-width:560px){ .cv-topbar .topbar__cta--desk{display:none} }
+
+/* .cv-topbar's padding is declared in THIS file, which loads after style.css —
+   so it silently beat the mobile reduction at style.css:1176 and the CV bar
+   stayed 22px-padded (~88px tall) against the homepage's 14px (~72px). Both
+   bars are the same component; they must be the same height.
+
+   The nav also wrapped: RG + the back link + EN/DE at 12px/.12em overflow the
+   280px content box at 320, and a two-row ghost bar sitting on the portrait
+   with a border-bottom running across it read as debris. One row, nowrap. */
+@media (max-width:768px){
+  .cv-topbar{padding:14px var(--gutter)}
+  .cv-topbar .topbar__nav{flex-wrap:nowrap;gap:10px;row-gap:0}
+  .cv-topbar .topbar__cta{font-size:11px;letter-spacing:.1em;white-space:nowrap}
+}
 
 /* ==========================================================================
    1 · COVER
@@ -443,7 +472,12 @@
 }
 .cv-seam__head{
   position:relative;z-index:1;
-  width:100%;max-width:var(--wrap);margin-inline:auto;padding:var(--s3) var(--gutter);
+  width:100%;max-width:var(--wrap);margin-inline:auto;
+  /* was the `padding` shorthand — it reset padding-left to --gutter and
+     silently discarded the rail offset .cv-wrap gets, so this row ran
+     22px→88px inset while every section below it sat at --cv-inset-l. Split
+     into padding-block/padding-inline so it shares the same left inset. */
+  padding-block:var(--s3);padding-inline:var(--cv-inset-l) var(--gutter);
   display:flex;justify-content:space-between;gap:var(--s3);flex-wrap:wrap;
   font-family:var(--mono);font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;
   color:var(--p-faint);border-bottom:1px solid var(--p-rule);
@@ -459,7 +493,10 @@
 @media (min-width:900px){ .cv-vitals__grid{grid-template-columns:repeat(4,1fr)} }
 .cv-vital{
   display:flex;flex-wrap:wrap;align-items:baseline;
-  padding:var(--s4) var(--s3) var(--s4) 0;
+  /* right pad matches the --s4 that + .cv-vital puts on the LEFT of the next
+     cell below, so each interior divider has an equal gap on both sides —
+     was --s3 (22px) here vs --s4 (34px) there, an asymmetric divider. */
+  padding:var(--s4) var(--s4) var(--s4) 0;
   border-bottom:1px solid var(--p-rule);
 }
 @media (min-width:900px){
@@ -485,13 +522,22 @@
 .cv-status__val{
   font-family:var(--mono);font-size:clamp(11px,1.15vw,13px);letter-spacing:.16em;
   text-transform:uppercase;color:var(--p-ink);
-  box-shadow:inset 0 -.42em 0 rgba(25,226,141,.4);
+  /* was box-shadow — painted against the BOX, so a wrapped string got one
+     full-width bar under the last line. background-image + box-decoration-break
+     paints per line fragment. Same fix as .status__val, style.css:746. */
+  background-image:linear-gradient(rgba(25,226,141,.4),rgba(25,226,141,.4));
+  background-size:100% .42em;background-position:0 100%;background-repeat:no-repeat;
+  -webkit-box-decoration-break:clone;box-decoration-break:clone;
 }
 
 /* ==========================================================================
    4 · CAREER — vertical, docked to the spine
    ========================================================================== */
-.cv-career{padding:var(--s6) 0 var(--s7)}
+/* was var(--s6) 0 var(--s7) — the odd bottom pad made the Career→Education
+   gap 218px against a uniform 172px everywhere else between paper sections.
+   The bigger --s7 stays only where a theme actually flips (vitals top, off
+   the seam; languages bottom, into the dark Vault). */
+.cv-career{padding:var(--s6) 0}
 .cv-roles{list-style:none}
 .cv-role{
   display:grid;grid-template-columns:1fr;gap:var(--s3);
@@ -548,6 +594,25 @@
 }
 .cv-award__mark{color:var(--ink-green)}
 .cv-award__link{color:var(--ink-green);border-bottom:1px solid currentColor;padding-bottom:1px}
+
+/* Wide screens: the bullets' 64ch readability cap is correct, but it left the
+   tag chips stranded under the bullets with a dead column beside them (the
+   .cv-role__when date rail is only 210px, nowhere near enough to eat the rest
+   of the row). Give the tags their own column instead of widening the
+   measure. Only .cv-role__body — .cv-tags is shared with the homepage via
+   style.css, so this stays scoped to the CV and inside the media query. */
+@media (min-width:1280px){
+  .cv-role__body{
+    display:grid;
+    grid-template-columns:minmax(0,64ch) minmax(220px,1fr);
+    column-gap:var(--s6);align-items:start;
+  }
+  .cv-role__title{grid-column:1/-1;grid-row:1}
+  .cv-role__org{grid-column:1/-1;grid-row:2}
+  .cv-role__bullets{grid-column:1;grid-row:3;max-width:none}
+  .cv-award{grid-column:1;grid-row:4;max-width:none}
+  .cv-role__body .cv-tags{grid-column:2;grid-row:3 / span 2;margin-top:var(--s3);align-self:start}
+}
 
 /* ==========================================================================
    5 · EDUCATION — the quiet beat
@@ -628,9 +693,12 @@
   display:block;margin-top:4px;
   font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--p-faint);
 }
-.cv-lang__gauge{display:flex;gap:4px}
+/* 6 equal fluid segments instead of a fixed-width row of ticks — a row that
+   stops filling its own rule reads as an unfinished meter. Stretches to
+   whatever width its grid track gives it, mobile or desktop. */
+.cv-lang__gauge{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
 .cv-lang__gauge i{
-  display:block;width:clamp(20px,3.4vw,34px);height:8px;
+  display:block;width:auto;height:8px;
   border:1px solid var(--p-rule);background:transparent;
 }
 .cv-lang__gauge i.is-on{background:var(--acid);border-color:rgba(20,20,15,.28)}
@@ -639,14 +707,16 @@
   color:var(--p-dim);text-align:right;
 }
 @media (min-width:760px){
-  /* fixed name column keeps the gauges in one vertical band; the level
-     column is content-sized (a 2-char label), not a 1fr track — that used
-     to strand ~1000px of dead row at 1920. Placed last so it wins over the
-     unconditional base rules above for the properties it overrides. */
-  .cv-lang{grid-template-columns:minmax(0,20ch) auto minmax(90px,auto);
-    justify-content:start;gap:var(--s5)}
+  /* fixed name column keeps the gauges in one vertical band; the gauge track
+     is now 1fr so it stretches across the row instead of stopping at its own
+     content width — with justify-content:start (removed) the tracks
+     collapsed to content size and stranded ~900px of empty ruled row at
+     1920px. gap is row/column split (was one value, which also blew the
+     vertical gap between a language and its native-name line out to --s5). */
+  .cv-lang{grid-template-columns:minmax(0,20ch) minmax(0,1fr) minmax(90px,auto);
+    gap:var(--s2) var(--s5)}
   .cv-lang__gauge{grid-column:2;grid-row:1}
-  .cv-lang__lvl{grid-column:3;text-align:left}
+  .cv-lang__lvl{grid-column:3;grid-row:1;text-align:right;justify-self:end}
 }
 
 /* ==========================================================================
@@ -660,13 +730,17 @@
    spine itself uses, since below it there's no rail to hide behind. */
 @media (min-width:1100px){
   .cv-vault{
-    /* mask tracks the inset spine: clear through gutter+spine, then soft fade */
+    /* mask tracks the inset spine: clear through the rail, then soft fade to
+       opaque exactly where .cv-wrap's content starts (--cv-inset-l) — was
+       calc(...+ --gutter), a different token than the content offset, so the
+       ramp used to end ~66px past the "06 DOCUMENTS" heading and fade its
+       first few glyphs. */
     -webkit-mask-image:linear-gradient(to right,
-      transparent 0, transparent calc(var(--spine-x) + var(--spine-w)),
-      #000 calc(var(--spine-x) + var(--spine-w) + var(--gutter)), #000 100%);
+      transparent 0, transparent var(--cv-rail),
+      #000 var(--cv-inset-l), #000 100%);
     mask-image:linear-gradient(to right,
-      transparent 0, transparent calc(var(--spine-x) + var(--spine-w)),
-      #000 calc(var(--spine-x) + var(--spine-w) + var(--gutter)), #000 100%);
+      transparent 0, transparent var(--cv-rail),
+      #000 var(--cv-inset-l), #000 100%);
   }
 }
 .cv-vault__lede{
@@ -792,12 +866,26 @@
    cv.css loads second (see cv.css:8-15 / style.css:14-18). Scoping to
    .cv-root keeps the homepage's own hand-tuned mobile values untouched.
    ========================================================================== */
-@media (max-width:768px){
+@media (max-width:900px){
   /* every section padded --s6/--s7 (86/132px) unchanged on a 375px phone —
-     ~400px of dead scroll across the page. */
+     ~400px of dead scroll across the page. Was max-width:768px, but the
+     portrait-banner cover switches at 900px (and max-aspect-ratio:13/20) —
+     the 768–900 band got mobile cover layout with unreduced desktop
+     spacing underneath it. Matched to the cover's own breakpoint. */
   .cv-root{--s5:38px;--s6:56px;--s7:76px}
 
+  /* The right pad here was justified by the matching padding-left on
+     + .cv-vital — but that rule is scoped to min-width:900px, so below it the
+     pad had no partner: ink 20px off the left edge, 42px off the right, while
+     .cv-sec__title above and .cv-status below both spanned the full column.
+     The desktop divider comes down instead, on every 2nd cell, with an equal
+     --s3 either side. Column gap stays 0 so the row rules cross it unbroken
+     and reach both edges. */
   .cv-vital{padding:var(--s3) var(--s3) var(--s3) 0}
+  .cv-vital:nth-child(2n){
+    border-left:1px solid var(--p-rule);
+    padding-left:var(--s3);padding-right:0;
+  }
   /* 6.4vw = 24px at 375 — the 44px floor won at every phone width, so the
      vitals ran desktop-sized type in a half-width column. Same bug
      style.css:1134 already fixed for .vital__n. */
@@ -838,7 +926,10 @@
   .spine,.cv-topbar,.whatsapp-float,.grain,.cv-lightbox,
   .cv-cover__hint,.cv-deck__hint,.cv-id__corner,.cv-end__actions,.cv-cover__actions{display:none!important}
   .cv-page{background:#fff;color:#000}
-  .cv-main{padding-left:0}
+  /* .cv-main itself carries no padding — the real inset lives on .cv-wrap,
+     already zeroed below (`.cv-wrap,.cv-cover__inner{...padding:0!important}`).
+     A stray `.cv-main{padding-left:0}` used to sit here targeting a property
+     nothing sets. */
   /* keep a little air between sections — zeroing padding outright made the
      status line collide with the next section heading */
   .cv-sec,.cv-sec--dark,.cv-sec--paper{
@@ -887,7 +978,7 @@
   .cv-vital,.cv-vitals__grid,.cv-lang-list,.cv-cap__head,.cv-sec__title{border-color:#bbb!important}
   .cv-role__bullets li,.cv-cap__list li,.cv-role__city,.cv-degree__city,
   .cv-doc__desc,.cv-vital__label,.cv-status__val,.cv-lang__lvl{color:#333!important}
-  .cv-status__val{box-shadow:none}
+  .cv-status__val{background-image:none}
   .cv-award{background:none;border-left:2px solid #000}
   .cv-lang__gauge i{border-color:#666}
   .cv-lang__gauge i.is-on{background:#000}

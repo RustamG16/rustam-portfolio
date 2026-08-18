@@ -47,12 +47,16 @@
 <main>
   <p class="code">404</p>
   <p class="msg">Sheet not found</p>
-  <!-- Correct once the custom domain is live, where / IS the site root. While
-       the site is still at github.io/rustam-portfolio/, this link points one
-       level too high — change it to /rustam-portfolio/ if the domain is
-       delayed, or leave it and let the domain fix it. It is on the SITE_URL
-       list in index.html's head comment for exactly this reason. -->
-  <a class="back" href="/">Back to the brief</a>
+  <!-- Absolute, not relative or root-relative: GitHub Pages serves this file
+       for a request at any depth, and the browser resolves a relative href
+       ("index.html") against that broken request URL, not against where
+       404.html actually lives — so a relative link 404s again from any
+       nested bad path. A bare "/" has the opposite bug: it's only correct
+       once the custom domain lands. An absolute URL sidesteps both and
+       matches the SITE_URL convention already used everywhere else (canonical,
+       og:url, sitemap.xml) — update it alongside that list when the domain
+       moves. -->
+  <a class="back" href="https://rustamg16.github.io/rustam-portfolio/">Back to the brief</a>
 </main>
 </body>
 </html>
