@@ -651,11 +651,13 @@ const I18N = {
 };
 
 const LANG_KEY = 'rg-lang';
-let currentLang = localStorage.getItem(LANG_KEY) === 'de' ? 'de' : 'en';
+let currentLang = 'en';
 
-const applyLang = (lang) => {
+const applyLang = (lang, persist = false) => {
   currentLang = lang === 'de' ? 'de' : 'en';
-  localStorage.setItem(LANG_KEY, currentLang);
+  if (persist) {
+    try { localStorage.setItem(LANG_KEY, currentLang); } catch (e) {}
+  }
   document.documentElement.lang = currentLang;
   const dict = I18N[currentLang];
   document.querySelectorAll('[data-i18n]').forEach((el) => {
@@ -681,7 +683,7 @@ const applyLang = (lang) => {
 applyLang(currentLang);
 const langToggle = document.getElementById('lang-toggle');
 if (langToggle) {
-  langToggle.addEventListener('click', () => applyLang(currentLang === 'en' ? 'de' : 'en'));
+  langToggle.addEventListener('click', () => applyLang(currentLang === 'en' ? 'de' : 'en', true));
 }
 
 /* ---------- hero: name split + scrub bindings ----------

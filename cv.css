@@ -22,13 +22,13 @@
   /* widened again for the section rewrite: labels are now full section
      names ("Capabilities", "Experience"), longer than the year-rail's old
      words — see .spine{--rail-x} below. */
-  --spine-w:168px;
+  --spine-w:154px;
   --wrap:100%;
   /* gap between the viewport edge and the rail itself — was hardcoded to
      var(--gutter) (88px at 1920 — NOT 132px, that's the 2870px+ cap), stranding
      a band as wide as the gutter to the rail's left. Its own scale, so it can
      stay narrower. */
-  --spine-x:clamp(20px,2.4vw,56px);
+  --spine-x:clamp(12px,1.8vw,40px);
   /* rail's own right edge, and the content's left inset off of it. Split into
      tokens so every offset consumer (.cv-wrap, .cv-seam__head, the vault mask)
      reads the same number instead of redeclaring the sum and drifting — that
@@ -39,8 +39,8 @@
   --cv-rail:calc(var(--spine-x) + var(--spine-w));
   --cv-inset-l:var(--gutter);
 }
-@media (min-width:1600px){ .cv-root{--spine-w:190px} }
-@media (min-width:2200px){ .cv-root{--spine-w:210px} }
+@media (min-width:1600px){ .cv-root{--spine-w:176px} }
+@media (min-width:2200px){ .cv-root{--spine-w:196px} }
 @media (min-width:1100px){
   .cv-root{--cv-inset-l:calc(var(--cv-rail) + var(--gutter))}
 }
@@ -125,15 +125,6 @@
 
 .cv-root.chrome-paper .spine{border-right-color:var(--p-rule)}
 
-/* runs up the far-left edge so it can never collide with the ruler or status */
-.spine__file{
-  font-family:var(--mono);font-size:9.5px;letter-spacing:.28em;color:var(--d-faint);
-  writing-mode:vertical-rl;transform:rotate(180deg);
-  position:absolute;left:11px;top:50%;translate:0 -50%;
-  transition:color .45s ease;
-}
-.cv-root.chrome-paper .spine__file{color:var(--p-faint)}
-
 /* the live "you are here" readout — current section number, echoing each
    section's own .cv-sec__num badge. height:1.05em + overflow:hidden was
    shaving the tops off the digits — this is the one number that must be
@@ -205,17 +196,6 @@
 }
 .cv-root.chrome-paper .spine__tick-n{color:var(--ink-green)}
 .spine__tick-t{background:inherit;white-space:nowrap}
-
-.spine__status{
-  padding-left:26px;
-  display:flex;align-items:center;gap:7px;margin-top:var(--s4);
-  font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;color:var(--d-faint);
-  transition:color .45s ease;
-}
-.cv-root.chrome-paper .spine__status{color:var(--p-faint)}
-.spine__dot{width:5px;height:5px;border-radius:50%;background:var(--acid);flex:none}
-.cv-root.chrome-paper .spine__dot{background:var(--ink-green)}
-.spine__status.is-closed .spine__dot{background:var(--d-faint)}
 
 /* ==========================================================================
    TOPBAR — a solid file tab, legible on BOTH themes at every scroll position.
@@ -443,9 +423,7 @@
   }
 }
 
-/* right-aligned so the scroll affordance ("OPEN FILE") no longer sits inches
-   from the spine's state label ("FILE OPEN") — side by side they read as one
-   garbled string */
+/* right-aligned so the scroll affordance stays clear of the desktop rail */
 .cv-cover__hint{
   display:flex;align-items:center;justify-content:flex-end;gap:var(--s2);
   margin:clamp(16px,2.5vh,40px) auto 0;padding-inline:var(--gutter);

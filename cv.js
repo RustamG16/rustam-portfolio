@@ -40,7 +40,6 @@ var I18N = {
     'cv.dl': 'Download',
     'cursor.open': 'OPEN ↗',
     'cv.spine.aria': 'Jump by section',
-    'cv.spine.status': 'FILE OPEN',
     /* the six numbered tick labels reuse cv.vitals / cv.exp / cv.edu /
        cv.skills / cv.langs / cv.docs directly (see below) — no separate
        keys, so the rail can never say something different from the
@@ -122,7 +121,6 @@ var I18N = {
     'cv.lang.ru': 'Russian',
     'cv.lang.tr': 'Turkish',
 
-    'cv.vault.lede': 'Five originals. Scanned, not summarised — open any one full size, or take the PDF.',
     'cv.vault.hint': 'Scroll to browse · click to open',
     'cv.doc.bach.title': 'Bachelor Certificate',
     'cv.doc.bach.desc': 'Degree certificate — Azerbaijan Technical University (Information Technologies).',
@@ -158,7 +156,6 @@ var I18N = {
     'cv.dl': 'Download',
     'cursor.open': 'ÖFFNEN ↗',
     'cv.spine.aria': 'Nach Abschnitt springen',
-    'cv.spine.status': 'AKTE OFFEN',
     'cv.spine.tick.end': 'Ende',
 
     'cv.cover.kicker': 'PERSONALAKTE · RG-2026',
@@ -235,7 +232,6 @@ var I18N = {
     'cv.lang.ru': 'Russisch',
     'cv.lang.tr': 'Türkisch',
 
-    'cv.vault.lede': 'Fünf Originale. Gescannt, nicht zusammengefasst — in voller Größe öffnen oder als PDF laden.',
     'cv.vault.hint': 'Scrollen zum Blättern · klicken zum Öffnen',
     'cv.doc.bach.title': 'Bachelor-Zeugnis',
     'cv.doc.bach.desc': 'Abschlusszeugnis — Azerbaijan Technical University (Information Technologies).',
@@ -260,11 +256,13 @@ var I18N = {
 };
 
 var LANG_KEY = 'rg-lang';
-var currentLang = localStorage.getItem(LANG_KEY) === 'de' ? 'de' : 'en';
+var currentLang = 'en';
 
-function applyLang(lang) {
+function applyLang(lang, persist) {
   currentLang = lang === 'de' ? 'de' : 'en';
-  try { localStorage.setItem(LANG_KEY, currentLang); } catch (e) {}
+  if (persist) {
+    try { localStorage.setItem(LANG_KEY, currentLang); } catch (e) {}
+  }
   root.lang = currentLang;
   var dict = I18N[currentLang];
   $$('[data-i18n]').forEach(function (el) {
@@ -288,7 +286,7 @@ applyLang(currentLang);
 var langToggle = $('#lang-toggle');
 if (langToggle) {
   langToggle.addEventListener('click', function () {
-    applyLang(currentLang === 'en' ? 'de' : 'en');
+    applyLang(currentLang === 'en' ? 'de' : 'en', true);
     if (hasST) ScrollTrigger.refresh();
   });
 }
@@ -512,23 +510,6 @@ if (hasGSAP && hasST) {
       });
     }
 
-    /* the file closes on the end card */
-    var status = $('.spine__status');
-    if (status) {
-      ScrollTrigger.create({
-        trigger: '#endcard', start: 'top center',
-        onEnter: function () {
-          status.classList.add('is-closed');
-          var l = $('[data-i18n="cv.spine.status"]', status);
-          if (l) l.textContent = currentLang === 'de' ? 'AKTE GESCHLOSSEN' : 'FILE CLOSED';
-        },
-        onLeaveBack: function () {
-          status.classList.remove('is-closed');
-          var l = $('[data-i18n="cv.spine.status"]', status);
-          if (l) l.textContent = I18N[currentLang]['cv.spine.status'];
-        }
-      });
-    }
 
     /* language gauges — content, so they fill in every mode */
     $$('.cv-lang').forEach(function (li) {
