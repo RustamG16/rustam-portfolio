@@ -1069,9 +1069,9 @@ html[lang="en"] .topbar__lang [data-lang-alt]{color:var(--text-dim)}
   position:fixed;left:0;right:0;bottom:0;z-index:150;
   display:flex;align-items:center;justify-content:space-between;gap:var(--s3);
   padding:10px var(--gutter);
-  background:rgba(10,10,11,.88);border-top:1px solid var(--d-rule);
+  background:rgba(239,233,222,.9);border-top:1px solid var(--p-rule);
   -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
-  font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--d-faint);
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--p-faint);
   transition:background .45s ease,border-color .45s ease,color .45s ease,
     transform .38s cubic-bezier(.2,.8,.2,1),opacity .3s;
 }
@@ -1081,37 +1081,37 @@ html[lang="en"] .topbar__lang [data-lang-alt]{color:var(--text-dim)}
 @media (max-width:1024px){
   .sheetbar{display:none}
 }
-.brief-root.chrome-paper .sheetbar{
-  background:rgba(239,233,222,.9);border-top-color:var(--p-rule);color:var(--p-faint);
+.brief-root.sheetbar-paper .sheetbar{
+  background:rgba(10,10,11,.88);border-top-color:var(--d-rule);color:var(--d-faint);
 }
 .sheetbar__id{flex:none}
+.sheetbar__availability{color:var(--ink-green);animation:availability-blink 1.6s ease-in-out infinite}
+.brief-root.sheetbar-paper .sheetbar__availability{color:var(--acid)}
+@keyframes availability-blink{0%,100%{opacity:1}50%{opacity:.32}}
 .sheetbar__ticks{list-style:none;display:flex;align-items:center;gap:0;margin:0;padding:0;flex-wrap:wrap;justify-content:center}
 .sheetbar__tick{
   display:inline-flex;align-items:center;gap:7px;min-height:44px;padding:0 var(--s2);
-  color:var(--d-faint);border-bottom:1px solid transparent;transition:color .28s,border-color .28s;
+  color:var(--p-faint);border-bottom:1px solid transparent;transition:color .28s,border-color .28s;
 }
-.brief-root.chrome-paper .sheetbar__tick{color:var(--p-faint)}
+.brief-root.sheetbar-paper .sheetbar__tick{color:var(--d-faint)}
 .sheetbar__tick-n{font-variant-numeric:tabular-nums}
 .sheetbar__tick-t{letter-spacing:.16em}
-.sheetbar__tick:hover,.sheetbar__tick:focus-visible{color:var(--acid);border-bottom-color:var(--acid)}
-.brief-root.chrome-paper .sheetbar__tick:hover,
-.brief-root.chrome-paper .sheetbar__tick:focus-visible{color:var(--ink-green);border-bottom-color:var(--ink-green)}
+.sheetbar__tick:hover,.sheetbar__tick:focus-visible{color:var(--ink-green);border-bottom-color:var(--ink-green)}
+.brief-root.sheetbar-paper .sheetbar__tick:hover,
+.brief-root.sheetbar-paper .sheetbar__tick:focus-visible{color:var(--acid);border-bottom-color:var(--acid)}
 .sheetbar__tick:focus-visible{outline:2px solid currentColor;outline-offset:2px}
 /* the live tick is the actual "you are here" indicator — pulsing it (not
    the progress hairline below) is what reads as a signal rather than décor,
    since it's the one thing on the bar that names which section you're in. */
-.sheetbar__tick.is-live{color:var(--acid);animation:tick-blink 1.6s ease-in-out infinite}
-.brief-root.chrome-paper .sheetbar__tick.is-live{color:var(--ink-green)}
+.sheetbar__tick.is-live{color:var(--ink-green);animation:tick-blink 1.6s ease-in-out infinite}
+.brief-root.sheetbar-paper .sheetbar__tick.is-live{color:var(--acid)}
 @keyframes tick-blink{0%,100%{opacity:1}50%{opacity:.32}}
-.sheetbar__count{flex:none;font-variant-numeric:tabular-nums}
-.sheetbar__count i{font-style:normal;color:var(--d-dim)}
-.brief-root.chrome-paper .sheetbar__count i{color:var(--p-dim)}
 /* page progress — a hairline along the very bottom edge */
 .sheetbar__fill{
   position:absolute;left:0;bottom:0;height:2px;width:100%;
-  background:var(--acid);transform:scaleX(0);transform-origin:left center;will-change:transform;
+  background:var(--ink-green);transform:scaleX(0);transform-origin:left center;will-change:transform;
 }
-.brief-root.chrome-paper .sheetbar__fill{background:var(--ink-green)}
+.brief-root.sheetbar-paper .sheetbar__fill{background:var(--acid)}
 
 /* The float has to clear the counter. Scoped to .brief-page and given the
    extra specificity deliberately: the base .whatsapp-float rule is declared
@@ -1312,7 +1312,7 @@ html[lang="en"] .topbar__lang [data-lang-alt]{color:var(--text-dim)}
   /* the carousel still STEPS under reduced motion — losing the slide would
      lose the feature. Only the sliding itself goes. */
   .worx__car-track,.worx__car-btn,.worx__car-dot{transition:none}
-  .sheetbar__tick.is-live{animation:none}
+  .sheetbar__tick.is-live,.sheetbar__availability{animation:none}
 
   /* main.js still handles open/close logic under reduced motion (instant,
      no slide/stagger) — this just kills any residual CSS transition so

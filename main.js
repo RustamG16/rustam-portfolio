@@ -495,7 +495,7 @@ class FlipbookScrubber {
 /* ---------- i18n (EN / DE) ---------- */
 const I18N = {
   en: {
-    'nav.cta': 'Available for work',
+    'nav.cta': 'Get in touch',
     'nav.cv': 'Download CV',
     'nav.experience': 'Experience',
     'nav.skip': 'Skip to work',
@@ -529,6 +529,7 @@ const I18N = {
     'xref.key': 'SEE ALSO',
     'xref.desc': '4 roles · 2 degrees · 5 verified documents',
     'bar.aria': 'Jump by sheet',
+    'bar.availability': 'Available for work',
     'bar.brief': 'BRIEF',
     'bar.sheet': 'SHEET',
     'bar.s1': 'Summary',
@@ -553,18 +554,18 @@ const I18N = {
     'work.kicker': 'SELECTED WORK',
     'work.meridian': 'Luxury alpine resort site — scroll-scrubbed canvas arrival, four interactive instruments, eight bespoke routes.',
     'work.sonnwerk': 'Premium CBD brand site — field-to-bottle storytelling, editorial type, scroll narrative.',
-    'work.urologie': 'Medical boutique practice site for Dr. Danijel Jozipovic — calm precision, booking-led.',
+    'work.ecopowertech': 'Technical recruiting site — a scroll-scrubbed cinematic hero built around the people behind the match.',
     'work.eduHub': 'Study-abroad consultancy landing — guidance-focused scroll experience for international students.',
     'work.tag.hosp': 'Hospitality · Experience',
     'work.tag.brand': 'Brand · Scrollytelling',
-    'work.tag.health': 'Healthcare · Landing',
+    'work.tag.ecopowertech': 'Recruiting · Scrollytelling',
     'work.tag.edu': 'Education · Landing',
     'work.cta': 'View project →',
     'cursor.view': 'VIEW ↗',
     'finale.line1': "LET'S BUILD",
     'finale.line2': 'SOMETHING',
     'finale.line3': 'UNFORGETTABLE',
-    'finale.cta': 'Available for work',
+    'finale.cta': 'Get in touch',
     'finale.cv': 'Download CV',
     'footer.copy': '© 2026 Rustam Gurbanov',
     'footer.cv': 'CV',
@@ -572,7 +573,7 @@ const I18N = {
     'whatsapp.aria': 'Chat on WhatsApp'
   },
   de: {
-    'nav.cta': 'Offen für Anstellung',
+    'nav.cta': 'Kontakt aufnehmen',
     'nav.cv': 'Lebenslauf laden',
     'nav.experience': 'Erfahrung',
     'nav.skip': 'Zu den Arbeiten springen',
@@ -606,6 +607,7 @@ const I18N = {
     'xref.key': 'SIEHE AUCH',
     'xref.desc': '4 Stationen · 2 Abschlüsse · 5 geprüfte Dokumente',
     'bar.aria': 'Nach Blatt springen',
+    'bar.availability': 'Offen für Anstellung',
     'bar.brief': 'DOSSIER',
     'bar.sheet': 'BLATT',
     'bar.s1': 'Überblick',
@@ -630,18 +632,18 @@ const I18N = {
     'work.kicker': 'AUSGEWÄHLTE ARBEITEN',
     'work.meridian': 'Luxus-Alpenresort-Website — scroll-gescrubbte Canvas-Ankunft, vier interaktive Instrumente, acht maßgefertigte Routen.',
     'work.sonnwerk': 'Premium-CBD-Markenseite — Storytelling vom Feld zur Flasche, editorial Typo, Scroll-Narrativ.',
-    'work.urologie': 'Medizinische Boutique-Praxis-Website für Dr. Danijel Jozipovic — ruhige Präzision, buchungsgeführt.',
+    'work.ecopowertech': 'Website für technisches Recruiting — cineastischer, scroll-gesteuerter Hero rund um die Menschen hinter dem perfekten Match.',
     'work.eduHub': 'Landingpage für Studienberatung — guidance-fokussiertes Scroll-Erlebnis für internationale Studierende.',
     'work.tag.hosp': 'Hospitality · Experience',
     'work.tag.brand': 'Brand · Scrollytelling',
-    'work.tag.health': 'Healthcare · Landing',
+    'work.tag.ecopowertech': 'Recruiting · Scrollytelling',
     'work.tag.edu': 'Education · Landing',
     'work.cta': 'Projekt ansehen →',
     'cursor.view': 'ANSEHEN ↗',
     'finale.line1': 'LASS UNS',
     'finale.line2': 'ETWAS',
     'finale.line3': 'UNVERGESSLICHES BAUEN',
-    'finale.cta': 'Offen für Anstellung',
+    'finale.cta': 'Kontakt aufnehmen',
     'finale.cv': 'Lebenslauf laden',
     'footer.copy': '© 2026 Rustam Gurbanov',
     'footer.cv': 'CV',
@@ -1243,8 +1245,8 @@ if (hero) {
    rather than a new tween per pointermove.
 
    TWO KINDS OF PREVIEW, and data-preview is the switch. Rows that carry it
-   (01 The Meridian, 02 Sonnwerk) play their clip. Rows that don't (03 SR
-   Urologie, 04 Education Hub) cycle the three stills their sibling
+   (01 The Meridian, 02 Sonnwerk, 03 ECO POWERTECH) play their clip. Rows
+   that don't (04 Education Hub) cycle the three stills their sibling
    .worx__media already lists for the mobile carousel — so this file adds no
    attribute to the page and a future project changes arms by editing markup
    rather than this module. Note rows 01/02 have BOTH data-preview and a
@@ -1336,7 +1338,7 @@ if (hero) {
       const el = document.createElement('video');
       el.className = 'worx__float-video';
       el.muted = true;
-      /* Both remaining clips are frame-locked loops, so no row carries
+      /* All project clips are frame-locked loops, so no row carries
          data-preview-loop="false". The opt-out stays wired: it costs a
          comparison and it is the only way a future non-looping clip can be
          dropped in without editing this file. */
@@ -1345,9 +1347,8 @@ if (hero) {
       /* 'auto', unconditionally, for both clips. The staggered metadata/auto
          split that used to live here existed because FOUR previews plus the two
          background plates plus the hero flipbook was seven live decoders, and
-         that combination froze the cover and the previews together. Rows 03/04
-         are stills now, so the budget is two previews plus two plates and there
-         is nothing left to ration.
+         that combination froze the cover and the previews together. The current
+         three previews plus two plates stay within the tested decoder budget.
 
          The preload upgrade + el.load() that used to run on hover went with it,
          and that deletion is a BUG FIX rather than a simplification: load()
@@ -1508,11 +1509,11 @@ if (hero) {
       /* jump to the new row rather than sliding across the whole list */
       place(row, clientY, false);
       if (revealTl) revealTl.kill();
-      revealTl = gsap.timeline()
-        .to(float, { autoAlpha: 1, scale: 1, duration: 0.5, ease: 'power3.out' }, 0)
-        .fromTo(floatFrame,
-          { clipPath: 'inset(0% 0% 100% 0%)' },
-          { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.55, ease: 'power3.out' }, 0);
+      /* The preview video is a direct response to hover, not an intro scene:
+         revealing this card over 550ms made a fully buffered clip LOOK late.
+         Show it in the same frame the row becomes active. */
+      gsap.set(float, { autoAlpha: 1, scale: 1 });
+      gsap.set(floatFrame, { clipPath: 'inset(0% 0% 0% 0%)' });
     } else {
       place(row, clientY, true);
     }
@@ -1561,14 +1562,12 @@ if (hero) {
 
      The metadata/auto tiering that used to live here is gone. Its reason was
      seven simultaneous video decoders next to the hero flipbook's frame
-     budget; rows 03/04 becoming stills removes two of them outright, so both
-     surviving clips can just buffer.
+     budget; with three project clips now in use, the stagger still keeps their
+     initial buffering out of the shared background-video loading tick.
 
-     What survives is the stagger, and only against the OTHER loader: the
-     shared [data-video] block at the bottom of this file fires on its own 35%
-     margin and stages closer.mp4 / builder.mp4 400ms apart. Starting the
-     clip delays at n=1 keeps these two out of that first tick — the same
-     demand shaping, one decoder class lighter.
+     The preview layers are built immediately on hover-capable desktops. This
+     is intentional: the work videos are a primary interaction, so the first
+     hover must play rather than spend time creating and buffering a clip.
 
      POSTERS are warmed too, and that is not an optimisation. The float has ONE
      <img> whose src swaps per row, and a browser keeps painting the OLD image
@@ -1586,25 +1585,11 @@ if (hero) {
      use the .worx__media carousel instead. It is evaluated once, so a window
      resized up from narrow gets nothing here; activate()'s getMedia() call is
      the fallback, which is why that call stays lazy. */
-  if (canHover()) {
-    const warmIo = new IntersectionObserver((entries) => {
-      if (!entries.some((en) => en.isIntersecting)) return;
-      warmIo.disconnect();
-      rows.forEach((row) => {
-        if (row.dataset.poster) { const p = new Image(); p.src = row.dataset.poster; }
-      });
-      let n = 1;
-      rows.forEach((row) => {
-        const build = () => {
-          const m = getMedia(row);
-          if (m && m.kind === 'stills' && m.imgs[0].decode) m.imgs[0].decode().catch(() => {});
-        };
-        if (row.dataset.preview) setTimeout(build, n++ * 250);
-        else build();
-      });
-    }, { rootMargin: '35% 0px' });
-    warmIo.observe(section);
-  }
+  if (canHover()) rows.forEach((row) => {
+    if (row.dataset.poster) { const p = new Image(); p.src = row.dataset.poster; }
+    const m = getMedia(row);
+    if (m && m.kind === 'stills' && m.imgs[0].decode) m.imgs[0].decode().catch(() => {});
+  });
 })();
 
 /* ---------- 03 · selected work: the mobile media carousel ----------
@@ -1765,7 +1750,6 @@ if (hero) {
   const bar = document.getElementById('sheetbar');
   if (!bar || !gsapReady) return;
   const fill = document.getElementById('sheetbar-fill');
-  const cur = document.getElementById('sheet-cur');
   const ticks = [...bar.querySelectorAll('.sheetbar__tick')];
   const root = document.documentElement;
 
@@ -1800,7 +1784,6 @@ if (hero) {
   const setLive = (idx) => {
     const s = sheets[idx];
     if (!s) return;
-    if (cur && cur.textContent !== s.n) cur.textContent = s.n;
     ticks.forEach((t) => t.classList.toggle('is-live', +t.dataset.sheet === idx));
   };
 
@@ -1838,6 +1821,22 @@ if (hero) {
       end: 'top center',
       refreshPriority: 1,
       onToggle: (self) => { root.classList.toggle('chrome-paper', self.isActive); }
+    });
+  }
+
+  /* The fixed sheetbar is painted against the section at the viewport's
+     bottom edge, not the section that owns the current scroll trigger. The
+     hero can remain pinned while paper already sits behind the bar, so this
+     separate state changes exactly when that visible surface crosses it. */
+  const firstPaper = document.getElementById('stats');
+  if (firstPaper && contact) {
+    ScrollTrigger.create({
+      trigger: firstPaper,
+      start: 'top bottom',
+      endTrigger: contact,
+      end: 'top bottom',
+      refreshPriority: 1,
+      onToggle: (self) => { root.classList.toggle('sheetbar-paper', self.isActive); }
     });
   }
 

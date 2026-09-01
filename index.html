@@ -41,7 +41,7 @@
 <link rel="preload" as="image" href="frames/hero/frame_0001.jpg" media="(min-width: 901px) and (min-aspect-ratio: 13/20)">
 <link rel="preload" as="image" href="media/poster.webp" media="(min-width: 901px) and (min-aspect-ratio: 13/20)">
 <link rel="preload" as="image" href="media/portrait-mobile.webp" media="(max-width: 900px), (max-aspect-ratio: 13/20)">
-<link rel="stylesheet" href="style.css?v=brief-4">
+<link rel="stylesheet" href="style.css?v=brief-5">
 <!-- CSS owns every resting state; this lets it know JS will animate them -->
 <script>document.documentElement.classList.add('js')</script>
 <script type="application/ld+json">
@@ -303,8 +303,8 @@
      Keeping it beside the title means the eye never has to leave the thing
      it is pointing at.
 
-     data-preview IS THE SWITCH, and only rows 01/02 carry it: they play a
-     clip. Rows 03/04 have no data-preview, so the float cycles the three
+     data-preview IS THE SWITCH: rows 01–03 carry it and play a clip. Row 04
+     has no data-preview, so the float cycles the three
      stills their sibling .worx__media already lists instead. That keeps the
      live video decoders on this page down to two, and it means changing a
      project between the two kinds is a markup edit, not a main.js edit.
@@ -399,22 +399,22 @@
         </li>
 
         <li>
-          <a class="worx__row reveal" id="project-urologie"
-             href="https://sr-urologie.netlify.app/" target="_blank" rel="noopener noreferrer"
-             data-poster="media/work/posters/sr-urologie.webp"
-             data-cap-label="PLATE 03 · SR UROLOGIE" data-cap-src="LIVE"
+          <a class="worx__row reveal" id="project-ecopowertech"
+             href="https://rustamg16.github.io/EcoPowerTech/" target="_blank" rel="noopener noreferrer"
+             data-poster="media/work/posters/ecopowertech.webp" data-preview="media/work/previews/ecopowertech.mp4"
+             data-cap-label="PLATE 03 · ECO POWERTECH" data-cap-src="LIVE"
              data-cursor="view" data-cursor-label="VIEW ↗" data-i18n-cursor="cursor.view">
             <span class="worx__index">03</span>
-            <span class="worx__tag" data-i18n="work.tag.health">Healthcare · Landing</span>
-            <h3 class="worx__name">SR UROLOGIE</h3>
-            <p class="worx__desc" data-i18n="work.urologie">Medical boutique practice site for Dr. Danijel Jozipovic — calm precision, booking-led.</p>
-            <ul class="tags worx__tags" aria-label="Stack"><li>Landing</li><li>Booking</li><li>Accessibility</li></ul>
+            <span class="worx__tag" data-i18n="work.tag.ecopowertech">Recruiting · Scrollytelling</span>
+            <h3 class="worx__name">ECO POWERTECH</h3>
+            <p class="worx__desc" data-i18n="work.ecopowertech">Technical recruiting site — a scroll-scrubbed cinematic hero built around the people behind the match.</p>
+            <ul class="tags worx__tags" aria-label="Stack"><li>HTML</li><li>GSAP</li><li>ScrollTrigger</li><li>Video Scrub</li></ul>
             <span class="worx__go" data-i18n="work.cta">View project →</span>
           </a>
-          <div class="worx__media" data-shots="media/work/shots/sr-urologie/01.webp,media/work/shots/sr-urologie/02.webp,media/work/shots/sr-urologie/03.webp"
-               data-media-label="SR Urologie">
+          <div class="worx__media" data-shots="media/work/shots/ecopowertech/01.avif,media/work/shots/ecopowertech/02.avif,media/work/shots/ecopowertech/03.avif"
+               data-clip="media/work/previews/ecopowertech.mp4" data-media-label="ECO POWERTECH">
             <span class="plate__frame plate__frame--wide" aria-hidden="true">
-              <img src="media/work/shots/sr-urologie/01.webp" alt="SR Urologie — screenshot of the live site" width="1000" height="562" loading="lazy" decoding="async">
+              <img src="media/work/shots/ecopowertech/01.avif" alt="ECO POWERTECH — screenshot of the live site" width="1000" height="562" loading="lazy" decoding="async">
             </span>
           </div>
         </li>
@@ -503,7 +503,7 @@
      where the spine counts years. Real jump-nav (anchor links).
      ============================================================ -->
 <nav class="sheetbar" id="sheetbar" aria-label="Jump by sheet" data-i18n-aria="bar.aria">
-  <p class="sheetbar__id" aria-hidden="true">RG&#8209;2026 · <span data-i18n="bar.brief">BRIEF</span></p>
+  <p class="sheetbar__id sheetbar__availability" aria-live="polite"><span data-i18n="bar.availability">AVAILABLE FOR WORK</span></p>
 
   <ol class="sheetbar__ticks">
     <li><a class="sheetbar__tick" href="#stats"   data-sheet="1"><span class="sheetbar__tick-n">01</span><span class="sheetbar__tick-t" data-i18n="bar.s1">Summary</span></a></li>
@@ -512,7 +512,6 @@
     <li><a class="sheetbar__tick" href="#contact" data-sheet="4"><span class="sheetbar__tick-n">04</span><span class="sheetbar__tick-t" data-i18n="bar.s4">Close</span></a></li>
   </ol>
 
-  <p class="sheetbar__count" aria-hidden="true"><span data-i18n="bar.sheet">SHEET</span> <i id="sheet-cur">00</i>/<i>04</i></p>
   <span class="sheetbar__fill" id="sheetbar-fill" aria-hidden="true"></span>
 </nav>
 
@@ -524,7 +523,7 @@
 <script src="vendor/ScrollTrigger.min.js"></script>
 <script src="vendor/ScrollToPlugin.min.js"></script>
 <script src="vendor/lenis.min.js"></script>
-<script src="main.js?v=brief-5"></script>
+<script src="main.js?v=brief-6"></script>
 <script src="cursor.js?v=brief-4"></script>
 </body>
 </html>
