@@ -1,0 +1,41 @@
+---
+// SVG-fitted Archivo word: the viewBox is the measured advance, so the word fills its container exactly,
+// whatever the font metrics (DESIGN.md typography.hero / footer-wordmark).
+interface Props {
+  text: string;
+  /** Advance in em, measured: GURBANOV 6.264, GURBANOV. 6.457 */
+  advanceEm: number;
+  /** Decorative by default (the real text lives elsewhere). Pass a label to expose it. */
+  label?: string;
+  class?: string;
+}
+const { text, advanceEm, label, class: cls = '' } = Astro.props;
+const w = Math.round(advanceEm * 1000);
+---
+<svg
+  class:list={['wordmark', cls]}
+  viewBox={`0 -704 ${w} 720`}
+  preserveAspectRatio="xMidYMid meet"
+  aria-hidden={label ? undefined : 'true'}
+  role={label ? 'img' : undefined}
+  aria-label={label}
+  focusable="false"
+>
+  <text x="0" y="0" font-size="1000" letter-spacing="-20" textLength={w} lengthAdjust="spacing">{text}</text>
+</svg>
+
+<style>
+  .wordmark {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+  .wordmark text {
+    font-family: var(--font-family-display);
+    font-weight: 900;
+    font-variation-settings: var(--display-axes);
+    text-transform: uppercase;
+    fill: currentColor;
+  }
+</style>

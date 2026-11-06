@@ -1,0 +1,155 @@
+---
+// 06 Documents #vault: a native horizontal scroll-snap strip of five paper cards. Each card opens the lightbox
+// (full scan + "Open PDF") or goes straight to the PDF. The openers are real links to the scan, so without JS
+// they open the image, and every URL goes through href (the file build relativizes only href/src/srcset/poster/data-poster/data-film). Card ids are #doc-<id>, so cv.html#doc-knime lands on its card.
+import { t, FACTS, type Lang } from '../../lib/i18n';
+import { withBase } from '../../lib/paths';
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const d = t(lang).cv.documents;
+const items = d.items as Record<string, { title: string; desc: string; meta: string }>;
+const docs = FACTS.documents.items as { id: string; pdf: string; preview: string }[];
+const openDoc = t(lang).cv.openDoc;
+---
+<section id="vault" class="band cvs vault" data-cv-docs aria-labelledby="vault-title">
+  <header class="cvs__head">
+    <p class="cvs__num t-label">{d.num}</p>
+    <h2 id="vault-title" class="t-display" data-reveal="lines">{d.title}</h2>
+  </header>
+  <p class="vault__intro t-subhead">{d.intro}</p>
+  <p class="vault__hint t-label">{d.hint}</p>
+  <ul class="docs">
+    {(d.order as string[]).map((id) => {
+      const f = docs.find((x) => x.id === id)!;
+      const it = items[id];
+      const full = withBase(f.preview);
+      const thumb = withBase(f.preview.replace('/full/', '/'));
+      return (
+        <li id={`doc-${id}`} class="doc">
+          <a
+            class="doc__thumb"
+            href={full}
+            data-doc-open
+            data-title={it.title}
+            data-meta={it.meta}
+            aria-haspopup="dialog"
+            aria-label={`${openDoc} ${it.title}`}
+            data-cursor="view"
+          >
+            <img src={thumb} alt="" loading="lazy" decoding="async" />
+          </a>
+          <h3 class="doc__title t-card-title">{it.title}</h3>
+          <p class="doc__desc t-small">{it.desc}</p>
+          <p class="doc__meta t-label">{it.meta}</p>
+          <div class="doc__actions">
+            <a
+              class="doc__btn t-nav"
+              href={full}
+              data-doc-open
+              data-title={it.title}
+              data-meta={it.meta}
+              aria-haspopup="dialog"
+              aria-label={`${openDoc} ${it.title}`}
+              data-cursor="link"
+            >{openDoc}</a>
+            <a
+              class="doc__btn t-nav"
+              href={withBase(f.pdf)}
+              data-doc-pdf
+              target="_blank"
+              rel="noopener"
+              aria-label={`${d.lightbox.openPdf}: ${it.title}`}
+              data-cursor="link"
+            >{d.lightbox.openPdf}</a>
+          </div>
+        </li>
+      );
+    })}
+  </ul>
+</section>
+
+<style>
+  .vault__intro {
+    max-width: var(--measure-lede);
+    color: var(--color-ink);
+  }
+  .vault__hint {
+    margin-top: var(--space-2);
+    color: var(--color-gray);
+  }
+  .docs {
+    display: flex;
+    gap: var(--space-2);
+    margin: var(--space-3) calc(var(--gutter) * -1) 0;
+    padding: 4px var(--gutter) var(--space-3);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--gutter);
+    overscroll-behavior-x: contain;
+  }
+  .doc {
+    flex: 0 0 min(78vw, 340px);
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    min-height: var(--row-doc);
+    padding: var(--space-2);
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--radius-card);
+    background: var(--color-paper);
+    color: var(--color-ink);
+    scroll-margin-top: calc(var(--header-h) + var(--space-3));
+  }
+  .doc:target {
+    border-color: var(--red-cherry);
+  }
+  .doc__thumb {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 4 / 5;
+    padding: var(--space-1);
+    margin-bottom: var(--space-1);
+    border-radius: var(--radius-control);
+    background: var(--color-cotton);
+    overflow: hidden;
+    text-decoration: none;
+  }
+  .doc__thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .doc__title {
+    color: var(--color-ink);
+    font-size: clamp(1.25rem, 1rem + 0.7vw, 1.625rem);
+  }
+  .doc__desc {
+    color: var(--color-ink);
+  }
+  .doc__meta {
+    margin-top: auto;
+    padding-top: var(--space-1);
+    color: var(--color-gray);
+  }
+  .doc__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 var(--space-3);
+  }
+  .doc__btn {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--touch-min);
+    color: var(--red-cherry);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 6px;
+    transition: color var(--duration-nav-hover) var(--ease-out-sharp);
+  }
+  .doc__btn:hover {
+    color: var(--red-maroon);
+  }
+</style>

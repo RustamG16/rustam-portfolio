@@ -1,0 +1,54 @@
+---
+// The RG mark: twelve vertical bars, Convenium's density ramp turned 90 degrees (DESIGN.md `mark`).
+// Geometry comes from design.json (generated from DESIGN.md), never retyped here.
+// Colour is currentColor (cotton on noir, ink on cotton); bar 8 is cherry (the portal slit).
+// aria-hidden: the accessible name lives on the enclosing link (nav.homeAria).
+import design from '../../../design.json';
+
+interface Props {
+  size?: number;
+  class?: string;
+  /** Loader: bars start collapsed so the script can rise them in. */
+  collapsed?: boolean;
+}
+const { size = 32, class: cls = '', collapsed = false } = Astro.props;
+const m = design.tokens.mark;
+const bars = m.x.map((x: number, i: number) => ({ x, w: m.width[i], accent: i === m.accentIndex }));
+const crisp = size >= 64;
+---
+<svg
+  class:list={['mark', cls]}
+  width={size}
+  height={size}
+  viewBox={m.viewBox}
+  aria-hidden="true"
+  focusable="false"
+  shape-rendering={crisp ? 'crispEdges' : 'geometricPrecision'}
+>
+  {bars.map((b) => (
+    <rect
+      class:list={['mark__bar', b.accent && 'mark__bar--accent']}
+      x={b.x}
+      y="0"
+      width={b.w}
+      height={m.barHeight}
+      style={collapsed ? 'transform: scaleY(0)' : undefined}
+    />
+  ))}
+</svg>
+
+<style>
+  .mark {
+    flex: none;
+    overflow: visible;
+  }
+  .mark__bar {
+    fill: currentColor;
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+  }
+  .mark__bar--accent {
+    /* The Mark Exception: the one place cherry may sit on noir. */
+    fill: var(--red-cherry);
+  }
+</style>

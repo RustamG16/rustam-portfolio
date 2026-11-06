@@ -1,0 +1,135 @@
+---
+// 02 Experience: four roles with dates, duration, bullets, tags; the Infineon award links to #doc-knime.
+import EditorialLink from '../ui/EditorialLink.astro';
+import { t, type Lang } from '../../lib/i18n';
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const e = t(lang).cv.experience;
+const roles = e.roles as Record<
+  string,
+  { from: string; to: string; duration: string; role: string; employer: string; city: string; bullets: string[]; tags: string[]; award?: { label: string; link: string } }
+>;
+---
+<section id="experience" class="band cvs" aria-labelledby="cv-experience-title">
+  <header class="cvs__head">
+    <p class="cvs__num t-label">{e.num}</p>
+    <h2 id="cv-experience-title" class="t-display" data-reveal="lines">{e.title}</h2>
+  </header>
+  <ol class="cvs__body jobs">
+    {(e.order as string[]).map((id) => {
+      const r = roles[id];
+      return (
+        <li class="job">
+          <p class="job__when t-label">
+            <span class="job__years">{r.from === r.to ? r.from : `${r.from} — ${r.to}`}</span>
+            <span class="job__dur">{r.duration}</span>
+          </p>
+          <div class="job__main">
+            <h3 class="job__role t-card-title">{r.role}</h3>
+            <p class="job__where t-small">{r.employer} <span>· {r.city}</span></p>
+            <ul class="job__bullets">
+              {r.bullets.map((b) => <li>{b}</li>)}
+            </ul>
+            <ul class="job__tags" aria-label={t(lang).cv.techAria}>
+              {r.tags.map((tag) => <li class="t-label">{tag}</li>)}
+            </ul>
+            {r.award && (
+              <p class="job__award">
+                <span class="t-label">{r.award.label}</span>
+                <EditorialLink class="t-nav job__awardlink" href="#doc-knime">{r.award.link}</EditorialLink>
+              </p>
+            )}
+          </div>
+        </li>
+      );
+    })}
+  </ol>
+</section>
+
+<style>
+  .jobs {
+    border-top: 1px solid var(--color-hairline);
+  }
+  .job {
+    display: grid;
+    gap: var(--space-1) var(--gutter);
+    padding-block: var(--space-4);
+    border-bottom: 1px solid var(--color-hairline);
+  }
+  .job__when {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 var(--space-2);
+    align-content: start;
+    color: var(--color-gray);
+  }
+  .job__years {
+    color: var(--color-ink);
+  }
+  .job__main {
+    display: grid;
+    gap: var(--space-2);
+    align-content: start;
+  }
+  .job__role {
+    color: var(--color-ink);
+  }
+  .job__where {
+    margin-top: -8px;
+    color: var(--color-gray);
+  }
+  .job__bullets {
+    display: grid;
+    gap: var(--space-1);
+    max-width: var(--measure-body);
+  }
+  .job__bullets li {
+    position: relative;
+    padding-left: 20px;
+    font-family: var(--font-family-serif);
+    font-size: var(--font-body);
+    line-height: 1.4;
+    color: var(--color-ink);
+  }
+  .job__bullets li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.72em;
+    width: 10px;
+    height: 1.5px;
+    background: var(--color-gray);
+  }
+  .job__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .job__tags li {
+    padding: 4px 10px;
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--radius-control);
+    color: var(--color-gray);
+  }
+  .job__award {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 var(--space-3);
+  }
+  .job__award > .t-label {
+    color: var(--red-cherry);
+  }
+  .job__award :global(.job__awardlink) {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--touch-min);
+  }
+  @media (min-width: 960px) {
+    .job {
+      grid-template-columns: 3fr 9fr;
+    }
+  }
+</style>

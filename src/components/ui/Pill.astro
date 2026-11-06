@@ -1,0 +1,76 @@
+---
+// CTA pill (cherry) and outline pill. Cherry fill + cotton text 9.05:1; hover maroon 11.45:1.
+interface Props {
+  href: string;
+  variant?: 'cherry' | 'outline';
+  /** header = 40px tall, 0 18px; contact = 56px tall, 0 28px */
+  size?: 'header' | 'contact';
+  download?: string;
+  external?: boolean;
+  class?: string;
+  cursor?: 'link' | 'view';
+}
+const { href, variant = 'cherry', size = 'contact', download, external = false, class: cls = '', cursor = 'link' } = Astro.props;
+---
+<a
+  class:list={['pill', `pill--${variant}`, `pill--${size}`, cls]}
+  href={href}
+  download={download}
+  target={external ? '_blank' : undefined}
+  rel={external ? 'noopener' : undefined}
+  data-cursor={cursor}
+><slot /></a>
+
+<style>
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--touch-min);
+    border-radius: var(--radius-pill);
+    font-family: var(--font-family-ui);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    text-decoration: none;
+    white-space: nowrap;
+    transition:
+      background-color var(--duration-nav-hover) var(--ease-out-sharp),
+      color var(--duration-nav-hover) var(--ease-out-sharp);
+  }
+  .pill--header {
+    height: 40px;
+    padding: 0 18px;
+  }
+  .pill--contact {
+    height: 56px;
+    padding: 0 28px;
+  }
+  .pill--cherry {
+    background: var(--red-cherry);
+    color: var(--color-cotton);
+  }
+  .pill--cherry:hover {
+    background: var(--red-maroon);
+  }
+  .pill--outline {
+    border: 1px solid currentColor;
+    background: transparent;
+    color: inherit;
+  }
+  .pill--outline:hover {
+    background: var(--hover-fill, var(--color-cotton));
+    border-color: var(--hover-fill, var(--color-cotton));
+    color: var(--hover-ink, var(--color-noir));
+  }
+  :global([data-theme="cotton"]) .pill--outline {
+    --hover-fill: var(--color-ink);
+    --hover-ink: var(--color-cotton);
+  }
+  :global([data-theme="noir"]) .pill--outline {
+    --hover-fill: var(--color-cotton);
+    --hover-ink: var(--color-noir);
+  }
+</style>

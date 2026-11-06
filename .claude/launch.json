@@ -1,0 +1,19 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "astro-dev",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["scripts/dev.mjs", "--port", "4180"],
+      "port": 4180,
+      "url": "http://localhost:4180"
+    },
+    {
+      "name": "serve-dist",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["qa/serve.mjs", "dist", "4181"],
+      "port": 4181,
+      "url": "http://127.0.0.1:4181"
+    }
+  ]
+}

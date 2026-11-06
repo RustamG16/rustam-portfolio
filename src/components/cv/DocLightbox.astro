@@ -1,0 +1,154 @@
+---
+// The documents lightbox: a modal <dialog> (showModal): focus trapped, Escape closes, focus returns to the opener.
+// Content is filled by src/scripts/cv/lightbox.ts from the opener's data-* attributes. data-lenis-prevent on the
+// dialog and on its scroller, so wheel scrolling inside it never reaches Lenis.
+import { t, type Lang } from '../../lib/i18n';
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const l = t(lang).cv.documents.lightbox;
+---
+<dialog class="lb" data-lightbox data-lenis-prevent aria-labelledby="lb-title">
+  <div class="lb__bar">
+    <div class="lb__id">
+      <p id="lb-title" class="lb__title t-card-title" data-lb-title></p>
+      <p class="lb__meta t-label" data-lb-meta></p>
+    </div>
+    <a class="lb__pdf t-nav" href="#" target="_blank" rel="noopener" data-lb-pdf>{l.openPdf}</a>
+    <button type="button" class="lb__close" data-lightbox-close aria-label={l.close}></button>
+  </div>
+  <div class="lb__stage" data-lb-stage data-lenis-prevent>
+    <img class="lb__img" data-lb-img alt="" />
+  </div>
+</dialog>
+
+<style>
+  .lb {
+    --ring-ground: var(--color-noir);
+    width: min(1100px, calc(100vw - 32px));
+    max-width: none;
+    height: calc(100svh - 32px);
+    max-height: none;
+    padding: 0;
+    border: 1px solid var(--rule-on-noir);
+    background: var(--color-noir);
+    color: var(--color-cotton);
+    overflow: hidden;
+  }
+  .lb[open] {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .lb::backdrop {
+    background: color-mix(in srgb, var(--color-noir) 90%, transparent);
+  }
+  .lb__bar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2);
+    border-bottom: 1px solid var(--rule-on-noir);
+  }
+  .lb__id {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: grid;
+    gap: 2px;
+  }
+  .lb__title {
+    margin: 0;
+    font-size: clamp(1.125rem, 1rem + 0.5vw, 1.5rem);
+    color: var(--color-cotton);
+  }
+  .lb__meta {
+    margin: 0;
+    color: var(--color-gray-on-noir);
+  }
+  .lb__pdf {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 44px;
+    padding: 0 20px;
+    border: 1px solid currentColor;
+    border-radius: var(--radius-pill);
+    color: var(--color-cotton);
+    text-decoration: none;
+    white-space: nowrap;
+    transition:
+      background-color var(--duration-nav-hover) var(--ease-out-sharp),
+      color var(--duration-nav-hover) var(--ease-out-sharp);
+  }
+  .lb__pdf:hover {
+    background: var(--color-cotton);
+    border-color: var(--color-cotton);
+    color: var(--color-noir);
+  }
+  .lb__close {
+    position: relative;
+    flex: none;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--rule-on-noir);
+    border-radius: var(--radius-control);
+    color: var(--color-cotton);
+    transition: border-color var(--duration-nav-hover) var(--ease-out-sharp);
+  }
+  .lb__close:hover {
+    border-color: var(--color-cotton);
+  }
+  /* CSS-drawn cross (no glyph icons) */
+  .lb__close::before,
+  .lb__close::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 18px;
+    height: 1.5px;
+    margin: -0.75px 0 0 -9px;
+    background: currentColor;
+    transform: rotate(45deg);
+  }
+  .lb__close::after {
+    transform: rotate(-45deg);
+  }
+  .lb__stage {
+    overflow: auto;
+    overscroll-behavior: contain;
+    padding: var(--space-2);
+  }
+  .lb__img {
+    display: block;
+    width: min(100%, 1000px);
+    height: auto;
+    margin: 0 auto;
+    background: var(--color-paper);
+  }
+  .lb__img:not([src]) {
+    min-height: 40vh;
+  }
+  @media (max-width: 639px) {
+    .lb {
+      width: 100vw;
+      height: 100svh;
+      border: 0;
+    }
+    .lb__bar {
+      flex-wrap: wrap;
+    }
+    .lb__id {
+      flex-basis: 100%;
+      order: 3;
+    }
+  }
+</style>
+
+<style is:global>
+  /* the page behind a modal never scrolls (Lenis is stopped too) */
+  html:has(dialog[data-lightbox][open]) {
+    overflow: hidden;
+  }
+</style>

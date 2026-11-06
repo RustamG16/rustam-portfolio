@@ -1,0 +1,441 @@
+{
+  "_meta": {
+    "lang": "en",
+    "htmlLang": "en",
+    "version": "2026-11-06",
+    "facts": ".olympus/copy/facts.json",
+    "note": "Section-based keys; copy.de.json has the identical tree. Values that are locked facts are copied from facts.json verbatim."
+  },
+
+  "nav": {
+    "skip": "Skip to work",
+    "homeAria": "Rustam Gurbanov — home",
+    "primaryAria": "Primary",
+    "secondaryAria": "Secondary",
+    "mark": "RG — 2026",
+    "work": "Work",
+    "about": "About",
+    "cv": "CV",
+    "contact": "Contact",
+    "downloadCv": "Download CV",
+    "tabBarAria": "Sections",
+    "lang": { "aria": "Switch language", "current": "EN", "alt": "DE" },
+    "menu": { "open": "Open menu", "close": "Close menu" }
+  },
+
+  "loader": {
+    "mark": "RG",
+    "line": "Klagenfurt · 2026",
+    "aria": "Loading"
+  },
+
+  "hero": {
+    "h1Aria": "Rustam Gurbanov",
+    "kicker": "RG — 2026",
+    "wordmark": "GURBANOV",
+    "titleCard": {
+      "line1": "Rustam Gurbanov",
+      "line2": "Engineer. Orchestrator. Designer.",
+      "line3": "Klagenfurt am Wörthersee"
+    },
+    "roles": "ENGINEER. ORCHESTRATOR. DESIGNER.",
+    "frame": { "label": "Frame", "sep": "/" },
+    "scrollHint": "Scroll to enter",
+    "enter": "Enter",
+    "skipFilm": "Skip the film",
+    "posterAlt": "Rustam Gurbanov in a burgundy quarter-zip, walking toward the camera down a dark corridor split by a red light."
+  },
+
+  "works": {
+    "kicker": "RG / Index 2026",
+    "location": "Klagenfurt · EU / Remote",
+    "title": "Selected work",
+    "intro": "Six builds, first frame to deploy. Every concept is marked as one.",
+    "cta": "View project",
+    "cursor": "View ↗",
+    "newTab": "opens in a new tab",
+    "filmLabel": "Film",
+    "order": ["convenium", "meridian", "sonnwerk", "wild-gruppe", "savra", "doko"],
+    "items": {
+      "convenium": {
+        "index": "01",
+        "name": "Convenium",
+        "sector": "Studio · live",
+        "line": "The studio I co-founded in Klagenfurt. We digitalize any idea.",
+        "tags": ["Next.js", "React", "TypeScript", "GSAP", "Three.js"],
+        "href": "https://convenium.at",
+        "alt": "Poster frame of the Convenium studio site: the name in cotton and red capitals, the line 'We digitalize any idea.', over a blurred row of portraits."
+      },
+      "meridian": {
+        "index": "02",
+        "name": "The Meridian",
+        "sector": "Hospitality · concept build",
+        "line": "Luxury alpine resort. A scroll-scrubbed canvas arrival, four interactive instruments, eight bespoke routes.",
+        "tags": ["Astro", "GSAP", "Canvas scrub", "Flip"],
+        "href": "https://rustamg16.github.io/003-meridian-mvp/",
+        "alt": "Poster frame of The Meridian concept site: the name in white serif over a blue-hour sea of clouds, 'An arrival you scroll through before you book.'"
+      },
+      "sonnwerk": {
+        "index": "03",
+        "name": "Sonn'werk",
+        "sector": "Brand · concept build",
+        "line": "Premium CBD brand. Field to bottle in one scroll, set in editorial type.",
+        "tags": ["Astro", "GSAP", "ScrollTrigger", "Editorial"],
+        "href": "https://rustamg16.github.io/002-sonnwerk/",
+        "alt": "Poster frame of the Sonn'werk concept site: the name in gold serif over a golden field, 'From the field to the bottle, in one scroll.'"
+      },
+      "wild-gruppe": {
+        "index": "04",
+        "name": "Wild Gruppe",
+        "sector": "Optomechatronics · concept",
+        "line": "Unsolicited relaunch concept, built around a 3D demonstrator. From specification to series.",
+        "tags": ["Three.js", "GSAP", "Lenis", "Vite"],
+        "href": "https://rustamg16.github.io/wild-gruppe/",
+        "alt": "Poster frame of the Wild Gruppe relaunch concept: 'WILD Gruppe' in white on black above an exploded 3D optical assembly with a red laser line."
+      },
+      "savra": {
+        "index": "05",
+        "name": "Savra",
+        "sector": "Restaurant · concept build",
+        "line": "An intimate dining room in Vienna. Through the blue door and into the room, in one scroll.",
+        "tags": ["React", "GSAP", "ScrollTrigger", "Vite"],
+        "href": "https://rustamg16.github.io/Savra_v2/",
+        "alt": "Poster frame of the Savra concept site: gold serif 'SAVRA' split by a tall blue door that opens onto a lit room, on deep green."
+      },
+      "doko": {
+        "index": "06",
+        "name": "DOKO",
+        "sector": "Barbershop · proposal",
+        "line": "Website proposal for a barbershop. Two locations, one domain.",
+        "tags": ["GSAP", "Lenis", "ScrollTrigger", "Vite"],
+        "href": "https://rustamg16.github.io/doko-barbershop-proposal/",
+        "alt": "Poster frame of the DOKO website proposal: 'DOKO' in cream capitals on green above a barbershop interior, 'Two locations, one domain.'"
+      }
+    }
+  },
+
+  "statement": {
+    "kicker": "Summary",
+    "line": "Ten years turning ideas into software that ships.",
+    "body": "Architecture, interface, motion, and the AI systems that run the rest. All of it in one pair of hands.",
+    "stats": {
+      "years":     { "value": "10", "suffix": "+", "label": "Years building" },
+      "projects":  { "value": "20", "suffix": "+", "label": "Projects shipped" },
+      "languages": { "value": "5",  "suffix": "",  "label": "Languages spoken" },
+      "pipeline":  { "value": "1",  "suffix": "",  "label": "Person, whole pipeline" }
+    },
+    "status": {
+      "key": "Status",
+      "value": "Available for work",
+      "location": "Based in Klagenfurt, Austria · EU / Remote"
+    }
+  },
+
+  "capability": {
+    "kicker": "Capability",
+    "title": "Three crafts. No handoffs.",
+    "pillars": {
+      "engineer": {
+        "index": "01",
+        "title": "Engineer",
+        "body": "Production software, end to end. TypeScript, React, Python and the pipelines behind them, from architecture to the last commit.",
+        "portraitAlt": "Rustam Gurbanov at his desk, at work."
+      },
+      "orchestrate": {
+        "index": "02",
+        "title": "Orchestrate",
+        "body": "AI agents and pipelines that do real work. Claude Code and Cursor do the typing; I decide what ships.",
+        "portraitAlt": "Rustam Gurbanov at a whiteboard, mapping a system."
+      },
+      "design": {
+        "index": "03",
+        "title": "Design & Create",
+        "body": "Cinematic web, motion and film. Everything that moves on this page included.",
+        "portraitAlt": "Rustam Gurbanov behind a camera."
+      }
+    },
+    "also": {
+      "label": "Also",
+      "items": ["Branding", "Graphic Design", "AI Content", "Social Media", "Motion", "Video"]
+    }
+  },
+
+  "experience": {
+    "kicker": "Experience",
+    "title": "Four roles. Two countries.",
+    "lede": "From a bank help desk in Baku to fullstack engineering at Infineon in Villach.",
+    "order": ["infineon", "iba", "ibatech", "bank"],
+    "roles": {
+      "infineon": { "years": "2023 — 2026", "duration": "2 yrs 7 mos", "role": "Digitalization Engineer, Fullstack Developer", "employer": "Infineon Technologies", "city": "Villach, Austria" },
+      "iba":      { "years": "2019 — 2021", "duration": "1 yr 8 mos",  "role": "Frontend Developer, Graphical Designer",       "employer": "International Bank of Azerbaijan", "city": "Baku, Azerbaijan" },
+      "ibatech":  { "years": "2019",        "duration": "3 mos",       "role": "Frontend Developer",                           "employer": "IBA-Tech Academy", "city": "Baku, Azerbaijan" },
+      "bank":     { "years": "2018 — 2019", "duration": "1 yr 3 mos",  "role": "Help desk specialist",                         "employer": "Bank Republic", "city": "Baku, Azerbaijan" }
+    },
+    "award": "IFX-KNIME Division Pioneer Award · 2024",
+    "cta": "Full CV and documents →",
+    "cvPdf": "Download CV (PDF)"
+  },
+
+  "contact": {
+    "kicker": "Contact",
+    "headline": ["The next one", "ships."],
+    "body": "An engineer who designs. A designer who ships. Same person.",
+    "cta": "Get in touch",
+    "cv": "Download CV",
+    "status": "Available for work · Klagenfurt · EU / Remote",
+    "channels": {
+      "email":     { "label": "Email",     "value": "rustam.gurbanov016@gmail.com", "href": "mailto:rustam.gurbanov016@gmail.com" },
+      "linkedin":  { "label": "LinkedIn",  "value": "LinkedIn",  "href": "https://www.linkedin.com/in/rustam-gurbanov016/" },
+      "instagram": { "label": "Instagram", "value": "Instagram", "href": "https://www.instagram.com/russ.tafarii/" },
+      "whatsapp":  { "label": "WhatsApp",  "value": "WhatsApp",  "href": "https://wa.me/436763492193", "aria": "Chat on WhatsApp" }
+    }
+  },
+
+  "footer": {
+    "wordmark": "GURBANOV.",
+    "copy": "© 2026 Rustam Gurbanov",
+    "location": "Klagenfurt, AT",
+    "backToTop": "Back to top",
+    "links": {
+      "work": "Work",
+      "cv": "CV",
+      "documents": "Documents",
+      "legal": "Legal",
+      "portfolio": "Portfolio"
+    }
+  },
+
+  "cv": {
+    "skip": "Skip to experience",
+    "back": "← Portfolio",
+    "download": "Download CV",
+    "downloadShort": "Download",
+    "openDoc": "Open ↗",
+    "techAria": "Tech",
+    "spine": { "aria": "Jump by section", "end": "End" },
+    "cover": {
+      "kicker": "RG / CV 2026",
+      "name": ["Rustam", "Gurbanov"],
+      "nameAria": "Rustam Gurbanov",
+      "roles": ["Engineer", "Orchestrator", "Designer", "Creator"],
+      "rolesAria": "Software Engineer, AI Orchestrator, Designer, Creator",
+      "meta": {
+        "subject":  { "label": "Subject",  "value": "Gurbanov, Rustam" },
+        "origin":   { "label": "Origin",   "value": "Baku, AZ" },
+        "station":  { "label": "Station",  "value": "Klagenfurt, AT" },
+        "period":   { "label": "Period",   "value": "2017 — 2026" },
+        "contents": { "label": "Contents", "value": "4 roles · 2 degrees · 5 documents" }
+      },
+      "docsLink": "Documents ↓",
+      "hint": "Scroll",
+      "portraitAlt": "Rustam Gurbanov, arms crossed, in a burgundy quarter-zip."
+    },
+    "vitals": {
+      "num": "01",
+      "title": "Vitals",
+      "stats": {
+        "years":     { "value": "10", "suffix": "+", "label": "Years building" },
+        "projects":  { "value": "20", "suffix": "+", "label": "Projects shipped" },
+        "languages": { "value": "5",  "suffix": "",  "label": "Languages spoken" },
+        "pipeline":  { "value": "1",  "suffix": "",  "label": "Person, whole pipeline" }
+      },
+      "status": { "key": "Status", "value": "Based in Klagenfurt, Austria · EU / Remote" }
+    },
+    "experience": {
+      "num": "02",
+      "title": "Experience",
+      "order": ["infineon", "iba", "ibatech", "bank"],
+      "roles": {
+        "infineon": {
+          "from": "2023", "to": "2026",
+          "duration": "2 yrs 7 mos",
+          "role": "Digitalization Engineer, Fullstack Developer",
+          "employer": "Infineon Technologies",
+          "city": "Villach, Austria",
+          "bullets": [
+            "Shipped fullstack tools for manufacturing digitalization — data workflows, APIs, and operator-facing UIs.",
+            "Built and automated KNIME / OpenShift pipelines; IFX-KNIME Division Pioneer Award (E9Steps, 2024).",
+            "Owned features end to end: TypeScript/React frontends, testing, Git workflows, and production handoff."
+          ],
+          "tags": ["TypeScript", "React", "KNIME", "OpenShift", "Python", "Git"],
+          "award": { "label": "IFX-KNIME Division Pioneer Award · 2024", "link": "See certificate →" }
+        },
+        "iba": {
+          "from": "2019", "to": "2021",
+          "duration": "1 yr 8 mos",
+          "role": "Frontend Developer, Graphical Designer",
+          "employer": "International Bank of Azerbaijan",
+          "city": "Baku, Azerbaijan",
+          "bullets": [
+            "Designed and built frontend interfaces for bank digital products with HTML, CSS, JS, and React.",
+            "Produced brand-aligned graphic assets and UI systems that kept product and marketing in sync."
+          ],
+          "tags": ["JavaScript", "React", "HTML/CSS", "Figma"]
+        },
+        "ibatech": {
+          "from": "2019", "to": "2019",
+          "duration": "3 mos",
+          "role": "Frontend Developer",
+          "employer": "IBA-Tech Academy",
+          "city": "Baku, Azerbaijan",
+          "bullets": [
+            "Completed intensive frontend development track (DAN.IT / IBA Tech Academy) and shipped academy projects."
+          ],
+          "tags": ["JavaScript", "HTML/CSS"]
+        },
+        "bank": {
+          "from": "2018", "to": "2019",
+          "duration": "1 yr 3 mos",
+          "role": "Help desk specialist",
+          "employer": "Bank Republic",
+          "city": "Baku, Azerbaijan",
+          "bullets": [
+            "First-line support for customers and internal teams — triage, resolution, and clear handoffs."
+          ],
+          "tags": ["Support", "Triage"]
+        }
+      }
+    },
+    "education": {
+      "num": "03",
+      "title": "Education",
+      "degrees": {
+        "master": {
+          "years": "2021 — present",
+          "title": "Master of Game Studies and Engineering",
+          "institution": "Universität Klagenfurt",
+          "city": "Klagenfurt, Austria"
+        },
+        "bachelor": {
+          "years": "2017 — 2021",
+          "title": "Bachelor of Information Technologies (IT)",
+          "institution": "Azerbaijan Technical University",
+          "city": "Baku, Azerbaijan"
+        }
+      }
+    },
+    "capabilities": {
+      "num": "04",
+      "title": "Capabilities",
+      "selfDirected": "Self-directed",
+      "groups": {
+        "eng": {
+          "index": "01",
+          "title": "Engineering",
+          "rows": [
+            { "label": "HTML · CSS · JS · TypeScript", "where": "Infineon · IBA" },
+            { "label": "React · API handling · Testing", "where": "Infineon" },
+            { "label": "Git · OpenShift · KNIME", "where": "Infineon" }
+          ]
+        },
+        "design": {
+          "index": "02",
+          "title": "Design",
+          "rows": [
+            { "label": "Figma · Canva", "where": "IBA" },
+            { "label": "Graphic design", "where": "IBA" },
+            { "label": "Scroll animation", "where": "Self-directed" }
+          ]
+        },
+        "ai": {
+          "index": "03",
+          "title": "AI & Automation",
+          "rows": [
+            { "label": "AI orchestration", "where": "Self-directed" },
+            { "label": "Cursor · Claude Code", "where": "Self-directed" },
+            { "label": "Content generation", "where": "Self-directed" }
+          ]
+        },
+        "mkt": {
+          "index": "04",
+          "title": "Marketing",
+          "rows": [
+            { "label": "Content strategy", "where": "Self-directed" },
+            { "label": "Social media", "where": "Self-directed" },
+            { "label": "Brand storytelling", "where": "IBA" }
+          ]
+        }
+      }
+    },
+    "languages": {
+      "num": "05",
+      "title": "Languages",
+      "order": ["az", "en", "de", "ru", "tr"],
+      "items": {
+        "az": { "name": "Azerbaijani", "native": "Azərbaycan", "level": "native" },
+        "en": { "name": "English",     "native": "English",    "level": "C2" },
+        "de": { "name": "German",      "native": "Deutsch",    "level": "B2" },
+        "ru": { "name": "Russian",     "native": "Русский",    "level": "C2" },
+        "tr": { "name": "Turkish",     "native": "Türkçe",     "level": "C2" }
+      }
+    },
+    "documents": {
+      "num": "06",
+      "title": "Documents",
+      "intro": "Five originals. Scanned, not summarized. Open any one full size, or take the PDF.",
+      "hint": "Scroll to browse · click to open",
+      "order": ["knime", "iba", "bach", "ref1", "ref2"],
+      "items": {
+        "knime": { "title": "IFX-KNIME Division Pioneer Award",        "desc": "Infineon certificate of achievement — IDEA: E9Steps, Use Case Contest 2024.", "meta": "PDF · 1 page · 123 KB" },
+        "iba":   { "title": "IBA Tech Academy — Frontend Certificate", "desc": "Completion certificate — Frontend Development (Oct–Dec 2019), IBA Tech Academy / DAN.IT.", "meta": "PDF · 1 page · 927 KB" },
+        "bach":  { "title": "Bachelor Certificate",                    "desc": "Degree certificate — Azerbaijan Technical University (Information Technologies).", "meta": "PDF · 5 pages · 937 KB" },
+        "ref1":  { "title": "Reference Letter",                        "desc": "Professional reference letter (scanned PDF).", "meta": "PDF · 1 page · 287 KB" },
+        "ref2":  { "title": "Reference Letter 2",                      "desc": "Additional professional reference letter (scanned PDF).", "meta": "PDF · 1 page · 204 KB" }
+      },
+      "lightbox": { "openPdf": "Open PDF", "close": "Close" }
+    },
+    "end": {
+      "kicker": "End of file · RG-2026",
+      "headline": ["One person.", "Whole pipeline."],
+      "cta": "Get in touch",
+      "cv": "Download CV",
+      "selectedWork": "Selected work →"
+    }
+  },
+
+  "legal": {
+    "source": "site/legal.html",
+    "verbatim": true,
+    "contentLang": "de",
+    "title": "Offenlegung & Datenschutz — Rustam Gurbanov",
+    "heading": "Offenlegung & Datenschutz",
+    "description": "Offenlegung nach § 25 Mediengesetz und Datenschutzerklärung für die persönliche Website von Rustam Gurbanov.",
+    "back": "← Zurück zur Startseite",
+    "footerLabel": "Legal",
+    "notice": "Legal notice and privacy policy, in German."
+  },
+
+  "404": {
+    "code": "404",
+    "line": "This page isn't in the index.",
+    "back": "Back to the start"
+  },
+
+  "meta": {
+    "ogLocale": "en_US",
+    "ogLocaleAlternate": "de_AT",
+    "siteName": "Rustam Gurbanov",
+    "home": {
+      "title": "Rustam Gurbanov — Engineer, AI Orchestrator, Designer",
+      "description": "Rustam Gurbanov, Klagenfurt: software engineer, AI orchestrator, designer. 10+ years, 20+ projects, five languages, one person for the whole pipeline.",
+      "ogTitle": "Rustam Gurbanov — One person, whole pipeline.",
+      "ogDescription": "Software engineer, AI orchestrator and designer in Klagenfurt. Six builds, 10+ years, the whole pipeline in one pair of hands.",
+      "ogImageAlt": "GURBANOV in large cotton capitals on noir, with the RG mark and 'Klagenfurt am Wörthersee'."
+    },
+    "cv": {
+      "title": "Rustam Gurbanov — CV & Documents",
+      "description": "The full CV: four roles, two degrees, five languages and five original documents to open or download.",
+      "ogTitle": "Rustam Gurbanov — CV & Documents",
+      "ogDescription": "Four roles, two degrees, five languages, five original documents.",
+      "ogImageAlt": "GURBANOV in large cotton capitals on noir, with the RG mark and 'Curriculum Vitae'."
+    },
+    "legal": {
+      "title": "Offenlegung & Datenschutz — Rustam Gurbanov",
+      "description": "Offenlegung nach § 25 Mediengesetz und Datenschutzerklärung für die persönliche Website von Rustam Gurbanov."
+    },
+    "404": {
+      "title": "404 — Rustam Gurbanov",
+      "description": "This page isn't in the index."
+    }
+  }
+}

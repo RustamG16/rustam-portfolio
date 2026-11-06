@@ -1,0 +1,53 @@
+---
+// 03 Education: two degrees on ruled rows.
+import { t, type Lang } from '../../lib/i18n';
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const e = t(lang).cv.education;
+---
+<section id="education" class="band cvs" aria-labelledby="education-title">
+  <header class="cvs__head">
+    <p class="cvs__num t-label">{e.num}</p>
+    <h2 id="education-title" class="t-display" data-reveal="lines">{e.title}</h2>
+  </header>
+  <ol class="cvs__body degrees">
+    {Object.values(e.degrees).map((d) => (
+      <li class="degree">
+        <p class="degree__years t-label">{d.years}</p>
+        <div>
+          <h3 class="t-card-title">{d.title}</h3>
+          <p class="degree__inst t-small">{d.institution} <span>· {d.city}</span></p>
+        </div>
+      </li>
+    ))}
+  </ol>
+</section>
+
+<style>
+  .degrees {
+    border-top: 1px solid var(--color-hairline);
+  }
+  .degree {
+    display: grid;
+    gap: var(--space-1) var(--gutter);
+    padding-block: var(--space-3);
+    border-bottom: 1px solid var(--color-hairline);
+  }
+  .degree__years {
+    color: var(--color-ink);
+  }
+  .degree h3 {
+    color: var(--color-ink);
+  }
+  .degree__inst {
+    margin-top: 6px;
+    color: var(--color-gray);
+  }
+  @media (min-width: 960px) {
+    .degree {
+      grid-template-columns: 3fr 9fr;
+    }
+  }
+</style>

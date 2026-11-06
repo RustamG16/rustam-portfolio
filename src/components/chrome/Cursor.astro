@@ -1,0 +1,79 @@
+---
+// The difference disc: cotton, 10 / 28 / 72 px (rest / link / "View ↗" over a work row).
+// scripts/cursor.ts mounts it on fine pointers without reduced motion; otherwise it stays display:none.
+import { t, type Lang } from '../../lib/i18n';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+---
+<div class="cursor" data-cursor-root aria-hidden="true">
+  <div class="cursor__disc"><span class="cursor__label">{t(lang).works.cursor}</span></div>
+</div>
+
+<style>
+  .cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+    mix-blend-mode: difference;
+    opacity: 0;
+    transition: opacity var(--duration-nav-hover) linear;
+    display: none;
+    will-change: transform;
+  }
+  :global(html.has-cursor) .cursor {
+    display: block;
+  }
+  .cursor.is-on {
+    opacity: 1;
+  }
+  .cursor__disc {
+    --s: var(--cursor-dot);
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: grid;
+    place-items: center;
+    width: var(--s);
+    height: var(--s);
+    margin: calc(var(--s) / -2) 0 0 calc(var(--s) / -2);
+    border-radius: 50%;
+    background: var(--color-cotton);
+    transition:
+      width var(--duration-reveal) var(--ease-out-sharp),
+      height var(--duration-reveal) var(--ease-out-sharp),
+      margin var(--duration-reveal) var(--ease-out-sharp);
+  }
+  .cursor[data-mode='link'] .cursor__disc {
+    --s: var(--cursor-link);
+  }
+  .cursor[data-mode='view'] .cursor__disc {
+    --s: var(--cursor-view);
+  }
+  .cursor__label {
+    font-family: var(--font-family-ui);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--color-noir);
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity var(--duration-nav-hover) linear;
+  }
+  .cursor[data-mode='view'] .cursor__label {
+    opacity: 1;
+  }
+  @media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
+    .cursor,
+    :global(html.has-cursor) .cursor {
+      display: none;
+    }
+  }
+</style>

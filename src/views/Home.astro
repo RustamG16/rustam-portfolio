@@ -1,0 +1,35 @@
+---
+// Home: sections 3-8 around the phase-7 <Hero/>.
+// Contract: hero (noir) -> cotton sheet (works, summary, about, experience) -> contact (noir) -> footer (Base).
+import Base from '../layouts/Base.astro';
+import Hero from '../components/hero/Hero.astro';
+import WorksIndex from '../components/home/WorksIndex.astro';
+import Statement from '../components/home/Statement.astro';
+import Capability from '../components/home/Capability.astro';
+import ExperienceTeaser from '../components/home/ExperienceTeaser.astro';
+import ContactClose from '../components/home/ContactClose.astro';
+import type { Lang } from '../lib/i18n';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+---
+<Base lang={lang} page="home" path="">
+  <Hero lang={lang} />
+  <div class="sheet" data-theme="cotton">
+    <WorksIndex lang={lang} />
+    <Statement lang={lang} />
+    <Capability lang={lang} />
+    <ExperienceTeaser lang={lang} />
+  </div>
+  <ContactClose lang={lang} />
+</Base>
+
+<style is:global>
+  /* the clip mask SplitText wraps every revealed line in: a little room so descenders and italics are not cut */
+  .rv-line-mask {
+    padding-bottom: 0.14em;
+    margin-bottom: -0.14em;
+  }
+</style>

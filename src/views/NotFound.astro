@@ -1,0 +1,66 @@
+---
+// PHASE 8 — stub from phase 6, already complete in content. Noir, the 64px mark, "404", one line, an ABSOLUTE
+// back link (GitHub Pages serves 404 at any depth; a relative or root-relative link breaks).
+// Both languages are rendered; an inline classic script shows DE when the requested path contains /de/.
+import Base from '../layouts/Base.astro';
+import Mark from '../components/chrome/Mark.astro';
+import { t } from '../lib/i18n';
+import { absUrl } from '../lib/paths';
+
+const en = t('en')['404'];
+const de = t('de')['404'];
+---
+<Base lang="en" page="404" chrome={false}>
+  <div class="nf" data-theme="noir">
+    <Mark size={64} />
+    <div class="nf__block" data-nf="en" lang="en">
+      <h1 class="t-h1">{en.code}</h1>
+      <p class="t-subhead">{en.line}</p>
+      <a class="nf__back t-nav" href={absUrl('')}>{en.back}</a>
+    </div>
+    <div class="nf__block" data-nf="de" lang="de" hidden>
+      <h1 class="t-h1">{de.code}</h1>
+      <p class="t-subhead">{de.line}</p>
+      <a class="nf__back t-nav" href={absUrl('de/')}>{de.back}</a>
+    </div>
+  </div>
+  <script is:inline>
+    (function () {
+      if (location.pathname.indexOf('/de/') === -1) return;
+      document.documentElement.lang = 'de-AT';
+      var en = document.querySelector('[data-nf="en"]');
+      var de = document.querySelector('[data-nf="de"]');
+      if (en && de) { en.hidden = true; de.hidden = false; }
+    })();
+  </script>
+</Base>
+
+<style>
+  .nf {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: var(--space-4);
+    min-height: 100svh;
+    padding: var(--space-6) var(--space-container);
+    background: var(--color-noir);
+    color: var(--color-cotton);
+  }
+  .nf__block {
+    display: grid;
+    gap: var(--space-2);
+    justify-items: start;
+  }
+  .nf__block[hidden] {
+    display: none;
+  }
+  .nf__back {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--touch-min);
+    color: var(--color-cotton);
+    text-underline-offset: 6px;
+    text-decoration-thickness: 1px;
+  }
+</style>

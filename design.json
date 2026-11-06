@@ -1,0 +1,1156 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-06T00:00:00Z",
+  "generatedFrom": "site/DESIGN.md front-matter (normative). Regenerate after every DESIGN.md amendment; never hand-edit token values here.",
+  "title": "Design System: RG x Convenium, Rustam Gurbanov portfolio",
+  "tokens": {
+    "name": "RG x Convenium: Rustam Gurbanov portfolio",
+    "description": "A warm noir stage where one drone take descends onto Rustam, then a ruled cotton index sheet slides over it carrying the evidence.",
+    "northStar": "Noir Portal → Index Sheet",
+    "doctrine": {
+      "hero": "convenium-design-kinetic",
+      "pages": "convenium-design-instrument (structure only: ruled rows, tabular figures, visible grouping)",
+      "family": "Convenium Studio (tokens verbatim)"
+    },
+    "colors": {
+      "noir": "#1b1717",
+      "cotton": "#edebdd",
+      "paper": "#f5f3e8",
+      "ink": "#241f1f",
+      "gray": "#6e6963",
+      "gray-on-noir": "#a8a29a",
+      "hairline": "#d6d2c2",
+      "cherry": "#810100",
+      "maroon": "#630000",
+      "chili": "#d73b3e",
+      "chili-300": "#e5595c",
+      "wordmark": "#2a2424",
+      "rule-on-noir": "rgba(237, 235, 221, 0.18)",
+      "scrim-type": "rgba(27, 23, 23, 0.65)"
+    },
+    "typography": {
+      "hero": {
+        "role": "GURBANOV wordmark, the home H1 (title card + re-entry). SVG-fitted.",
+        "fontFamily": "Archivo (variable), 'Arial Narrow', Arial, sans-serif",
+        "fontVariationSettings": "\"wght\" 900, \"wdth\" 100",
+        "token": "--display-hero: clamp(72px, 16vw, 300px)",
+        "fontSize": "min(var(--display-hero), (100cqi) / 6.264)",
+        "renderedAt": {
+          "w1920": "293.7px = 15.30vw",
+          "w1440": "217.1px = 15.08vw",
+          "w1024": "153.7px = 15.01vw",
+          "w390": "57.2px = 14.65vw",
+          "w360": "52.4px = 14.55vw",
+          "w2560": "300px = 11.72vw (cap)"
+        },
+        "fontWeight": 900,
+        "lineHeight": 0.72,
+        "letterSpacing": "-0.02em",
+        "textTransform": "uppercase",
+        "advanceEm": 6.264,
+        "inkWidthEm": 6.24,
+        "capHeightEm": 0.703,
+        "svg": "viewBox='0 -704 6264 720'; <text x='0' y='0' font-size='1000' letter-spacing='-20' textLength='6264' lengthAdjust='spacing'>; width 100% of container; max-width 1879px",
+        "kineticCheck": "doctrine --display-max 12-18vw; rendered 14.55-15.30vw from 360 to 1920 px; PASS. Above 2500 px the PLAN cap (300px) holds and it drops to 11.7vw at 2560: accepted."
+      },
+      "footer-wordmark": {
+        "role": "GURBANOV. edge to edge in the footer, colour wordmark, aria-hidden",
+        "fontFamily": "Archivo (variable)",
+        "fontWeight": 900,
+        "advanceEm": 6.457,
+        "svg": "viewBox='0 -704 6457 720'; textLength='6457'; width 100% of container",
+        "letterSpacing": "-0.02em"
+      },
+      "h1": {
+        "role": "page H1 on /cv/ (name), /legal/, 404 code",
+        "fontFamily": "Archivo (variable)",
+        "fontSize": "clamp(2.5rem, 1.56rem + 3.85vw, 5rem)",
+        "fontWeight": 900,
+        "lineHeight": 0.95,
+        "letterSpacing": "-0.02em",
+        "textTransform": "uppercase"
+      },
+      "display": {
+        "role": "section heads (capability, experience, contact, CV sections)",
+        "fontFamily": "Archivo (variable)",
+        "fontSize": "clamp(2rem, 1.1rem + 2.8vw, 4rem)",
+        "fontWeight": 900,
+        "lineHeight": 1.02,
+        "letterSpacing": "-0.02em",
+        "textTransform": "uppercase"
+      },
+      "list": {
+        "role": "work names in the index rows; mobile card names",
+        "fontFamily": "Archivo (variable)",
+        "fontSize": "clamp(1.75rem, 1.13rem + 2.54vw, 3.25rem)",
+        "fontWeight": 900,
+        "lineHeight": 1,
+        "letterSpacing": "-0.01em",
+        "textTransform": "uppercase"
+      },
+      "figure": {
+        "role": "stat figures (10+, 20+, 5, 1), work indices 01-06; capped at 56px (Rank Rule)",
+        "fontFamily": "Archivo (variable)",
+        "fontSize": "clamp(2.5rem, 2.13rem + 1.52vw, 3.5rem)",
+        "fontWeight": 900,
+        "lineHeight": 1,
+        "fontFeatureSettings": "\"tnum\" 1"
+      },
+      "index-sector": {
+        "role": "sector word in a work row (board C), e.g. HOSPITALITY",
+        "fontFamily": "Archivo (variable)",
+        "fontSize": "clamp(1.25rem, 0.9rem + 0.9vw, 2rem)",
+        "fontWeight": 900,
+        "lineHeight": 1.05,
+        "textTransform": "uppercase"
+      },
+      "card-title": {
+        "role": "statement line (italic), pillar titles, CV role titles, card titles",
+        "fontFamily": "Newsreader, Georgia, serif",
+        "fontSize": "clamp(1.5rem, 1.1rem + 1vw, 2.25rem)",
+        "fontWeight": 400,
+        "lineHeight": 1.15,
+        "letterSpacing": "-0.01em"
+      },
+      "subhead": {
+        "role": "title-card roles line (italic), ledes, contact body",
+        "fontFamily": "Newsreader, Georgia, serif",
+        "fontSize": "clamp(1.25rem, 0.9rem + 0.9vw, 2rem)",
+        "fontWeight": 400,
+        "lineHeight": 1.3
+      },
+      "body": {
+        "role": "long-form serif: CV bullets, statement body",
+        "fontFamily": "Newsreader, Georgia, serif",
+        "fontSize": "clamp(1rem, 0.9rem + 0.35vw, 1.25rem)",
+        "fontWeight": 400,
+        "lineHeight": 1.4
+      },
+      "small": {
+        "role": "compact explanatory copy: work lines, pillar bodies, document descriptions",
+        "fontFamily": "Inter, sans-serif",
+        "fontSize": "clamp(0.875rem, 0.83rem + 0.15vw, 1rem)",
+        "fontWeight": 400,
+        "lineHeight": 1.55
+      },
+      "label": {
+        "role": "labels, meta, state labels, frame counter, tags, buttons; the mono role of the boards",
+        "fontFamily": "Inter, sans-serif",
+        "fontSize": "clamp(0.75rem, 0.66rem + 0.12vw, 0.8125rem)",
+        "fontWeight": 500,
+        "lineHeight": 1.4,
+        "letterSpacing": "0.06em",
+        "textTransform": "uppercase",
+        "fontFeatureSettings": "\"tnum\" 1"
+      },
+      "nav": {
+        "role": "header nav items, tab-bar labels",
+        "fontFamily": "Inter, sans-serif",
+        "fontSize": "13px",
+        "fontWeight": 500,
+        "lineHeight": 1,
+        "letterSpacing": "0.08em",
+        "textTransform": "uppercase"
+      }
+    },
+    "fonts": {
+      "files": "self-hosted woff2 in public/fonts/; no Google Fonts, no CDN (legal page promise)",
+      "archivo": {
+        "file": "archivo-latin-wght-normal.woff2 + archivo-latin-ext-wght-normal.woff2",
+        "axes": "wght 100-900 (wdth 100 is the default instance)",
+        "display": "swap",
+        "preload": "latin only"
+      },
+      "newsreader": {
+        "file": "newsreader-latin-{normal,italic}.woff2 + latin-ext",
+        "weights": "400 (opsz variable)",
+        "display": "swap"
+      },
+      "inter": {
+        "file": "inter-latin-wght-normal.woff2 + latin-ext + cyrillic",
+        "weights": "400 500 600",
+        "display": "swap",
+        "note": "cyrillic subset is required for 'Русский' in /cv/ languages; latin-ext for 'Azərbaycan' and 'Türkçe'"
+      },
+      "fallbackMetrics": "size-adjust fallbacks generated for Archivo->Arial Narrow and Inter->Arial to hold CLS < 0.02"
+    },
+    "rounded": {
+      "sheet": "0px",
+      "control": "8px",
+      "media": "8px",
+      "card": "10px",
+      "pill": "999px",
+      "disc": "50%"
+    },
+    "spacing": {
+      "scale": {
+        "1": "8px",
+        "2": "16px",
+        "3": "24px",
+        "4": "40px",
+        "5": "48px",
+        "6": "80px",
+        "7": "120px"
+      },
+      "scalePhone": {
+        "5": "32px",
+        "6": "48px",
+        "7": "72px"
+      },
+      "container": "clamp(1rem, 0.443rem + 2.286vw, 2.5rem)",
+      "sheetInset": "16px",
+      "gutter": "clamp(20px, 2.5vw, 48px)",
+      "bandPad": "clamp(64px, 7.5vw, 144px)",
+      "measure": {
+        "body": "62ch",
+        "lede": "46ch",
+        "small": "56ch",
+        "label": "32ch"
+      },
+      "grid": {
+        "columns": 12,
+        "columnsTablet": 8,
+        "columnsPhone": 4,
+        "gap": "var(--gutter)"
+      },
+      "header": {
+        "height": "72px",
+        "heightPhone": "56px"
+      },
+      "tabBar": {
+        "height": "64px",
+        "plus": "env(safe-area-inset-bottom)"
+      },
+      "touchTargetMin": "44px",
+      "rowMin": {
+        "workRow": "96px",
+        "roleRow": "72px",
+        "channelRow": "56px",
+        "docRow": "88px"
+      }
+    },
+    "motion": {
+      "enter": 0.62,
+      "media": 0.78,
+      "exit": 0.24,
+      "ease": "expo.out",
+      "easeInOut": "power2.inOut",
+      "stagger": 0.07,
+      "yBlock": 24,
+      "yBlockMobile": 14,
+      "yPercentLine": 110,
+      "start": "top 85%",
+      "css-ease-out": "cubic-bezier(0.16, 1, 0.3, 1)",
+      "css-ease-in-out": "cubic-bezier(0.645, 0.045, 0.355, 1)",
+      "micro": "180ms",
+      "move": "320ms",
+      "scene": "780ms",
+      "active": "260ms",
+      "menu": "450ms",
+      "scrub": 1,
+      "floatLerp": 0.14,
+      "floatSize": "320x400px",
+      "loaderMax": "0.9s",
+      "effectBudget": [
+        "hero scrub",
+        "masked-line reveal (incl. yBlock media rise)",
+        "works float preview"
+      ]
+    },
+    "hero": {
+      "runway": "320svh",
+      "runwayPhone": "300svh",
+      "sectionHeight": "calc(100svh + var(--runway-hero))",
+      "beats": {
+        "titleHold": [
+          0,
+          0.08
+        ],
+        "titleOut": [
+          0.08,
+          0.14
+        ],
+        "film": [
+          0.14,
+          0.86
+        ],
+        "arrivalHold": [
+          0.86,
+          0.92
+        ],
+        "wordmarkIn": [
+          0.86,
+          0.9
+        ],
+        "chromeOut": [
+          0.86,
+          0.89
+        ],
+        "slideOut": [
+          0.92,
+          1
+        ],
+        "enterOut": [
+          0.92,
+          0.95
+        ]
+      },
+      "keyframes": {
+        "KA": "frame 1, p 0.14",
+        "KB": "frame 45, p 0.32",
+        "KP": "frame 90, p 0.50",
+        "KC": "frame 135, p 0.68",
+        "KD": "frame 180, p 0.86"
+      },
+      "hops": {
+        "V1_KA_KB": [
+          0.14,
+          0.32
+        ],
+        "V2_KB_KP": [
+          0.32,
+          0.5
+        ],
+        "V3_KP_KC": [
+          0.5,
+          0.68
+        ],
+        "V4_KC_KD": [
+          0.68,
+          0.86
+        ]
+      },
+      "hopNote": "four 8 s hops = 45 frames each between five keyframes; KP (at the slit, portal threshold) is added because four hops need five keyframes; V4 ends on KD = frame 180",
+      "titleFilmOpacity": {
+        "at0": 0,
+        "at0_08": 0.35,
+        "at0_14": 1
+      },
+      "titleRise": "24px",
+      "sheetOverlap": {
+        "desktop": "-25.6svh",
+        "phone": "-24svh"
+      },
+      "frames": {
+        "desktop": {
+          "path": "frames/hero/desktop/frame_",
+          "ext": ".jpg",
+          "pad": 4,
+          "count": 180,
+          "w": 1920,
+          "h": 1080,
+          "format": "baseline JPEG (never progressive, never AVIF)",
+          "maxTotal": "12 MB",
+          "avgTarget": "66 KB"
+        },
+        "phone": {
+          "path": "frames/hero/phone/frame_",
+          "ext": ".jpg",
+          "pad": 4,
+          "count": 90,
+          "w": 720,
+          "h": 1280,
+          "crop": "9:16 centre crop of the same concat",
+          "maxTotal": "3.5 MB",
+          "avgTarget": "39 KB"
+        },
+        "poster": {
+          "desktop": "frames/hero/desktop/frame_0180.jpg",
+          "phone": "frames/hero/phone/frame_0090.jpg"
+        },
+        "matte": {
+          "desktop": "frames/hero/desktop/matte.webp (1920x1080 RGBA, lossless)",
+          "phone": "frames/hero/phone/matte.webp (720x1280 RGBA, lossless)"
+        },
+        "pick": "portrait orientation at load -> phone set, else desktop; never swapped mid-session",
+        "preload": "frame 1, then every 8th (indices 0,8,...,176 desktop / 0,8,...,88 phone), then the last frame, then the rest in index order; coarse set fetchPriority high",
+        "pxPerFrame": {
+          "at900tall": 11.6,
+          "at1080tall": 13.9,
+          "phone844": 20.5
+        }
+      },
+      "counter": "FRAME 001 / 180, zero-padded 3, from the painted index",
+      "enterDisc": "88px (72px phone), cotton fill, noir Inter 600 12px label",
+      "progressRule": "chili, 2px, full stage width at the bottom edge, scaleX 0->1 over the film beat"
+    },
+    "mark": {
+      "name": "RG density ramp (portfolio mark; Convenium's ramp turned to vertical bars)",
+      "viewBox": "0 0 100 100",
+      "orientation": "vertical bars, read left to right: hairline -> full weight",
+      "bars": 12,
+      "ratio": 1.18,
+      "gap": 4.01,
+      "x": [
+        0,
+        5.61,
+        11.51,
+        17.75,
+        24.39,
+        31.5,
+        39.17,
+        47.5,
+        56.6,
+        66.63,
+        77.73,
+        90.12
+      ],
+      "width": [
+        1.6,
+        1.89,
+        2.23,
+        2.63,
+        3.1,
+        3.66,
+        4.32,
+        5.1,
+        6.01,
+        7.1,
+        8.37,
+        9.88
+      ],
+      "barHeight": 100,
+      "fill": {
+        "onNoir": "cotton",
+        "onCotton": "ink"
+      },
+      "accentIndex": 7,
+      "accentFill": "cherry",
+      "sizes": {
+        "header": "32px",
+        "footer": "64px",
+        "loader": "96px",
+        "cvCover": "64px"
+      },
+      "shapeRendering": "crispEdges at >= 64px, geometricPrecision below",
+      "below32px": "RAMP_MICRO turned vertical (3 bars, ratio 1.6, gap 6, x 0/27.27/63.64, widths 13.64/22.73/36.36), no accent bar; favicon only",
+      "loaderAnimation": "bars rise in left->right, scaleY 0->1 from the bottom, 34ms apart, 0.62s expo.out; no scan loop",
+      "lockup": "mark + 'RG — 2026' (nav.mark) in nav type, gap 12px",
+      "a11y": "aria-hidden; the accessible name is on the link (nav.homeAria)"
+    },
+    "cursor": {
+      "blend": "difference",
+      "color": "cotton",
+      "sizes": {
+        "default": "10px",
+        "link": "28px",
+        "view": "72px"
+      },
+      "viewLabel": "works.cursor, Inter 600 12px uppercase 0.08em, noir",
+      "transitions": "opacity 180ms; width/height/margin 320ms cubic-bezier(0.16,1,0.3,1)",
+      "follow": "exact pointer position via transform in rAF (no lerp; the float preview is the lerped object)",
+      "zIndex": 100,
+      "hiddenWhen": [
+        "(hover: none)",
+        "(pointer: coarse)",
+        "(prefers-reduced-motion: reduce)"
+      ]
+    },
+    "breakpoints": {
+      "sm": "640px",
+      "md": "960px",
+      "lg": "1200px",
+      "queries": {
+        "desktopMotion": "(min-width: 960px) and (prefers-reduced-motion: no-preference)",
+        "mobileMotion": "(max-width: 959px) and (prefers-reduced-motion: no-preference)",
+        "reduced": "(prefers-reduced-motion: reduce)",
+        "finePointer": "(hover: hover) and (pointer: fine)"
+      },
+      "target": [
+        "1920x1080",
+        "1440x900",
+        "1024x768",
+        "390x844",
+        "360x780",
+        "430x932"
+      ]
+    },
+    "budgets": {
+      "heroFramesDesktop": "12 MB",
+      "heroFramesPhone": "3.5 MB",
+      "initialNonFrame": "600 KB (HTML + CSS + JS + fonts + poster)",
+      "js": "150 KB minified / 58 KB gzip (one IIFE bundle incl. GSAP core, ScrollTrigger, SplitText, Lenis; A1 2026-11-06 110/45→145/55; A2 2026-11-06 →150/58, measured 147/56.6 after phase 8)",
+      "css": "40 KB minified",
+      "fonts": "220 KB woff2 total, 2 preloaded",
+      "worksFilm": "4 MB each, preload none, fetched on first hover",
+      "worksPoster": "150 KB each (960x1200 JPEG)",
+      "portrait": "180 KB each (WebP)",
+      "lcp": {
+        "desktop": "2.0s",
+        "phoneThrottled": "2.5s"
+      },
+      "inp": "200ms",
+      "cls": "0.02",
+      "lighthouse": {
+        "performance": 90,
+        "accessibility": 100
+      },
+      "homeScreensPhone": {
+        "ceiling": 16,
+        "planned": 12.1
+      }
+    },
+    "components": {
+      "header": {
+        "height": "72px / 56px phone",
+        "onNoir": {
+          "text": "{colors.cotton}",
+          "ratio": "14.84:1"
+        },
+        "onCotton": {
+          "background": "{colors.cotton}",
+          "text": "{colors.ink}",
+          "ratio": "13.58:1"
+        },
+        "themeFlip": "ScrollTrigger per section at the header's centre line (start 'top 36px'), 320ms colour transition"
+      },
+      "nav-item": {
+        "typography": "{typography.nav}",
+        "active": "1px underline, 6px offset, current colour",
+        "hit": "44px min height"
+      },
+      "lang-toggle": {
+        "shape": "pill, 1px border current colour at 40 % (decorative), 36px tall, two Inter 600 12px segments EN|DE",
+        "active": "cherry fill, cotton text (9.05:1)"
+      },
+      "cta-pill": {
+        "background": "{colors.cherry}",
+        "text": "{colors.cotton}",
+        "ratio": "9.05:1",
+        "typography": "Inter 600 13px uppercase 0.08em",
+        "height": "56px contact / 40px header",
+        "padding": "0 28px / 0 18px",
+        "hover": "{colors.maroon} fill, 180ms (11.45:1)"
+      },
+      "outline-pill": {
+        "border": "1px current colour",
+        "text": "cotton on noir (14.84:1) / ink on cotton (13.58:1)",
+        "height": "56px",
+        "hover": "fill current colour, text flips to the ground"
+      },
+      "enter-disc": {
+        "size": "88px / 72px phone",
+        "background": "{colors.cotton}",
+        "text": "{colors.noir}",
+        "ratio": "14.84:1",
+        "typography": "Inter 600 12px uppercase 0.08em"
+      },
+      "frame-counter": {
+        "typography": "{typography.label}",
+        "text": "cotton on noir frames, with scrim-type behind the label when the frame under it is bright"
+      },
+      "progress-rule": {
+        "color": "{colors.chili}",
+        "height": "2px"
+      },
+      "work-row": {
+        "minHeight": "96px",
+        "columns": "index 1fr | name 5fr | dash 1fr | sector + state 5fr (12-col)",
+        "rule": "1px {colors.hairline} top and bottom",
+        "index": "{typography.figure} capped at list size, ink",
+        "name": "{typography.list}, ink",
+        "dash": "48 x 3px bar drawn in CSS, ink",
+        "sector": "{typography.index-sector}, ink",
+        "state": "{typography.label}, gray (4.54:1); 'live' in cherry (9.05:1) + 8px chili dot",
+        "hover": "index, name, dash, sector -> cherry (9.05:1) in 180ms; 12px cherry square marker at left; cursor 'view'"
+      },
+      "state-label": {
+        "typography": "{typography.label}",
+        "color": "gray on cotton 4.54:1; gray-on-noir on noir 7.02:1"
+      },
+      "float-preview": {
+        "size": "320 x 400px",
+        "radius": "{rounded.media}",
+        "open": "clip-path inset(100% 0 0 0) -> inset(0) 0.78s expo.out",
+        "close": "0.24s",
+        "content": "poster.jpg at once, film.mp4 muted loop playsinline once it can play"
+      },
+      "work-card-phone": {
+        "width": "72vw (max 320px)",
+        "poster": "4:5, radius 8px",
+        "snap": "scroll-snap-type x mandatory; align start; gap 16px; scroll-padding = container"
+      },
+      "stat": {
+        "figure": "{typography.figure}",
+        "label": "{typography.label}, gray",
+        "divider": "1px hairline vertical between stats at >= 960"
+      },
+      "statement-aside": {
+        "background": "{colors.noir}",
+        "portrait": "4:5, full strength",
+        "status": "label, cotton",
+        "cta": "outline-pill 'Download CV'"
+      },
+      "pillar": {
+        "index": "{typography.label}, cherry",
+        "title": "{typography.card-title}",
+        "body": "{typography.small}, ink, 56ch",
+        "portrait": "4:5 desktop / 4:3 phone, radius 8px"
+      },
+      "role-row": {
+        "minHeight": "72px",
+        "years": "{typography.label} tnum",
+        "role": "{typography.card-title} at subhead size",
+        "employer": "{typography.small}"
+      },
+      "channel-row": {
+        "minHeight": "56px",
+        "rule": "1px {colors.rule-on-noir}",
+        "text": "cotton (14.84:1); hover chili-300 (5.01:1)"
+      },
+      "editorial-link": {
+        "color": "cherry on cotton (9.05:1); current colour on noir",
+        "underline": "1px, 6px offset, always visible"
+      },
+      "tab-bar": {
+        "background": "{colors.noir}",
+        "item": "Inter 500 12px uppercase 0.08em, cotton, 64px tall, 25 % width each",
+        "active": "cherry pill fill (cotton 9.05:1) inset 8px",
+        "rule": "1px rule-on-noir top"
+      },
+      "doc-card": {
+        "background": "{colors.paper}",
+        "text": "ink (14.62:1); meta gray (4.88:1)",
+        "radius": "{rounded.card}"
+      },
+      "lightbox": {
+        "ground": "{colors.noir}",
+        "close": "44px square button, CSS-drawn cross, cotton",
+        "scroll": "data-lenis-prevent"
+      },
+      "focus-ring": {
+        "color": "{colors.chili}",
+        "width": "2px",
+        "offset": "3px",
+        "ground": "--ring-ground per field (noir or cotton)",
+        "ratios": "chili on noir 3.88:1, chili on cotton 3.82:1 (both >= 3:1 non-text)"
+      },
+      "footer-wordmark": {
+        "color": "{colors.wordmark}",
+        "ratio": "1.16:1 (texture, aria-hidden)"
+      }
+    }
+  },
+  "extensions": {
+    "colorMeta": {
+      "noir": {
+        "role": "neutral",
+        "displayName": "Noir",
+        "canonical": "#1b1717"
+      },
+      "cotton": {
+        "role": "neutral",
+        "displayName": "Cotton",
+        "canonical": "#edebdd"
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "canonical": "#f5f3e8"
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "#241f1f"
+      },
+      "gray": {
+        "role": "neutral",
+        "displayName": "Gray",
+        "canonical": "#6e6963"
+      },
+      "gray-on-noir": {
+        "role": "neutral",
+        "displayName": "Gray On Noir",
+        "canonical": "#a8a29a"
+      },
+      "hairline": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "#d6d2c2"
+      },
+      "cherry": {
+        "role": "primary",
+        "displayName": "Cherry",
+        "canonical": "#810100"
+      },
+      "maroon": {
+        "role": "primary",
+        "displayName": "Maroon",
+        "canonical": "#630000"
+      },
+      "chili": {
+        "role": "secondary",
+        "displayName": "Chili",
+        "canonical": "#d73b3e"
+      },
+      "chili-300": {
+        "role": "secondary",
+        "displayName": "Chili 300",
+        "canonical": "#e5595c"
+      },
+      "wordmark": {
+        "role": "neutral",
+        "displayName": "Wordmark",
+        "canonical": "#2a2424"
+      },
+      "rule-on-noir": {
+        "role": "neutral",
+        "displayName": "Rule On Noir",
+        "canonical": "rgba(237, 235, 221, 0.18)"
+      },
+      "scrim-type": {
+        "role": "neutral",
+        "displayName": "Scrim Type",
+        "canonical": "rgba(27, 23, 23, 0.65)"
+      }
+    },
+    "typographyMeta": {
+      "hero": {
+        "displayName": "hero",
+        "purpose": "GURBANOV wordmark, the home H1 (title card + re-entry). SVG-fitted."
+      },
+      "footer-wordmark": {
+        "displayName": "footer-wordmark",
+        "purpose": "GURBANOV. edge to edge in the footer, colour wordmark, aria-hidden"
+      },
+      "h1": {
+        "displayName": "h1",
+        "purpose": "page H1 on /cv/ (name), /legal/, 404 code"
+      },
+      "display": {
+        "displayName": "display",
+        "purpose": "section heads (capability, experience, contact, CV sections)"
+      },
+      "list": {
+        "displayName": "list",
+        "purpose": "work names in the index rows; mobile card names"
+      },
+      "figure": {
+        "displayName": "figure",
+        "purpose": "stat figures (10+, 20+, 5, 1), work indices 01-06; capped at 56px (Rank Rule)"
+      },
+      "index-sector": {
+        "displayName": "index-sector",
+        "purpose": "sector word in a work row (board C), e.g. HOSPITALITY"
+      },
+      "card-title": {
+        "displayName": "card-title",
+        "purpose": "statement line (italic), pillar titles, CV role titles, card titles"
+      },
+      "subhead": {
+        "displayName": "subhead",
+        "purpose": "title-card roles line (italic), ledes, contact body"
+      },
+      "body": {
+        "displayName": "body",
+        "purpose": "long-form serif: CV bullets, statement body"
+      },
+      "small": {
+        "displayName": "small",
+        "purpose": "compact explanatory copy: work lines, pillar bodies, document descriptions"
+      },
+      "label": {
+        "displayName": "label",
+        "purpose": "labels, meta, state labels, frame counter, tags, buttons; the mono role of the boards"
+      },
+      "nav": {
+        "displayName": "nav",
+        "purpose": "header nav items, tab-bar labels"
+      }
+    },
+    "shadows": [],
+    "shadowsNote": "None. The system is flat; depth comes from noir/cotton alternation, hairlines and photographic light. The only box-shadow allowed is the focus-ring spacer.",
+    "motion": [
+      {
+        "name": "enter",
+        "value": "0.62s expo.out",
+        "purpose": "Copy block or masked line entrance."
+      },
+      {
+        "name": "media",
+        "value": "0.78s expo.out",
+        "purpose": "Media masks, float-preview open."
+      },
+      {
+        "name": "exit",
+        "value": "0.24s",
+        "purpose": "Anything leaving; exits are faster than entrances."
+      },
+      {
+        "name": "ease-out-sharp",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "CSS twin of expo.out."
+      },
+      {
+        "name": "ease-in-out",
+        "value": "cubic-bezier(0.645, 0.045, 0.355, 1)",
+        "purpose": "CSS twin of power2.inOut, two-way scrubbed motion."
+      },
+      {
+        "name": "stagger",
+        "value": "0.07s",
+        "purpose": "Between siblings in one group."
+      },
+      {
+        "name": "micro",
+        "value": "180ms",
+        "purpose": "State feedback: row hover, cursor fade."
+      },
+      {
+        "name": "move",
+        "value": "320ms",
+        "purpose": "Cursor disc size, header theme flip."
+      },
+      {
+        "name": "scrub",
+        "value": "1",
+        "purpose": "Hero timeline smoothing."
+      },
+      {
+        "name": "float-lerp",
+        "value": "0.14",
+        "purpose": "Works float preview pointer follow."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "960px"
+      },
+      {
+        "name": "lg",
+        "value": "1200px"
+      }
+    ],
+    "hero": {
+      "runway": "320svh",
+      "runwayPhone": "300svh",
+      "sectionHeight": "calc(100svh + var(--runway-hero))",
+      "beats": {
+        "titleHold": [
+          0,
+          0.08
+        ],
+        "titleOut": [
+          0.08,
+          0.14
+        ],
+        "film": [
+          0.14,
+          0.86
+        ],
+        "arrivalHold": [
+          0.86,
+          0.92
+        ],
+        "wordmarkIn": [
+          0.86,
+          0.9
+        ],
+        "chromeOut": [
+          0.86,
+          0.89
+        ],
+        "slideOut": [
+          0.92,
+          1
+        ],
+        "enterOut": [
+          0.92,
+          0.95
+        ]
+      },
+      "keyframes": {
+        "KA": "frame 1, p 0.14",
+        "KB": "frame 45, p 0.32",
+        "KP": "frame 90, p 0.50",
+        "KC": "frame 135, p 0.68",
+        "KD": "frame 180, p 0.86"
+      },
+      "hops": {
+        "V1_KA_KB": [
+          0.14,
+          0.32
+        ],
+        "V2_KB_KP": [
+          0.32,
+          0.5
+        ],
+        "V3_KP_KC": [
+          0.5,
+          0.68
+        ],
+        "V4_KC_KD": [
+          0.68,
+          0.86
+        ]
+      },
+      "hopNote": "four 8 s hops = 45 frames each between five keyframes; KP (at the slit, portal threshold) is added because four hops need five keyframes; V4 ends on KD = frame 180",
+      "titleFilmOpacity": {
+        "at0": 0,
+        "at0_08": 0.35,
+        "at0_14": 1
+      },
+      "titleRise": "24px",
+      "sheetOverlap": {
+        "desktop": "-25.6svh",
+        "phone": "-24svh"
+      },
+      "frames": {
+        "desktop": {
+          "path": "frames/hero/desktop/frame_",
+          "ext": ".jpg",
+          "pad": 4,
+          "count": 180,
+          "w": 1920,
+          "h": 1080,
+          "format": "baseline JPEG (never progressive, never AVIF)",
+          "maxTotal": "12 MB",
+          "avgTarget": "66 KB"
+        },
+        "phone": {
+          "path": "frames/hero/phone/frame_",
+          "ext": ".jpg",
+          "pad": 4,
+          "count": 90,
+          "w": 720,
+          "h": 1280,
+          "crop": "9:16 centre crop of the same concat",
+          "maxTotal": "3.5 MB",
+          "avgTarget": "39 KB"
+        },
+        "poster": {
+          "desktop": "frames/hero/desktop/frame_0180.jpg",
+          "phone": "frames/hero/phone/frame_0090.jpg"
+        },
+        "matte": {
+          "desktop": "frames/hero/desktop/matte.webp (1920x1080 RGBA, lossless)",
+          "phone": "frames/hero/phone/matte.webp (720x1280 RGBA, lossless)"
+        },
+        "pick": "portrait orientation at load -> phone set, else desktop; never swapped mid-session",
+        "preload": "frame 1, then every 8th (indices 0,8,...,176 desktop / 0,8,...,88 phone), then the last frame, then the rest in index order; coarse set fetchPriority high",
+        "pxPerFrame": {
+          "at900tall": 11.6,
+          "at1080tall": 13.9,
+          "phone844": 20.5
+        }
+      },
+      "counter": "FRAME 001 / 180, zero-padded 3, from the painted index",
+      "enterDisc": "88px (72px phone), cotton fill, noir Inter 600 12px label",
+      "progressRule": "chili, 2px, full stage width at the bottom edge, scaleX 0->1 over the film beat"
+    },
+    "mark": {
+      "name": "RG density ramp (portfolio mark; Convenium's ramp turned to vertical bars)",
+      "viewBox": "0 0 100 100",
+      "orientation": "vertical bars, read left to right: hairline -> full weight",
+      "bars": 12,
+      "ratio": 1.18,
+      "gap": 4.01,
+      "x": [
+        0,
+        5.61,
+        11.51,
+        17.75,
+        24.39,
+        31.5,
+        39.17,
+        47.5,
+        56.6,
+        66.63,
+        77.73,
+        90.12
+      ],
+      "width": [
+        1.6,
+        1.89,
+        2.23,
+        2.63,
+        3.1,
+        3.66,
+        4.32,
+        5.1,
+        6.01,
+        7.1,
+        8.37,
+        9.88
+      ],
+      "barHeight": 100,
+      "fill": {
+        "onNoir": "cotton",
+        "onCotton": "ink"
+      },
+      "accentIndex": 7,
+      "accentFill": "cherry",
+      "sizes": {
+        "header": "32px",
+        "footer": "64px",
+        "loader": "96px",
+        "cvCover": "64px"
+      },
+      "shapeRendering": "crispEdges at >= 64px, geometricPrecision below",
+      "below32px": "RAMP_MICRO turned vertical (3 bars, ratio 1.6, gap 6, x 0/27.27/63.64, widths 13.64/22.73/36.36), no accent bar; favicon only",
+      "loaderAnimation": "bars rise in left->right, scaleY 0->1 from the bottom, 34ms apart, 0.62s expo.out; no scan loop",
+      "lockup": "mark + 'RG — 2026' (nav.mark) in nav type, gap 12px",
+      "a11y": "aria-hidden; the accessible name is on the link (nav.homeAria)"
+    },
+    "cursor": {
+      "blend": "difference",
+      "color": "cotton",
+      "sizes": {
+        "default": "10px",
+        "link": "28px",
+        "view": "72px"
+      },
+      "viewLabel": "works.cursor, Inter 600 12px uppercase 0.08em, noir",
+      "transitions": "opacity 180ms; width/height/margin 320ms cubic-bezier(0.16,1,0.3,1)",
+      "follow": "exact pointer position via transform in rAF (no lerp; the float preview is the lerped object)",
+      "zIndex": 100,
+      "hiddenWhen": [
+        "(hover: none)",
+        "(pointer: coarse)",
+        "(prefers-reduced-motion: reduce)"
+      ]
+    },
+    "budgets": {
+      "heroFramesDesktop": "12 MB",
+      "heroFramesPhone": "3.5 MB",
+      "initialNonFrame": "600 KB (HTML + CSS + JS + fonts + poster)",
+      "js": "150 KB minified / 58 KB gzip (one IIFE bundle incl. GSAP core, ScrollTrigger, SplitText, Lenis; A1 2026-11-06 110/45→145/55; A2 2026-11-06 →150/58, measured 147/56.6 after phase 8)",
+      "css": "40 KB minified",
+      "fonts": "220 KB woff2 total, 2 preloaded",
+      "worksFilm": "4 MB each, preload none, fetched on first hover",
+      "worksPoster": "150 KB each (960x1200 JPEG)",
+      "portrait": "180 KB each (WebP)",
+      "lcp": {
+        "desktop": "2.0s",
+        "phoneThrottled": "2.5s"
+      },
+      "inp": "200ms",
+      "cls": "0.02",
+      "lighthouse": {
+        "performance": 90,
+        "accessibility": 100
+      },
+      "homeScreensPhone": {
+        "ceiling": 16,
+        "planned": 12.1
+      }
+    }
+  },
+  "components": [
+    {
+      "name": "CTA Pill",
+      "kind": "button",
+      "refersTo": "cta-pill",
+      "description": "Primary action: Get in touch. Cherry field, cotton label.",
+      "html": "<a class=\"ds-cta\" href=\"mailto:rustam.gurbanov016@gmail.com\">Get in touch</a>",
+      "css": ".ds-cta{display:inline-flex;align-items:center;height:56px;padding:0 28px;border-radius:999px;background:#810100;color:#edebdd;font:600 13px/1 Inter,sans-serif;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;transition:background 180ms cubic-bezier(.16,1,.3,1)}.ds-cta:hover{background:#630000}.ds-cta:focus-visible{outline:2px solid #d73b3e;outline-offset:3px}"
+    },
+    {
+      "name": "Outline Pill",
+      "kind": "button",
+      "refersTo": "outline-pill",
+      "description": "Secondary action: Download CV.",
+      "html": "<a class=\"ds-outline\" href=\"assets/rustam-gurbanov-resume.pdf\" download=\"Rustam-Gurbanov-CV.pdf\">Download CV</a>",
+      "css": ".ds-outline{display:inline-flex;align-items:center;height:56px;padding:0 28px;border-radius:999px;border:1px solid currentColor;color:#edebdd;background:transparent;font:600 13px/1 Inter,sans-serif;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;transition:background 180ms,color 180ms}.ds-outline:hover{background:#edebdd;color:#1b1717}"
+    },
+    {
+      "name": "Work Row",
+      "kind": "custom",
+      "refersTo": "work-row",
+      "description": "Board C index row: index, name, drawn dash, sector, state label. Cherry on hover.",
+      "html": "<a class=\"ds-row\" href=\"https://convenium.at\"><span class=\"i\">01</span><span class=\"n\">Convenium</span><span class=\"d\"></span><span class=\"s\">Studio</span><span class=\"t\">live</span></a>",
+      "css": ".ds-row{display:grid;grid-template-columns:1fr 5fr 1fr 4fr 1fr;align-items:center;min-height:96px;border-top:1px solid #d6d2c2;color:#241f1f;text-decoration:none;font-family:Archivo,sans-serif;font-weight:900;text-transform:uppercase;transition:color 180ms cubic-bezier(.16,1,.3,1)}.ds-row .n{font-size:clamp(1.75rem,1.13rem + 2.54vw,3.25rem)}.ds-row .s{font-size:clamp(1.25rem,.9rem + .9vw,2rem)}.ds-row .d{width:48px;height:3px;background:currentColor}.ds-row .t{font:500 13px/1.4 Inter,sans-serif;letter-spacing:.06em;color:#810100}.ds-row:hover{color:#810100}"
+    },
+    {
+      "name": "ENTER Disc",
+      "kind": "button",
+      "refersTo": "enter-disc",
+      "description": "Hero skip control, bottom right of the stage.",
+      "html": "<a class=\"ds-enter\" href=\"#work\">Enter</a>",
+      "css": ".ds-enter{display:grid;place-items:center;width:88px;height:88px;border-radius:50%;background:#edebdd;color:#1b1717;font:600 12px/1 Inter,sans-serif;letter-spacing:.08em;text-transform:uppercase;text-decoration:none}"
+    },
+    {
+      "name": "Primary Nav",
+      "kind": "nav",
+      "refersTo": "nav-item",
+      "description": "Header nav on noir: cotton Inter 13px caps.",
+      "html": "<nav class=\"ds-nav\"><a href=\"#work\">Work</a><a href=\"#about\">About</a><a href=\"cv/\">CV</a><a href=\"#contact\">Contact</a></nav>",
+      "css": ".ds-nav{display:flex;gap:32px;background:#1b1717;padding:24px}.ds-nav a{color:#edebdd;font:500 13px/1 Inter,sans-serif;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;min-height:44px;display:inline-flex;align-items:center}"
+    },
+    {
+      "name": "Tab Bar",
+      "kind": "nav",
+      "refersTo": "tab-bar",
+      "description": "Phone thumb-zone bar, active tab cherry.",
+      "html": "<nav class=\"ds-tabs\"><a aria-current=\"page\" href=\"#work\">Work</a><a href=\"#about\">About</a><a href=\"cv/\">CV</a><a href=\"#contact\">Contact</a></nav>",
+      "css": ".ds-tabs{display:grid;grid-template-columns:repeat(4,1fr);height:64px;background:#1b1717;border-top:1px solid rgba(237,235,221,.18)}.ds-tabs a{display:grid;place-items:center;margin:8px;border-radius:999px;color:#edebdd;font:500 12px/1 Inter,sans-serif;letter-spacing:.08em;text-transform:uppercase;text-decoration:none}.ds-tabs a[aria-current]{background:#810100}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Noir Portal → Index Sheet",
+    "overview": "The ground is warm noir. On it, one filmed drone take falls from the blue-hour sky above Wörthersee to a concrete studio with a single red slit, through a corridor and onto Rustam in a burgundy quarter-zip. A cotton GURBANOV the width of the screen passes behind him. Then a square-cornered cotton sheet slides up over the film and the page becomes a personnel file: ruled rows of six works in Archivo capitals, one italic Newsreader line, tabular figures, and Inter metadata as quiet as a stamp. Red appears as events only: the progress rule, a hovered row, the one bar in the mark, the \"Get in touch\" pill. Someone shown ten portfolios would recognise this one by the slit-red line under a black film and the ruled cream index that follows it.",
+    "keyCharacteristics": [
+      "Effect: hero scrub",
+      "Effect: masked-line reveal (incl. yBlock media rise)",
+      "Effect: works float preview",
+      "One continuous drone take, frame-locked joins",
+      "Cotton index sheet slides over the held film",
+      "Convenium tokens verbatim, red as events only"
+    ],
+    "rules": [
+      {
+        "name": "The One-Take Rule",
+        "body": "The hero is one continuous camera move. No cut, dissolve or crossfade happens inside it, and every join is frame-locked before the frames are cut."
+      },
+      {
+        "name": "The Sheet Rule",
+        "body": "Everything after the hero sits on one cotton sheet inset 16 px (8 px on phone) from the noir page, with hairlines dividing the bands. Only the noir statement aside, portraits and the two wordmarks run past a text column."
+      },
+      {
+        "name": "The Rank Rule",
+        "body": "From Convenium: within a page, a section head is never smaller than a numeral, a stat figure or a label. That is why figures cap at 56 px and section heads reach 64 px. The only type above a section head is the page H1 (the hero wordmark on home, the name on `/cv/`) and the footer wordmark."
+      },
+      {
+        "name": "The Text-Zoom Note",
+        "body": "Every fluid size carries a rem term (WCAG 1.4.4). The hero wordmark is the one vw-only size, because it is fitted to its container. Its accessible name is the H1's `aria-label` (`hero.h1Aria`), and full-page zoom still scales it."
+      },
+      {
+        "name": "The Three-Red Rule",
+        "body": "Cherry selects, maroon deepens, chili signals. The roles are not interchangeable."
+      },
+      {
+        "name": "The Mark Exception",
+        "body": "The RG mark's one cherry bar sits on noir at 1.64:1, so it reads as a dark-red slit among cotton bars, which is the portal in miniature. The mark is a logotype, `aria-hidden`, and carries no information, so WCAG 1.4.11 does not apply. This is the only place cherry may sit on noir."
+      },
+      {
+        "name": "The Real-Pixels Rule",
+        "body": "Work media is deterministic capture of the live sites; the Remotion films are made from those captures. Nothing is mocked up, and no reference board ships as a page image."
+      },
+      {
+        "name": "The Opacity-and-Transform Rule",
+        "body": "Reveals move opacity and transform only, never `autoAlpha`, `visibility`, `display` or `content-visibility`. SplitText keeps the whole line in the accessibility tree (`aria: \"auto\"`)."
+      }
+    ],
+    "dos": [
+      "**Do** draw every internal URL through the base helper, so the same build works on Pages",
+      "**Do** show each work's state label on screen in both languages, next to the sector.",
+      "**Do** keep frame 180, the matte and the poster as one source, so the end hold never jumps.",
+      "**Do** derive every number in CSS from `src/styles/tokens.css`, the executable copy of this",
+      "**Do** split a work's `sector` string on \" · \" into the Archivo sector word and the Inter state label.",
+      "**Do** keep the hero chrome (nav, counter, ENTER) in the frame's negative space at the edges."
+    ],
+    "donts": [
+      "**Don't** add a gradient, glass, backdrop blur, decorative shadow, SVG grain or emoji icon. The old",
+      "**Don't** add a fourth effect: no parallax, marquee, magnetic buttons, text scramble or count-up",
+      "**Don't** put noir text on cherry or maroon, chili body text on noir, or cherry anywhere on noir",
+      "**Don't** window the frame strip, re-encode it to AVIF or progressive JPEG, or load it with",
+      "**Don't** let the 72 px floor of `--display-hero` override the fit on narrow screens. The fit",
+      "**Don't** use standalone Unicode glyphs as icons (✕, ☰, ↗ as a button). Close, menu and chevrons"
+    ]
+  }
+}

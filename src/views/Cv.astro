@@ -1,0 +1,84 @@
+---
+// /cv/ and /de/cv/: noir cover, jump rail beside a cotton sheet of six numbered sections, the documents lightbox,
+// the noir end card. The only motion here is the masked-line reveal on the section heads.
+import Base from '../layouts/Base.astro';
+import CvCover from '../components/cv/CvCover.astro';
+import CvSpine from '../components/cv/CvSpine.astro';
+import CvVitals from '../components/cv/CvVitals.astro';
+import CvExperience from '../components/cv/CvExperience.astro';
+import CvEducation from '../components/cv/CvEducation.astro';
+import CvCapabilities from '../components/cv/CvCapabilities.astro';
+import CvLanguages from '../components/cv/CvLanguages.astro';
+import CvDocuments from '../components/cv/CvDocuments.astro';
+import DocLightbox from '../components/cv/DocLightbox.astro';
+import CvEnd from '../components/cv/CvEnd.astro';
+import type { Lang } from '../lib/i18n';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+---
+<Base lang={lang} page="cv" path="cv/">
+  <CvCover lang={lang} />
+  <div class="cvmain">
+    <CvSpine lang={lang} />
+    <div class="sheet cvmain__sheet" data-theme="cotton">
+      <CvVitals lang={lang} />
+      <CvExperience lang={lang} />
+      <CvEducation lang={lang} />
+      <CvCapabilities lang={lang} />
+      <CvLanguages lang={lang} />
+      <CvDocuments lang={lang} />
+    </div>
+  </div>
+  <DocLightbox lang={lang} />
+  <CvEnd lang={lang} />
+</Base>
+
+<style is:global>
+  /* the clip mask SplitText wraps every revealed line in: room for descenders and italics */
+  .rv-line-mask {
+    padding-bottom: 0.14em;
+    margin-bottom: -0.14em;
+  }
+  /* shared section frame for the six numbered sheet sections */
+  .cvs__head {
+    display: grid;
+    gap: var(--space-1);
+    margin-bottom: var(--space-4);
+  }
+  .cvs__num {
+    color: var(--red-cherry);
+  }
+  .cvs__head h2 {
+    color: var(--color-ink);
+  }
+
+  /* below 960 the jump rail is a sticky strip under the header: jumps must land below both */
+  @media (max-width: 959px) {
+    .cvs,
+    #end {
+      scroll-margin-top: calc(var(--header-h) + 56px);
+    }
+  }
+
+  .cvmain {
+    display: block;
+  }
+  @media (min-width: 960px) {
+    .cvmain {
+      display: grid;
+      grid-template-columns: 72px minmax(0, 1fr);
+      align-items: start;
+    }
+    .cvmain__sheet {
+      margin-left: 0;
+    }
+  }
+  @media (min-width: 1200px) {
+    .cvmain {
+      grid-template-columns: 220px minmax(0, 1fr);
+    }
+  }
+</style>

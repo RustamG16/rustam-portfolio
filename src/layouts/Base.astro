@@ -1,0 +1,134 @@
+---
+// Base layout: <head> (meta, OG, hreflang, canonical, JSON-LD, font preloads, tokens/fonts/base CSS),
+// skip link, header, <main>, footer, tab-bar slot, cursor, and the one classic script.
+// Components contain no processed script elements: the only inline scripts are the is:inline ones below.
+import '../styles/tokens.css';
+import fontsCss from '../styles/fonts.css?raw';
+import '../styles/base.css';
+
+import SkipLink from '../components/chrome/SkipLink.astro';
+import Header from '../components/chrome/Header.astro';
+import Footer from '../components/chrome/Footer.astro';
+import TabBar from '../components/chrome/TabBar.astro';
+import Cursor from '../components/chrome/Cursor.astro';
+import { t, htmlLang, FACTS, altHref, type Lang } from '../lib/i18n';
+import { withBase, absUrl, routePath } from '../lib/paths';
+
+interface Props {
+  lang: Lang;
+  page: 'home' | 'cv' | 'legal' | '404';
+  /** Route path without the language prefix: '' | 'cv/' | 'legal/' */
+  path?: string;
+  /** false for the 404 page: no header, footer, tab bar, cursor or script. */
+  chrome?: boolean;
+  /** Initial header tone before the first ScrollTrigger runs. */
+  tone?: 'noir' | 'cotton';
+}
+const { lang, page, path = '', chrome = true, tone = 'noir' } = Astro.props;
+
+const copy = t(lang);
+const meta = (copy.meta as Record<string, { title: string; description: string; ogTitle?: string; ogDescription?: string; ogImageAlt?: string }>)[page];
+const ogImage = page === 'home' ? absUrl('og/home.jpg') : page === 'cv' ? absUrl('og/cv.jpg') : undefined;
+const BUILD_ID = Date.now().toString(36);
+
+const canonical = absUrl(routePath(lang, path));
+const alternates = page === '404' ? [] : [
+  { hreflang: 'en', href: absUrl(routePath('en', path)) },
+  { hreflang: 'de', href: absUrl(routePath('de', path)) },
+  { hreflang: 'x-default', href: absUrl(routePath('en', path)) },
+];
+
+const skip = page === 'home'
+  ? { href: '#work', label: copy.nav.skip }
+  : page === 'cv'
+    ? { href: '#experience', label: copy.cv.skip }
+    : null;
+
+const id = FACTS.identity;
+const jsonLd = (page === 'home' || page === 'cv') ? {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: id.name.value,
+  url: absUrl(''),
+  jobTitle: id.titles.value.join(' / '),
+  email: FACTS.contact.email.value,
+  address: { '@type': 'PostalAddress', addressLocality: 'Klagenfurt am Wörthersee', addressCountry: 'AT' },
+  sameAs: [FACTS.contact.linkedin.href, FACTS.contact.instagram.href],
+  knowsLanguage: (FACTS.languages.items as { en: string }[]).map((l) => l.en),
+} : null;
+
+// fonts.css is inlined with every url rebased through withBase(): Vite does not rebase public urls inside CSS in dev,
+// and the file build is relativized afterwards. Same faces, one source of truth.
+const fontFaces = fontsCss.replaceAll("url('/fonts/", `url('${withBase('fonts/')}`);
+
+// Load the preloaded faces with CORS, as fonts always are.
+const fontPreloads = ['archivo-latin-wght-normal.woff2', 'inter-latin-wght-normal.woff2'];
+---
+<!doctype html>
+<html lang={htmlLang(lang)} class="no-js" data-base={withBase('')} data-page={page} data-lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{meta.title}</title>
+    <meta name="description" content={meta.description} />
+    <meta name="theme-color" content="#1b1717" />
+    {(page === 'legal' || page === '404') && <meta name="robots" content="noindex, follow" />}
+    <link rel="canonical" href={canonical} />
+    {alternates.map((a) => <link rel="alternate" hreflang={a.hreflang} href={a.href} />)}
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={copy.meta.siteName} />
+    <meta property="og:title" content={meta.ogTitle ?? meta.title} />
+    <meta property="og:description" content={meta.ogDescription ?? meta.description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:locale" content={copy.meta.ogLocale} />
+    <meta property="og:locale:alternate" content={copy.meta.ogLocaleAlternate} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    {ogImage && <meta property="og:image:width" content="1200" />}
+    {ogImage && <meta property="og:image:height" content="630" />}
+    {ogImage && meta.ogImageAlt && <meta property="og:image:alt" content={meta.ogImageAlt} />}
+    <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
+    <meta name="twitter:title" content={meta.ogTitle ?? meta.title} />
+    <meta name="twitter:description" content={meta.ogDescription ?? meta.description} />
+    {ogImage && <meta name="twitter:image" content={ogImage} />}
+
+    <style is:inline set:html={fontFaces}></style>
+    <link rel="icon" type="image/svg+xml" href={withBase('favicon.svg')} />
+    <link rel="apple-touch-icon" href={withBase('apple-touch-icon.png')} />
+    {fontPreloads.map((f) => <link rel="preload" as="font" type="font/woff2" href={withBase('fonts/' + f)} crossorigin />)}
+
+    {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+
+    <!-- Runs before first paint: js / reduced classes, and whether the loader curtain shows. The loader shows
+         only on the home page, with JS, without reduced motion, and not on internal navigation
+         (same-origin referrer or back/forward). Nothing is stored. -->
+    <script is:inline>
+      (function () {
+        var h = document.documentElement;
+        h.className = h.className.replace('no-js', 'js');
+        var reduced = false;
+        try { reduced = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+        if (reduced) h.classList.add('reduced');
+        var internal = false;
+        try {
+          var nav = performance.getEntriesByType('navigation')[0];
+          if (nav && nav.type === 'back_forward') internal = true;
+          if (document.referrer && new URL(document.referrer).origin === location.origin) internal = true;
+        } catch (e) {}
+        h.setAttribute('data-nav', internal ? 'internal' : 'entry');
+        if (h.getAttribute('data-page') === 'home' && !reduced && !internal) h.classList.add('loader-on');
+      })();
+    </script>
+  </head>
+  <body data-theme="noir">
+    {chrome && skip && <SkipLink href={skip.href} label={skip.label} />}
+    {chrome && <Header lang={lang} page={page} path={path} tone={tone} />}
+    <main id="main">
+      <slot />
+    </main>
+    {chrome && <Footer lang={lang} />}
+    {chrome && <TabBar lang={lang} page={page} />}
+    {chrome && <Cursor lang={lang} />}
+    {chrome && <script is:inline defer src={withBase('js/site.js') + '?v=' + BUILD_ID}></script>}
+  </body>
+</html>

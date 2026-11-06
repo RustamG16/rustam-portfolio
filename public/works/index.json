@@ -1,0 +1,192 @@
+{
+  "generated": "2026-11-06",
+  "source": "D:/Projects/Convenium/video (Remotion 4.0.536, WorksFilm)",
+  "items": [
+    {
+      "slug": "convenium",
+      "composition": "works-convenium",
+      "film": {
+        "file": "convenium/film.mp4",
+        "bytes": 1203472,
+        "width": 960,
+        "height": 1200,
+        "fps": 24,
+        "frames": 218,
+        "durationSeconds": 9.083,
+        "codec": "h264",
+        "pixFmt": "yuvj420p",
+        "audio": false
+      },
+      "poster": {
+        "jpg": {
+          "file": "convenium/poster.jpg",
+          "bytes": 59495,
+          "width": 960,
+          "height": 1200
+        },
+        "webp": {
+          "file": "convenium/poster.webp",
+          "bytes": 19624,
+          "width": 960,
+          "height": 1200,
+          "quality": 82
+        }
+      }
+    },
+    {
+      "slug": "meridian",
+      "composition": "works-meridian",
+      "film": {
+        "file": "meridian/film.mp4",
+        "bytes": 1029825,
+        "width": 960,
+        "height": 1200,
+        "fps": 24,
+        "frames": 218,
+        "durationSeconds": 9.083,
+        "codec": "h264",
+        "pixFmt": "yuvj420p",
+        "audio": false
+      },
+      "poster": {
+        "jpg": {
+          "file": "meridian/poster.jpg",
+          "bytes": 70889,
+          "width": 960,
+          "height": 1200
+        },
+        "webp": {
+          "file": "meridian/poster.webp",
+          "bytes": 30438,
+          "width": 960,
+          "height": 1200,
+          "quality": 82
+        }
+      }
+    },
+    {
+      "slug": "sonnwerk",
+      "composition": "works-sonnwerk",
+      "film": {
+        "file": "sonnwerk/film.mp4",
+        "bytes": 2775319,
+        "width": 960,
+        "height": 1200,
+        "fps": 24,
+        "frames": 218,
+        "durationSeconds": 9.083,
+        "codec": "h264",
+        "pixFmt": "yuvj420p",
+        "audio": false
+      },
+      "poster": {
+        "jpg": {
+          "file": "sonnwerk/poster.jpg",
+          "bytes": 76288,
+          "width": 960,
+          "height": 1200
+        },
+        "webp": {
+          "file": "sonnwerk/poster.webp",
+          "bytes": 33616,
+          "width": 960,
+          "height": 1200,
+          "quality": 82
+        }
+      }
+    },
+    {
+      "slug": "wild-gruppe",
+      "composition": "works-wild-gruppe",
+      "film": {
+        "file": "wild-gruppe/film.mp4",
+        "bytes": 1222960,
+        "width": 960,
+        "height": 1200,
+        "fps": 24,
+        "frames": 218,
+        "durationSeconds": 9.083,
+        "codec": "h264",
+        "pixFmt": "yuvj420p",
+        "audio": false
+      },
+      "poster": {
+        "jpg": {
+          "file": "wild-gruppe/poster.jpg",
+          "bytes": 79882,
+          "width": 960,
+          "height": 1200
+        },
+        "webp": {
+          "file": "wild-gruppe/poster.webp",
+          "bytes": 37178,
+          "width": 960,
+          "height": 1200,
+          "quality": 82
+        }
+      }
+    },
+    {
+      "slug": "savra",
+      "composition": "works-savra",
+      "film": {
+        "file": "savra/film.mp4",
+        "bytes": 767327,
+        "width": 960,
+        "height": 1200,
+        "fps": 24,
+        "frames": 218,
+        "durationSeconds": 9.083,
+        "codec": "h264",
+        "pixFmt": "yuvj420p",
+        "audio": false
+      },
+      "poster": {
+        "jpg": {
+          "file": "savra/poster.jpg",
+          "bytes": 71250,
+          "width": 960,
+          "height": 1200
+        },
+        "webp": {
+          "file": "savra/poster.webp",
+          "bytes": 32204,
+          "width": 960,
+          "height": 1200,
+          "quality": 82
+        }
+      }
+    },
+    {
+      "slug": "doko",
+      "composition": "works-doko",
+      "film": {
+        "file": "doko/film.mp4",
+        "bytes": 1314989,
+        "width": 960,
+        "height": 1200,
+        "fps": 24,
+        "frames": 218,
+        "durationSeconds": 9.083,
+        "codec": "h264",
+        "pixFmt": "yuvj420p",
+        "audio": false
+      },
+      "poster": {
+        "jpg": {
+          "file": "doko/poster.jpg",
+          "bytes": 83763,
+          "width": 960,
+          "height": 1200
+        },
+        "webp": {
+          "file": "doko/poster.webp",
+          "bytes": 41120,
+          "width": 960,
+          "height": 1200,
+          "quality": 82
+        }
+      }
+    }
+  ]
+}

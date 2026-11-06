@@ -1,0 +1,69 @@
+---
+// 04 Capabilities: four groups of ruled rows, each row says where the skill was used (or "self-directed").
+import { t, type Lang } from '../../lib/i18n';
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const c = t(lang).cv.capabilities;
+---
+<section id="capabilities" class="band cvs" aria-labelledby="capabilities-title">
+  <header class="cvs__head">
+    <p class="cvs__num t-label">{c.num}</p>
+    <h2 id="capabilities-title" class="t-display" data-reveal="lines">{c.title}</h2>
+  </header>
+  <div class="cvs__body groups">
+    {Object.values(c.groups).map((g) => (
+      <div class="group">
+        <h3 class="group__title t-card-title"><span class="group__idx t-label">{g.index}</span>{g.title}</h3>
+        <ul class="group__rows">
+          {g.rows.map((r) => (
+            <li class="group__row">
+              <span class="t-small">{r.label}</span>
+              <span class="t-label group__where">{r.where}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
+  </div>
+</section>
+
+<style>
+  .groups {
+    display: grid;
+    gap: var(--space-5) var(--gutter);
+  }
+  .group__title {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    padding-bottom: var(--space-2);
+    color: var(--color-ink);
+  }
+  .group__idx {
+    color: var(--red-cherry);
+  }
+  .group__rows {
+    border-top: 1px solid var(--color-hairline);
+  }
+  .group__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 4px var(--space-2);
+    min-height: 48px;
+    padding-block: 12px;
+    border-bottom: 1px solid var(--color-hairline);
+    color: var(--color-ink);
+  }
+  .group__where {
+    color: var(--color-gray);
+  }
+  @media (min-width: 640px) {
+    .groups {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>

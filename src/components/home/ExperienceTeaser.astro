@@ -1,0 +1,115 @@
+---
+// Section #experience: H2, lede, four ruled rows in experience.order, the award line, the editorial link to /cv/
+// and the PDF link. Every date and duration is a locked fact (facts.json).
+import EditorialLink from '../ui/EditorialLink.astro';
+import { t, FACTS, type Lang } from '../../lib/i18n';
+import { withBase, routePath } from '../../lib/paths';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const e = t(lang).experience;
+const roles = e.roles as Record<string, { years: string; duration: string; role: string; employer: string; city: string }>;
+---
+<section id="experience" class="band exp" aria-labelledby="experience-title">
+  <p class="exp__kicker t-label">{e.kicker}</p>
+  <div class="exp__head">
+    <h2 id="experience-title" class="t-display" data-reveal="lines">{e.title}</h2>
+    <p class="exp__lede t-subhead">{e.lede}</p>
+  </div>
+  <ol class="exp__list">
+    {(e.order as string[]).map((id) => (
+      <li class="role">
+        <p class="role__when t-label">
+          <span class="role__years">{roles[id].years}</span>
+          <span class="role__dur">{roles[id].duration}</span>
+        </p>
+        <h3 class="role__title t-subhead">{roles[id].role}</h3>
+        <p class="role__where t-small">{roles[id].employer} <span class="role__city">· {roles[id].city}</span></p>
+      </li>
+    ))}
+  </ol>
+  <p class="exp__award t-label">{e.award}</p>
+  <p class="exp__links">
+    <EditorialLink class="t-nav exp__link" href={withBase(routePath(lang, 'cv/'))}>{e.cta}</EditorialLink>
+    <EditorialLink class="t-nav exp__link" href={withBase(FACTS.cvPdf.path)} download={FACTS.cvPdf.downloadName}>{e.cvPdf}</EditorialLink>
+  </p>
+</section>
+
+<style>
+  .exp__kicker {
+    color: var(--color-gray);
+    margin-bottom: var(--space-2);
+  }
+  .exp__head {
+    display: grid;
+    gap: var(--space-2);
+    margin-bottom: var(--space-5);
+  }
+  .exp__head :global(h2) {
+    max-width: 16ch;
+    color: var(--color-ink);
+  }
+  .exp__lede {
+    max-width: var(--measure-lede);
+    color: var(--color-ink);
+  }
+  .exp__list {
+    border-top: 1px solid var(--color-hairline);
+  }
+  .role {
+    display: grid;
+    gap: 4px var(--gutter);
+    align-items: baseline;
+    min-height: var(--row-role);
+    padding-block: var(--space-3);
+    border-bottom: 1px solid var(--color-hairline);
+  }
+  .role__when {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 var(--space-2);
+    color: var(--color-gray);
+  }
+  .role__years {
+    color: var(--color-ink);
+  }
+  .role__title {
+    font-size: var(--font-card-title);
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    color: var(--color-ink);
+  }
+  .role__where {
+    color: var(--color-gray);
+  }
+  .exp__award {
+    margin-top: var(--space-4);
+    color: var(--red-cherry);
+  }
+  .exp__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1) var(--space-4);
+    margin-top: var(--space-2);
+  }
+  .exp__links :global(.exp__link) {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--touch-min);
+  }
+  @media (min-width: 960px) {
+    .exp__head {
+      grid-template-columns: 1fr 1fr;
+      align-items: end;
+      column-gap: var(--gutter);
+    }
+    .role {
+      grid-template-columns: 3fr 5fr 4fr;
+    }
+    .role__where {
+      text-align: right;
+    }
+  }
+</style>

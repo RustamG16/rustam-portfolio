@@ -1,0 +1,84 @@
+---
+// PHASE 8 — stub from phase 6, already complete in content: the cotton sheet with src/content/legal-body.de.html
+// verbatim. EN chrome adds legal.notice. Phase 8 owns the styling.
+import Base from '../layouts/Base.astro';
+import legalBody from '../content/legal-body.de.html?raw';
+import { t, type Lang } from '../lib/i18n';
+import { withBase, routePath } from '../lib/paths';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const l = t(lang).legal;
+---
+<Base lang={lang} page="legal" path="legal/" tone="cotton">
+  <div class="sheet" data-theme="cotton" id="top">
+    <div class="legal band">
+      <a class="t-label" href={withBase(routePath(lang))} data-cursor="link">{l.back}</a>
+      {lang === 'en' && <p class="t-label legal__notice">{l.notice}</p>}
+      <div class="legal__body" lang="de" set:html={legalBody} />
+    </div>
+  </div>
+</Base>
+
+<style>
+  .legal {
+    padding-top: calc(var(--header-h) + var(--space-5));
+    max-width: 72ch;
+    margin-inline: auto;
+  }
+  .legal :global(h1) {
+    font-family: var(--font-family-display);
+    font-variation-settings: var(--display-axes);
+    font-weight: 900;
+    font-size: var(--font-h1);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    margin: var(--space-3) 0 var(--space-2);
+  }
+  .legal :global(h2) {
+    font-family: var(--font-family-display);
+    font-weight: 900;
+    font-size: var(--font-sector);
+    text-transform: uppercase;
+    margin: var(--space-5) 0 var(--space-2);
+  }
+  .legal :global(h3) {
+    font-family: var(--font-family-ui);
+    font-size: var(--font-label);
+    font-weight: 600;
+    letter-spacing: var(--tracking-meta);
+    text-transform: uppercase;
+    color: var(--color-gray);
+    margin: var(--space-4) 0 var(--space-1);
+  }
+  .legal :global(p),
+  .legal :global(li) {
+    font-family: var(--font-family-serif);
+    font-size: var(--font-body);
+    line-height: 1.5;
+    margin: 0 0 var(--space-2);
+    max-width: var(--measure-body);
+  }
+  .legal :global(ul) {
+    padding-left: 1.2em;
+    list-style: disc;
+  }
+  .legal :global(a) {
+    color: var(--red-cherry);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .legal :global(.legal__meta) {
+    border-top: 1px solid var(--color-hairline);
+    padding-top: var(--space-3);
+    margin-top: var(--space-6);
+    font-family: var(--font-family-ui);
+    font-size: var(--font-label);
+    letter-spacing: var(--tracking-meta);
+    text-transform: uppercase;
+    color: var(--color-gray);
+  }
+</style>

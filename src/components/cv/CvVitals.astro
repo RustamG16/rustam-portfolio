@@ -1,0 +1,73 @@
+---
+// 01 Vitals: the four locked figures and the status line.
+import { t, type Lang } from '../../lib/i18n';
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const v = t(lang).cv.vitals;
+---
+<section id="vitals" class="band cvs" aria-labelledby="vitals-title">
+  <header class="cvs__head">
+    <p class="cvs__num t-label">{v.num}</p>
+    <h2 id="vitals-title" class="t-display" data-reveal="lines">{v.title}</h2>
+  </header>
+  <div class="cvs__body">
+    <dl class="vitals" data-reveal="block">
+      {Object.values(v.stats).map((s) => (
+        <div class="vitals__item">
+          <dt class="t-label">{s.label}</dt>
+          <dd>{s.value}{s.suffix}</dd>
+        </div>
+      ))}
+    </dl>
+    <p class="vitals__status t-small">{v.status.key}: {v.status.value}</p>
+  </div>
+</section>
+
+<style>
+  .vitals {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border-top: 1px solid var(--color-hairline);
+  }
+  .vitals__item {
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: flex-end;
+    gap: var(--space-1);
+    padding: var(--space-3) var(--space-2) var(--space-3) 0;
+    border-bottom: 1px solid var(--color-hairline);
+  }
+  .vitals__item dt {
+    color: var(--color-gray);
+  }
+  .vitals__item dd {
+    margin: 0;
+    font-family: var(--font-family-display);
+    font-variation-settings: var(--display-axes);
+    font-weight: 900;
+    font-size: var(--font-figure);
+    line-height: 1;
+    font-feature-settings: 'tnum' 1;
+    color: var(--color-ink);
+  }
+  .vitals__status {
+    margin-top: var(--space-3);
+    color: var(--color-gray);
+  }
+  @media (min-width: 640px) {
+    .vitals {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .vitals__item {
+      padding-left: var(--space-2);
+    }
+    .vitals__item:first-child {
+      padding-left: 0;
+    }
+    .vitals__item + .vitals__item {
+      border-left: 1px solid var(--color-hairline);
+    }
+  }
+</style>

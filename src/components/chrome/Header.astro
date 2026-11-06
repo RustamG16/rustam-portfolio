@@ -1,0 +1,127 @@
+---
+// Fixed header. Its tone flips noir <-> cotton from the section under its centre line (scripts/header.ts,
+// ScrollTrigger per [data-theme] section at start "top 36px"). 72px, 56px below 960.
+import Mark from './Mark.astro';
+import LangToggle from './LangToggle.astro';
+import Pill from '../ui/Pill.astro';
+import { t, type Lang } from '../../lib/i18n';
+import { withBase, routePath } from '../../lib/paths';
+
+interface Props {
+  lang: Lang;
+  /** 'home' | 'cv' | 'legal' */
+  page: string;
+  /** Route path without the language prefix */
+  path: string;
+  tone?: 'noir' | 'cotton';
+}
+const { lang, page, path, tone = 'noir' } = Astro.props;
+const c = t(lang);
+const n = c.nav;
+const home = withBase(routePath(lang));
+const links = [
+  { key: 'work', href: `${home}#work`, current: false },
+  { key: 'about', href: `${home}#about`, current: false },
+  { key: 'cv', href: withBase(routePath(lang, 'cv/')), current: page === 'cv' },
+  { key: 'contact', href: `${home}#contact`, current: false },
+] as const;
+---
+<header class="hdr" data-header data-tone={tone}>
+  <a class="hdr__brand" href={home} data-cursor="link">
+    <Mark size={32} />
+    <span class="hdr__mark t-nav">{n.mark}</span>
+    <span class="sr-only"> · {n.homeAria}</span>
+  </a>
+  <nav class="hdr__nav" aria-label={n.primaryAria}>
+    <ul>
+      {links.map((l) => (
+        <li>
+          <a class="hdr__link t-nav" href={l.href} aria-current={l.current ? 'page' : undefined} data-cursor="link">{n[l.key]}</a>
+        </li>
+      ))}
+    </ul>
+  </nav>
+  <div class="hdr__end">
+    <LangToggle lang={lang} path={path} />
+    <Pill class="hdr__cta" size="header" href={c.contact.channels.email.href}>{c.contact.cta}</Pill>
+  </div>
+</header>
+
+<style>
+  .hdr {
+    --fg: var(--color-cotton);
+    --bg: transparent;
+    --ring-ground: var(--color-noir);
+    position: fixed;
+    inset: 0 0 auto 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    height: var(--header-h);
+    padding-inline: var(--space-container);
+    color: var(--fg);
+    transition: color var(--duration-reveal) var(--ease-in-out);
+  }
+  .hdr[data-tone='cotton'] {
+    --fg: var(--color-ink);
+    --bg: var(--color-cotton);
+    --ring-ground: var(--color-cotton);
+  }
+  /* square cotton strip, inset like the sheet it sits on */
+  .hdr::before {
+    content: '';
+    position: absolute;
+    inset: 0 var(--sheet-inset);
+    z-index: -1;
+    background: var(--bg);
+    transition: background-color var(--duration-reveal) var(--ease-in-out);
+  }
+  .hdr__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    min-height: var(--touch-min);
+    text-decoration: none;
+  }
+  .hdr__nav ul {
+    display: flex;
+    gap: var(--space-4);
+  }
+  .hdr__link {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--touch-min);
+    text-decoration: none;
+    text-underline-offset: 6px;
+    text-decoration-thickness: 1px;
+  }
+  .hdr__link:hover,
+  .hdr__link[aria-current='page'] {
+    text-decoration: underline;
+  }
+  .hdr__end {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+  .hdr :global(.lang) {
+    --hover-fill: var(--fg);
+  }
+  /* 640-959: the mark, "RG — 2026" and the toggle. The tab bar carries the sections. */
+  @media (max-width: 959px) {
+    .hdr__nav,
+    .hdr :global(.hdr__cta) {
+      display: none;
+    }
+  }
+  @media (min-width: 960px) {
+    .hdr__nav {
+      margin-left: auto;
+    }
+  }
+  .hdr :global(.pill--cherry) {
+    color: var(--color-cotton);
+  }
+</style>

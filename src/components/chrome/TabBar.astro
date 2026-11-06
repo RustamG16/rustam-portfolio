@@ -1,0 +1,25 @@
+---
+// PHASE 9 fills this slot (mobile-app-shell): thumb-zone bar below 960 px, active-section sync,
+// env(safe-area-inset-*) on all four sides. Phase 6 only reserves the landmark and the copy keys.
+import { t, type Lang } from '../../lib/i18n';
+import { withBase, routePath } from '../../lib/paths';
+
+interface Props {
+  lang: Lang;
+  page: string;
+}
+const { lang, page } = Astro.props;
+const n = t(lang).nav;
+const home = withBase(routePath(lang));
+const tabs = [
+  { key: 'work', href: `${home}#work` },
+  { key: 'about', href: `${home}#about` },
+  { key: 'cv', href: withBase(routePath(lang, 'cv/')) },
+  { key: 'contact', href: `${home}#contact` },
+] as const;
+---
+<nav class="tabbar" data-tabbar hidden aria-label={n.tabBarAria}>
+  {tabs.map((tab) => (
+    <a class="tabbar__tab t-nav" href={tab.href} aria-current={tab.key === 'cv' && page === 'cv' ? 'page' : undefined}>{n[tab.key]}</a>
+  ))}
+</nav>

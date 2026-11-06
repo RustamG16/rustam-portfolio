@@ -1,0 +1,71 @@
+---
+// Section #about: "Three crafts. No handoffs." Three pillars with portraits, then the "Also" strip.
+import Pillar from './Pillar.astro';
+import { t, type Lang } from '../../lib/i18n';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const c = t(lang).capability;
+---
+<section id="about" class="band about" aria-labelledby="about-title">
+  <p class="about__kicker t-label">{c.kicker}</p>
+  <h2 id="about-title" class="about__title t-display" data-reveal="lines">{c.title}</h2>
+  <div class="pillars">
+    <Pillar lang={lang} id="engineer" />
+    <Pillar lang={lang} id="orchestrate" />
+    <Pillar lang={lang} id="design" />
+  </div>
+  <div class="also">
+    <p class="also__label t-label">{c.also.label}</p>
+    <ul class="also__list">
+      {c.also.items.map((i) => <li class="t-label">{i}</li>)}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .about {
+    border-top: 1px solid var(--color-hairline);
+  }
+  .about__kicker {
+    color: var(--color-gray);
+    margin-bottom: var(--space-2);
+  }
+  .about__title {
+    max-width: 14ch;
+    color: var(--color-ink);
+  }
+  .pillars {
+    display: grid;
+    gap: var(--space-5);
+    margin-top: var(--space-5);
+  }
+  .also {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1) var(--space-3);
+    margin-top: var(--space-5);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--color-hairline);
+  }
+  .also__label {
+    color: var(--red-cherry);
+  }
+  .also__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1) var(--space-3);
+  }
+  .also__list li {
+    color: var(--color-ink);
+  }
+  @media (min-width: 960px) {
+    .pillars {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--gutter);
+    }
+  }
+</style>

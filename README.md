@@ -1,19 +1,23 @@
-# Rustam Gurbanov portfolio
+# Rustam Gurbanov portfolio (RG × Convenium)
 
-This directory is the complete public GitHub Pages site. It is a dependency-free static deployment: every font, image, video and browser runtime file is served from this repository, with no build step and no analytics.
+Astro 5 static site, GSAP 3.15 + Lenis 1.3 bundled into one classic script so builds open from `file://`.
+Live: https://rustamg16.github.io/rustam-portfolio/ · repo `RustamG16/rustam-portfolio`, branch `main`.
 
-## Before publishing
+How an agent works here: `CLAUDE.md` (and `AGENTS.md`, a pointer). Numbers: `DESIGN.md`. Product contract:
+`PRODUCT.md`. Tech: `architecture.md` (one-screen outline: `architecture-essentials.md`).
 
-Run these checks from the parent workspace:
-
-```powershell
-node _verify/launch-check.mjs
-Push-Location site; node ci/check-refs.mjs; Pop-Location
-node _verify/verify-preview.mjs
+```bash
+npm ci                      # Node 22
+npm run dev                 # astro dev + esbuild --watch  ->  http://localhost:4180/rustam-portfolio/
+npm run build               # esbuild IIFE (public/js/site.js) + astro build  ->  dist/
+npm run build:file          # file build + scripts/relativize.mjs  ->  dist-file/  (double-click index.html)
+npm run serve               # dist/ mounted under /rustam-portfolio/ on http://127.0.0.1:4181/rustam-portfolio/
+npm run check               # every gate (check-frames stays red until the hero frames are delivered)
+node scripts/check-all.mjs --allow-frames   # the same, minus the frame gate
+npm run tokens              # regenerate src/styles/tokens.css from the DESIGN.md front-matter
+node qa/capture.mjs | qa/chrome.mjs | qa/file-url.mjs   # QA scenarios (system Chrome, CHROME_PATH)
 ```
 
-Review every PDF in `assets/` before publishing: GitHub Pages is public and each committed document is downloadable.
-
-## GitHub Pages
-
-The workflow in `.github/workflows/deploy.yml` deploys `main` only after the local-reference gate succeeds. In the GitHub repository settings, set Pages → Source to **GitHub Actions**, then confirm the deployment URL and enable **Enforce HTTPS**. Do not put API keys, source inputs, verification screenshots, plans, or private material in this directory.
+Before publishing, review every PDF in `public/assets/`: GitHub Pages is public and each committed document is
+downloadable. A deploy (push to `main`) happens only after Gate C and on Russ's word. The retired vanilla site
+lives in `../_attic/brief-rg-2026/`.

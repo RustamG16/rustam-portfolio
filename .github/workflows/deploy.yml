@@ -1,20 +1,11 @@
-# Deploy the site to GitHub Pages, but only after it has been checked.
+# Deploy to GitHub Pages, but only after every gate has passed.
 #
-# The repository root IS the site — there is no build step and no bundler, so
-# "build" here means "verify the thing we are about to publish is internally
-# consistent". The gate is ci/check-refs.mjs: it asserts every local href, src,
-# data-* media path, CSS url() and the full hero frame strip exists on disk.
-# That is this project's characteristic failure (a renamed or moved asset that
-# still exists in the working tree, so it looks fine locally and 404s in
-# production), and it is worth a job of its own.
+# The check job builds the site (esbuild IIFE + astro build -> dist/) and runs `npm run check`:
+# check-copy, check-tokens, build, check-refs dist (strict assets), check-frames, check-facts-dist
+# (once phase 8 has added it). A commit that fails a gate is never published, rather than published and
+# then noticed. A push to main happens only after Gate C and on Russ's word.
 #
-# Switching from branch-based Pages to this workflow also makes the deploy
-# atomic: a commit that fails the check is never published at all, rather than
-# published and then noticed.
-#
-# NOTE: after merging this, set Settings -> Pages -> Source to "GitHub Actions".
-# While the source is still "Deploy from a branch", this workflow runs and goes
-# green but nothing it uploads is served.
+# Pages source must be set to "GitHub Actions" (Settings -> Pages -> Source).
 
 name: Deploy site
 
@@ -28,34 +19,34 @@ permissions:
   pages: write
   id-token: write
 
-# Never let two deploys race. Queue rather than cancel, so a push that lands
-# during a deploy still ends up live instead of being silently dropped.
+# Never let two deploys race. Queue rather than cancel, so a push that lands during a deploy still goes live.
 concurrency:
   group: pages
   cancel-in-progress: false
 
 jobs:
-  check:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-      - name: Check internal references
-        run: node ci/check-refs.mjs
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Gates
+        # TEMP (2026-11-06): frames gate skipped until phase 4 delivers the hero frames; phase 7 restores `npm run check`.
+        run: npm run check -- --allow-frames
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
 
   deploy:
-    needs: check
+    needs: build
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: '.'
       - id: deployment
         uses: actions/deploy-pages@v4

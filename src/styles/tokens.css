@@ -1,0 +1,132 @@
+/* GENERATED from DESIGN.md front-matter by scripts/tokens-from-design.mjs. Do not edit by hand. */
+/* Convenium values verbatim (D:\Projects\Convenium\styles\tokens.css). Portfolio additions are marked. */
+:root {
+  /* Font families: faces are declared in fonts.css, each with a metric-matched fallback. */
+  --font-family-display: "Archivo", "Archivo Fallback", "Arial Narrow", Arial, sans-serif;
+  --font-family-serif: "Newsreader", "Newsreader Fallback", Georgia, serif;
+  --font-family-ui: "Inter", "Inter Fallback", Arial, sans-serif;
+
+  /* Palette. Cherry selects, maroon deepens, chili signals, chili-300 is red text on noir. */
+  --color-noir: #1b1717;
+  --color-cotton: #edebdd;
+  --color-paper: #f5f3e8;
+  --color-ink: #241f1f;
+  --color-gray: #6e6963;
+  --color-gray-on-noir: #a8a29a;
+  --color-hairline: #d6d2c2;
+  --red-cherry: #810100;
+  --red-maroon: #630000;
+  --red-chili: #d73b3e;
+  --red-chili-300: #e5595c;
+  --color-accent: var(--red-cherry);
+  --color-accent-on-noir: var(--red-chili-300);
+  --color-accent-deep: var(--red-maroon);
+  --color-wordmark: #2a2424;
+  --rule-on-noir: rgba(237, 235, 221, 0.18);
+  --scrim-type: rgba(27, 23, 23, 0.65);
+
+  /* Tracking */
+  --tracking-label: 0.08em;
+  --tracking-meta: 0.06em;
+  --display-axes: "wght" 900, "wdth" 100;
+
+  /* Type scale (every size carries a rem term, WCAG 1.4.4) */
+  --display-hero: clamp(72px, 16vw, 300px); /* portfolio: fitted as min(token, container / 6.264) */
+  --hero-advance-em: 6.264;
+  --footer-advance-em: 6.457;
+  --font-h1: clamp(2.5rem, 1.56rem + 3.85vw, 5rem);
+  --font-display: clamp(2rem, 1.1rem + 2.8vw, 4rem);
+  --font-list: clamp(1.75rem, 1.13rem + 2.54vw, 3.25rem);
+  --font-figure: clamp(2.5rem, 2.13rem + 1.52vw, 3.5rem);
+  --font-sector: clamp(1.25rem, 0.9rem + 0.9vw, 2rem);
+  --font-card-title: clamp(1.5rem, 1.1rem + 1vw, 2.25rem);
+  --font-subhead: clamp(1.25rem, 0.9rem + 0.9vw, 2rem);
+  --font-body: clamp(1rem, 0.9rem + 0.35vw, 1.25rem);
+  --font-small: clamp(0.875rem, 0.83rem + 0.15vw, 1rem);
+  --font-label: clamp(0.75rem, 0.66rem + 0.12vw, 0.8125rem);
+  --font-nav: 13px;
+
+  /* Spacing, base 8 */
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 40px;
+  --space-5: 48px;
+  --space-6: 80px;
+  --space-7: 120px;
+  --space-container: clamp(1rem, 0.443rem + 2.286vw, 2.5rem);
+  --sheet-inset: 16px;
+  --gutter: clamp(20px, 2.5vw, 48px);
+  --band-pad: clamp(64px, 7.5vw, 144px);
+  --measure-body: 62ch;
+  --measure-lede: 46ch;
+  --measure-small: 56ch;
+  --measure-label: 32ch;
+  --touch-min: 44px;
+  --row-work: 96px;
+  --row-role: 72px;
+  --row-channel: 56px;
+  --row-doc: 88px;
+
+  /* Radii */
+  --radius-sheet: 0px;
+  --radius-control: 8px;
+  --radius-media: 8px;
+  --radius-card: 10px;
+  --radius-pill: 999px;
+
+  /* Motion: state feedback only. The three effects live in src/scripts and read motion.* from DESIGN.md. */
+  --ease-out-sharp: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.645, 0.045, 0.355, 1);
+  --duration-nav-hover: 180ms;
+  --duration-nav-active: 260ms;
+  --duration-reveal: 320ms;
+  --duration-scene: 780ms;
+  --duration-menu: 450ms;
+
+  /* Hero (portfolio) */
+  --runway-hero: 320svh;
+  --runway-hero-phone: 300svh;
+  --runway-hero-active: var(--runway-hero);
+  --sheet-overlap: -25.6svh;
+  --enter-disc: 88px;
+
+  /* Chrome (portfolio) */
+  --header-h: 72px;
+  --tabbar-h: 64px;
+  --float-w: 320px;
+  --float-h: 400px;
+  --cursor-dot: 10px;
+  --cursor-link: 28px;
+  --cursor-view: 72px;
+  --ring-width: 2px;
+  --ring-offset: 3px;
+  --ring-ground: var(--color-noir);
+}
+
+/* Phone rhythm: max-width 639px (Convenium phone rhythm) */
+@media (max-width: 639px) {
+  :root {
+    --sheet-inset: 8px;
+    --space-5: 32px;
+    --space-6: 48px;
+    --space-7: 72px;
+    --band-pad: 40px;
+    --enter-disc: 72px;
+  }
+}
+
+/* The header slims below 960 */
+@media (max-width: 959px) {
+  :root {
+    --header-h: 56px;
+  }
+}
+
+/* Portrait viewports use the phone runway, whatever their width */
+@media (orientation: portrait) {
+  :root {
+    --runway-hero-active: var(--runway-hero-phone);
+    --sheet-overlap: -24svh;
+  }
+}

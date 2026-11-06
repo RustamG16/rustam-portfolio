@@ -1,0 +1,47 @@
+---
+// PHASE 7 — working stub from phase 6. Phase 7 owns this file and may rebuild it.
+// Noir curtain with the 96px RG mark (bars rise in left to right) and loader.line.
+// Hidden unless the head script set html.loader-on (home, JS, no reduced motion, not internal navigation).
+// scripts/hero/loader.ts runs it; a CSS failsafe lifts the curtain at 2 s if the script never does.
+import Mark from '../chrome/Mark.astro';
+import { t, type Lang } from '../../lib/i18n';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const l = t(lang).loader;
+---
+<div class="loader" data-loader role="status" aria-label={l.aria}>
+  <Mark size={96} collapsed />
+  <span class="sr-only">{l.mark}</span>
+  <p class="loader__line t-label">{l.line}</p>
+</div>
+
+<style>
+  .loader {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+    background: var(--color-noir);
+    color: var(--color-cotton);
+  }
+  :global(html.loader-on) .loader {
+    display: flex;
+    animation: loader-failsafe 1ms linear 2s forwards;
+  }
+  .loader__line {
+    margin: 0;
+    color: var(--color-gray-on-noir);
+  }
+  @keyframes loader-failsafe {
+    to {
+      transform: translateY(-100%);
+    }
+  }
+</style>

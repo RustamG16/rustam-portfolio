@@ -1,0 +1,94 @@
+---
+// 05 Languages: five rows with a six-segment gauge (CEFR A1..C2 = 1..6; native = 6). The gauge is decoration:
+// the level is always written out as text next to it.
+import { t, FACTS, type Lang } from '../../lib/i18n';
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const l = t(lang).cv.languages;
+const items = l.items as Record<string, { name: string; native: string; level: string }>;
+const STEPS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+const factLevel = (id: string): string => {
+  const it = (FACTS.languages.items as { id: string; level: string | { en: string } }[]).find((x) => x.id === id);
+  const lv = it?.level;
+  return typeof lv === 'string' ? lv : (lv?.en ?? '');
+};
+const segments = (id: string): number => {
+  const lv = factLevel(id);
+  const i = STEPS.indexOf(lv);
+  return i >= 0 ? i + 1 : 6; // "native" fills all six
+};
+---
+<section id="languages" class="band cvs" aria-labelledby="languages-title">
+  <header class="cvs__head">
+    <p class="cvs__num t-label">{l.num}</p>
+    <h2 id="languages-title" class="t-display" data-reveal="lines">{l.title}</h2>
+  </header>
+  <ul class="cvs__body langs">
+    {(l.order as string[]).map((id) => (
+      <li class="lang">
+        <span class="lang__name t-card-title">{items[id].name}</span>
+        <span class="lang__native t-small" lang={id}>{items[id].native}</span>
+        <span class="lang__level t-label">{items[id].level}</span>
+        <span class="gauge" aria-hidden="true">
+          {[1, 2, 3, 4, 5, 6].map((n) => <i class:list={[n <= segments(id) && 'on']}></i>)}
+        </span>
+      </li>
+    ))}
+  </ul>
+</section>
+
+<style>
+  .langs {
+    border-top: 1px solid var(--color-hairline);
+  }
+  .lang {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'name level'
+      'native gauge';
+    align-items: center;
+    gap: 6px var(--space-2);
+    min-height: var(--row-role);
+    padding-block: var(--space-2);
+    border-bottom: 1px solid var(--color-hairline);
+  }
+  .lang__name {
+    grid-area: name;
+    color: var(--color-ink);
+  }
+  .lang__native {
+    grid-area: native;
+    color: var(--color-gray);
+  }
+  .lang__level {
+    grid-area: level;
+    justify-self: end;
+    color: var(--color-ink);
+  }
+  .gauge {
+    grid-area: gauge;
+    display: inline-flex;
+    gap: 4px;
+  }
+  .gauge i {
+    display: block;
+    width: 24px;
+    height: 6px;
+    background: var(--color-hairline);
+  }
+  .gauge i.on {
+    background: var(--color-ink);
+  }
+  @media (min-width: 640px) {
+    .lang {
+      grid-template-columns: 5fr 4fr 2fr auto;
+      grid-template-areas: 'name native level gauge';
+    }
+    .lang__level {
+      justify-self: start;
+    }
+  }
+</style>

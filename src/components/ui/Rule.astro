@@ -1,0 +1,21 @@
+---
+// A 1px rule: hairline on cotton, rule-on-noir on noir. Decorative.
+interface Props {
+  on?: 'cotton' | 'noir';
+  class?: string;
+}
+const { on = 'cotton', class: cls = '' } = Astro.props;
+---
+<hr class:list={['rule', `rule--${on}`, cls]} aria-hidden="true" />
+
+<style>
+  .rule {
+    margin: 0;
+    height: 0;
+    border: 0;
+    border-top: 1px solid var(--color-hairline);
+  }
+  .rule--noir {
+    border-top-color: var(--rule-on-noir);
+  }
+</style>

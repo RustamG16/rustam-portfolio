@@ -1,0 +1,250 @@
+---
+// One work: board C's ruled row on fine pointers >= 960 px, a poster card in the snap carousel everywhere else.
+// Contract: ONE <a> per work to the live site (new tab); the sector word and the state label are always visible.
+// data-poster / data-film are what the float preview reads (relativized for file://); data-work is its row hook.
+import type { Work } from '../../lib/works';
+import { t, type Lang } from '../../lib/i18n';
+import { withBase } from '../../lib/paths';
+
+interface Props {
+  work: Work;
+  lang: Lang;
+}
+const { work, lang } = Astro.props;
+const w = t(lang).works;
+const live = work.state.toLowerCase() === 'live';
+const webp = withBase(`works/${work.id}/poster.webp`);
+---
+<li class="row">
+  <a
+    class="row__a"
+    href={work.href}
+    target="_blank"
+    rel="noopener"
+    data-cursor="view"
+    data-work={work.id}
+    data-poster={webp}
+    data-film={work.film}
+  >
+    <picture class="row__media">
+      <source type="image/webp" srcset={webp} />
+      <img src={work.poster} alt={work.alt} width="960" height="1200" loading="lazy" decoding="async" />
+    </picture>
+    <span class="row__mark" aria-hidden="true"></span>
+    <span class="row__idx">{work.index}</span>
+    <h3 class="row__name">{work.name}</h3>
+    <span class="row__dash" aria-hidden="true"></span>
+    <span class="row__sector">
+      <span class="row__sec">{work.sector}</span>
+      <span class:list={['row__state', 't-label', live && 'is-live']}>{work.state}</span>
+    </span>
+    <span class="row__line t-small">{work.line}</span>
+    <span class="sr-only"> — {w.newTab}</span>
+  </a>
+</li>
+
+<style>
+  /* ---- default: the poster card of the snap carousel (touch, coarse pointers, anything under 960) ---- */
+  .row {
+    flex: 0 0 min(72vw, 320px);
+    scroll-snap-align: start;
+  }
+  .row__a {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      'media media'
+      'idx name'
+      'sector sector'
+      'line line';
+    column-gap: var(--space-1);
+    row-gap: var(--space-1);
+    align-items: baseline;
+    color: var(--color-ink);
+    text-decoration: none;
+  }
+  .row__media {
+    grid-area: media;
+    display: block;
+    aspect-ratio: 4 / 5;
+    border-radius: var(--radius-media);
+    overflow: hidden;
+    background: var(--color-hairline);
+    margin-bottom: var(--space-1);
+  }
+  .row__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .row__mark,
+  .row__dash {
+    display: none;
+  }
+  .row__idx,
+  .row__name,
+  .row__sec {
+    font-family: var(--font-family-display);
+    font-variation-settings: var(--display-axes);
+    font-weight: 900;
+    text-transform: uppercase;
+    color: var(--color-ink);
+  }
+  .row__idx {
+    grid-area: idx;
+    font-size: var(--font-sector);
+    line-height: 1;
+    font-feature-settings: 'tnum' 1;
+    color: var(--red-cherry);
+  }
+  .row__name {
+    grid-area: name;
+    font-size: var(--font-sector);
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+  }
+  .row__sector {
+    grid-area: sector;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px var(--space-1);
+  }
+  .row__sec {
+    font-size: var(--font-small);
+    letter-spacing: 0;
+  }
+  .row__state {
+    color: var(--color-gray);
+  }
+  .row__state.is-live {
+    color: var(--red-cherry);
+  }
+  .row__state.is-live::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    margin-right: 6px;
+    border-radius: 50%;
+    background: var(--red-chili);
+    vertical-align: 0.08em;
+  }
+  .row__line {
+    grid-area: line;
+    color: var(--color-gray);
+    max-width: var(--measure-small);
+  }
+
+  /* ---- board C: ruled rows. Fine pointer, >= 960 px (the float preview's arm condition) ---- */
+  @media (min-width: 960px) and (hover: hover) and (pointer: fine) {
+    .row {
+      flex: none;
+      border-top: 1px solid var(--color-hairline);
+    }
+    .row:last-child {
+      border-bottom: 1px solid var(--color-hairline);
+    }
+    .row__a {
+      grid-template-columns: 1fr 6fr 3fr;
+      grid-template-areas:
+        'idx name zone'
+        'idx sector zone'
+        'idx line zone';
+      column-gap: var(--gutter);
+      row-gap: 6px;
+      align-items: center;
+      min-height: var(--row-work);
+      padding-block: 20px;
+    }
+    .row__media {
+      display: none;
+    }
+    .row__mark {
+      display: block;
+      position: absolute;
+      left: 0;
+      top: 50%;
+      width: 12px;
+      height: 12px;
+      margin-top: -6px;
+      background: var(--red-cherry);
+      opacity: 0;
+      transition: opacity var(--duration-nav-hover) var(--ease-out-sharp);
+    }
+    .row__idx,
+    .row__name,
+    .row__sec,
+    .row__dash {
+      transition: color var(--duration-nav-hover) var(--ease-out-sharp);
+    }
+    .row__idx {
+      grid-row: 1 / 4;
+      padding-left: 28px;
+      font-size: var(--font-list);
+      color: var(--color-ink);
+    }
+    .row__name {
+      align-self: end;
+      font-size: var(--font-list);
+      line-height: 1;
+    }
+    .row__sector {
+      align-self: start;
+      flex-direction: row;
+    }
+    .row__sec {
+      font-size: var(--font-sector);
+      line-height: 1.05;
+    }
+    .row__line {
+      align-self: start;
+      max-width: 52ch;
+    }
+    .row__a:hover :is(.row__idx, .row__name, .row__sec, .row__dash),
+    .row__a:focus-visible :is(.row__idx, .row__name, .row__sec, .row__dash),
+    .row__a.is-active :is(.row__idx, .row__name, .row__sec, .row__dash) {
+      color: var(--red-cherry);
+    }
+    .row__a:hover .row__mark,
+    .row__a:focus-visible .row__mark,
+    .row__a.is-active .row__mark {
+      opacity: 1;
+    }
+  }
+
+  /* >= 1200: the full board C row, index | name | dash | sector + state, the last three columns left to the float frame */
+  @media (min-width: 1200px) and (hover: hover) and (pointer: fine) {
+    .row__a {
+      grid-template-columns: 112px minmax(0, 1fr) 40px 320px var(--float-w);
+      grid-template-areas:
+        'idx name dash sector zone'
+        'idx line dash sector zone';
+      column-gap: var(--space-3);
+      row-gap: 6px;
+    }
+    .row__dash {
+      display: block;
+      grid-area: dash;
+      grid-row: 1 / 3;
+      width: 48px;
+      height: 3px;
+      background: currentColor;
+      color: var(--color-ink);
+    }
+    .row__sector {
+      grid-row: 1 / 3;
+      flex-direction: column;
+      align-items: flex-start;
+      align-self: center;
+      gap: 4px;
+    }
+    .row__name {
+      align-self: end;
+    }
+    .row__line {
+      align-self: start;
+    }
+  }
+</style>

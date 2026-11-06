@@ -1,0 +1,79 @@
+---
+// Noir footer: links, © + location, back to top, then GURBANOV. edge to edge (aria-hidden SVG, colour wordmark).
+import Wordmark from '../ui/Wordmark.astro';
+import { t, type Lang } from '../../lib/i18n';
+import { withBase, routePath } from '../../lib/paths';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const f = t(lang).footer;
+const home = withBase(routePath(lang));
+const links = [
+  { label: f.links.work, href: `${home}#work` },
+  { label: f.links.cv, href: withBase(routePath(lang, 'cv/')) },
+  { label: f.links.documents, href: withBase(routePath(lang, 'cv/')) + '#vault' },
+  { label: f.links.legal, href: withBase(routePath(lang, 'legal/')) },
+];
+---
+<footer class="foot" data-theme="noir" data-footer>
+  <div class="foot__row">
+    <ul class="foot__links">
+      {links.map((l) => (
+        <li><a class="foot__link t-nav" href={l.href} data-cursor="link">{l.label}</a></li>
+      ))}
+    </ul>
+    <p class="foot__copy t-label">{f.copy} · {f.location}</p>
+    <a class="foot__top t-nav" href="#top" data-cursor="link">{f.backToTop}</a>
+  </div>
+  <div class="foot__word" aria-hidden="true">
+    <Wordmark text={f.wordmark} advanceEm={6.457} />
+  </div>
+</footer>
+
+<style>
+  .foot {
+    position: relative;
+    z-index: 2;
+    background: var(--color-noir);
+    color: var(--color-cotton);
+    padding-top: var(--band-pad);
+    overflow: hidden;
+  }
+  .foot__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3) var(--space-5);
+    padding-inline: var(--space-container);
+    padding-bottom: var(--space-6);
+  }
+  .foot__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 var(--space-4);
+  }
+  .foot__link,
+  .foot__top {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--touch-min);
+    text-decoration: none;
+    text-underline-offset: 6px;
+    text-decoration-thickness: 1px;
+  }
+  .foot__link:hover,
+  .foot__top:hover {
+    text-decoration: underline;
+  }
+  .foot__copy {
+    color: var(--color-gray-on-noir);
+  }
+  .foot__word {
+    color: var(--color-wordmark);
+    width: 100%;
+    line-height: 0;
+  }
+</style>

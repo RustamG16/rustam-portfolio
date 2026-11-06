@@ -1,0 +1,179 @@
+---
+// Section #summary: cotton 8/4 split. Italic statement line, body, four stats on hairlines; the noir aside carries
+// the P4 portrait, status, location and the "Download CV" outline pill. The aside is a slab of the noir page, flush
+// to the sheet edge (board C). It deliberately has no data-theme: the header tone must not flip under it.
+import Pill from '../ui/Pill.astro';
+import { t, FACTS, type Lang } from '../../lib/i18n';
+import { withBase } from '../../lib/paths';
+import { portrait } from './media';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const c = t(lang).statement;
+const stats = Object.values(c.stats);
+const alt = t(lang).cv.cover.portraitAlt;
+const p4 = portrait('cv');
+---
+<section id="summary" class="summary" aria-labelledby="summary-kicker">
+  <div class="summary__main">
+    <h2 id="summary-kicker" class="t-label summary__kicker">{c.kicker}</h2>
+    <p class="summary__line t-card-title" data-reveal="lines"><em>{c.line}</em></p>
+    <p class="summary__body">{c.body}</p>
+    <dl class="stats" data-reveal="block">
+      {stats.map((s) => (
+        <div class="stats__item">
+          <dt class="stats__label t-label">{s.label}</dt>
+          <dd class="stats__fig">{s.value}{s.suffix}</dd>
+        </div>
+      ))}
+    </dl>
+  </div>
+  <aside class="aside">
+    <div class="aside__portrait" data-reveal="block">
+      {p4
+        ? <img src={p4.src} alt={alt} width="1200" height="1500" loading="lazy" decoding="async" />
+        : <div class="aside__ph" aria-hidden="true"></div>}
+    </div>
+    <div class="aside__row">
+      <p class="aside__status t-label"><span class="aside__key">{c.status.key}</span> <span class="aside__val">{c.status.value}</span></p>
+      <p class="aside__loc t-label">{c.status.location}</p>
+      <Pill variant="outline" size="contact" href={withBase(FACTS.cvPdf.path)} download={FACTS.cvPdf.downloadName}>{t(lang).nav.downloadCv}</Pill>
+    </div>
+  </aside>
+</section>
+
+<style>
+  .summary {
+    display: grid;
+    border-top: 1px solid var(--color-hairline);
+  }
+  .summary__main {
+    padding: var(--band-pad) var(--gutter);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+  .summary__kicker {
+    color: var(--color-gray);
+  }
+  .summary__line {
+    font-style: italic;
+    font-size: clamp(1.75rem, 1.2rem + 2.2vw, 3rem);
+    line-height: 1.12;
+    max-width: 22ch;
+    color: var(--color-ink);
+  }
+  .summary__line em {
+    font-style: italic;
+  }
+  .summary__body {
+    max-width: var(--measure-lede);
+    font-family: var(--font-family-serif);
+    font-size: var(--font-body);
+    line-height: 1.4;
+    color: var(--color-ink);
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    margin-top: var(--space-3);
+    border-top: 1px solid var(--color-hairline);
+  }
+  .stats__item {
+    display: flex;
+    flex-direction: column-reverse; /* DOM: term then figure; shown: figure above its label */
+    justify-content: flex-end;
+    gap: var(--space-1);
+    padding: var(--space-3) var(--space-2) var(--space-3) 0;
+    border-bottom: 1px solid var(--color-hairline);
+  }
+  .stats__fig {
+    margin: 0;
+    font-family: var(--font-family-display);
+    font-variation-settings: var(--display-axes);
+    font-weight: 900;
+    font-size: var(--font-figure);
+    line-height: 1;
+    font-feature-settings: 'tnum' 1;
+    color: var(--color-ink);
+  }
+  .stats__label {
+    margin: 0;
+    color: var(--color-gray);
+  }
+
+  .aside {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--gutter) var(--space-4);
+    background: var(--color-noir);
+    color: var(--color-cotton);
+    --ring-ground: var(--color-noir);
+  }
+  .aside__portrait {
+    aspect-ratio: 4 / 5;
+    width: min(100%, 420px);
+    overflow: hidden;
+    background: var(--color-wordmark);
+  }
+  .aside__portrait img,
+  .aside__ph {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 20%;
+  }
+  .aside__row {
+    display: grid;
+    gap: var(--space-2);
+    justify-items: start;
+  }
+  .aside__key,
+  .aside__loc {
+    color: var(--color-gray-on-noir);
+  }
+  .aside__val {
+    color: var(--color-cotton);
+  }
+  .aside :global(.pill--outline) {
+    --hover-fill: var(--color-cotton);
+    --hover-ink: var(--color-noir);
+  }
+
+  @media (min-width: 640px) {
+    .stats {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .stats__item {
+      padding-left: var(--space-2);
+    }
+    .stats__item:first-child {
+      padding-left: 0;
+    }
+    .stats__item + .stats__item {
+      border-left: 1px solid var(--color-hairline);
+    }
+  }
+  @media (min-width: 960px) {
+    .summary {
+      grid-template-columns: 2fr 1fr;
+    }
+    .stats {
+      margin-top: auto; /* the figures sit on the same baseline as the aside's status row */
+    }
+    .aside {
+      justify-content: space-between;
+      padding-top: var(--band-pad);
+      padding-bottom: var(--space-4);
+    }
+    .aside__portrait {
+      width: 100%;
+    }
+  }
+</style>

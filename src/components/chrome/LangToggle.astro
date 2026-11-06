@@ -1,0 +1,79 @@
+---
+// EN | DE as two plain links. The URL is the state: nothing is written to storage (legal page promise).
+// The hash is kept at click time by scripts/header.ts via data-keep-hash.
+import { t, altHref, type Lang } from '../../lib/i18n';
+import { withBase, routePath } from '../../lib/paths';
+
+interface Props {
+  lang: Lang;
+  /** Route path without the language prefix: '' | 'cv/' | 'legal/' */
+  path: string;
+}
+const { lang, path } = Astro.props;
+const n = t(lang).nav;
+const items = [
+  { code: 'en' as Lang, text: lang === 'en' ? n.lang.current : n.lang.alt },
+  { code: 'de' as Lang, text: lang === 'de' ? n.lang.current : n.lang.alt },
+].map((i) => ({
+  ...i,
+  href: i.code === lang ? withBase(routePath(lang, path)) : altHref(lang, path),
+  current: i.code === lang,
+}));
+---
+<div class="lang" role="group" aria-label={n.lang.aria}>
+  {items.map((i) => (
+    <a
+      class:list={['lang__seg', i.current && 'is-current']}
+      href={i.href}
+      hreflang={i.code}
+      lang={i.code}
+      aria-current={i.current ? 'true' : undefined}
+      data-keep-hash
+      data-cursor="link"
+    >{i.text}</a>
+  ))}
+</div>
+
+<style>
+  .lang {
+    display: inline-flex;
+    height: 36px;
+    border: 1px solid color-mix(in srgb, currentColor 40%, transparent);
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+  }
+  .lang__seg {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    padding: 0 12px;
+    font-family: var(--font-family-ui);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    text-decoration: none;
+    transition:
+      background-color var(--duration-nav-hover) var(--ease-out-sharp),
+      color var(--duration-nav-hover) var(--ease-out-sharp);
+  }
+  /* 44px hit area on a 36px control */
+  .lang__seg::after {
+    content: '';
+    position: absolute;
+    inset: -4px 0;
+  }
+  .lang__seg.is-current {
+    background: var(--red-cherry);
+    color: var(--color-cotton);
+  }
+  .lang__seg:not(.is-current):hover {
+    background: color-mix(in srgb, currentColor 14%, transparent);
+  }
+  .lang__seg:focus-visible {
+    border-radius: var(--radius-pill);
+  }
+</style>

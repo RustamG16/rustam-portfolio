@@ -1,0 +1,69 @@
+---
+// PHASE 7 — stub from phase 6. Phase 7 builds the stage, layers, scrubber hooks and the reduced-motion still
+// (frames come from phase 4; this stub deliberately references none, so the build stays green before they land).
+// Contract kept: section#top[data-hero][data-theme=noir]; H1 = SVG wordmark with aria-label hero.h1Aria;
+// ENTER jumps to #work. Frame constants for the data-* attributes are in src/lib/frames.ts.
+import Loader from './Loader.astro';
+import Wordmark from '../ui/Wordmark.astro';
+import { t, type Lang } from '../../lib/i18n';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const h = t(lang).hero;
+---
+<section id="top" class="hero" data-hero data-theme="noir">
+  <Loader lang={lang} />
+  <div class="hero__stage">
+    <h1 class="hero__h1" aria-label={h.h1Aria}>
+      <Wordmark text={h.wordmark} advanceEm={6.264} />
+    </h1>
+    <div class="hero__card">
+      <p class="t-label">{h.titleCard.line1}</p>
+      <p class="t-subhead"><em>{h.titleCard.line2}</em></p>
+      <p class="t-label">{h.titleCard.line3}</p>
+    </div>
+    <a class="hero__enter t-label" href="#work" data-cursor="link">{h.enter}<span class="sr-only"> — {h.skipFilm}</span></a>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    background: var(--color-noir);
+    color: var(--color-cotton);
+  }
+  .hero__stage {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: var(--space-3);
+    min-height: 100svh;
+    padding: calc(var(--header-h) + var(--space-3)) var(--space-container) var(--space-5);
+  }
+  .hero__h1 {
+    margin: 0;
+    width: 100%;
+    max-width: 1879px;
+  }
+  .hero__card {
+    display: grid;
+    gap: var(--space-1);
+  }
+  .hero__enter {
+    position: absolute;
+    right: var(--space-container);
+    bottom: var(--space-5);
+    display: grid;
+    place-items: center;
+    width: var(--enter-disc);
+    height: var(--enter-disc);
+    border-radius: 50%;
+    background: var(--color-cotton);
+    color: var(--color-noir);
+    font-weight: 600;
+    letter-spacing: var(--tracking-label);
+    text-decoration: none;
+  }
+</style>

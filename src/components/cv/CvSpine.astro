@@ -1,0 +1,120 @@
+---
+// The jump rail. >= 960: a sticky column beside the sheet (numbers + titles at >= 1200, numbers only below, titles
+// stay in the accessibility tree). < 960: a sticky horizontal strip under the header. The active section is set by
+// src/scripts/cv/spine.ts (ScrollTrigger); without JS every item is a plain anchor.
+import { t, type Lang } from '../../lib/i18n';
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const c = t(lang).cv;
+const items = [
+  { id: 'vitals', num: c.vitals.num, title: c.vitals.title },
+  { id: 'experience', num: c.experience.num, title: c.experience.title },
+  { id: 'education', num: c.education.num, title: c.education.title },
+  { id: 'capabilities', num: c.capabilities.num, title: c.capabilities.title },
+  { id: 'languages', num: c.languages.num, title: c.languages.title },
+  { id: 'vault', num: c.documents.num, title: c.documents.title },
+  { id: 'end', num: '', title: c.spine.end },
+];
+---
+<nav class="spine" aria-label={c.spine.aria} data-cv-spine>
+  <ol class="spine__list" data-spine-list>
+    {items.map((i) => (
+      <li>
+        <a class="spine__a t-nav" href={`#${i.id}`} data-cursor="link">
+          {i.num && <span class="spine__num">{i.num}</span>}
+          <span class="spine__title">{i.title}</span>
+        </a>
+      </li>
+    ))}
+  </ol>
+</nav>
+
+<style>
+  .spine {
+    position: sticky;
+    top: var(--header-h);
+    z-index: 40;
+    background: var(--color-noir);
+    border-bottom: 1px solid var(--rule-on-noir);
+    --ring-ground: var(--color-noir);
+  }
+  .spine__list {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    padding: 6px var(--space-container);
+    scrollbar-width: none;
+  }
+  .spine__list::-webkit-scrollbar {
+    display: none;
+  }
+  .spine__a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: var(--touch-min);
+    padding: 0 14px;
+    border-radius: var(--radius-pill);
+    color: var(--color-gray-on-noir);
+    text-decoration: none;
+    white-space: nowrap;
+    transition:
+      background-color var(--duration-nav-active) var(--ease-out-sharp),
+      color var(--duration-nav-active) var(--ease-out-sharp);
+  }
+  .spine__a:hover {
+    color: var(--color-cotton);
+  }
+  .spine__a[aria-current='location'] {
+    background: var(--red-cherry);
+    color: var(--color-cotton);
+  }
+  .spine__num {
+    font-feature-settings: 'tnum' 1;
+  }
+
+  @media (min-width: 960px) {
+    .spine {
+      top: calc(var(--header-h) + var(--space-3));
+      align-self: start;
+      background: transparent;
+      border-bottom: 0;
+    }
+    .spine__list {
+      flex-direction: column;
+      overflow: visible;
+      padding: 0 0 0 var(--space-container);
+    }
+    .spine__a {
+      border-radius: var(--radius-pill);
+      padding: 0 12px;
+    }
+    .spine__title {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+    .spine__a:not(:has(.spine__num)) .spine__title {
+      position: static;
+      width: auto;
+      height: auto;
+      margin: 0;
+      clip-path: none;
+    }
+  }
+  @media (min-width: 1200px) {
+    .spine__title {
+      position: static;
+      width: auto;
+      height: auto;
+      margin: 0;
+      clip-path: none;
+    }
+  }
+</style>

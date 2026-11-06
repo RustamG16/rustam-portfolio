@@ -1,3 +1,11 @@
 .DS_Store
 Thumbs.db
 _verify/
+node_modules/
+dist/
+dist-file/
+.astro/
+public/js/
+qa/shots/
+qa/out/
+*.log

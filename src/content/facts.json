@@ -1,0 +1,367 @@
+{
+  "$schema_note": "Locked facts for the RG x Convenium redesign. Every value here must survive verbatim (per language where a field has en/de). Copy files reference these; scripts/facts check reads `check` arrays. Sources point at the CURRENT site source (site/), which wins over _verify/redesign/text-before/*.txt where the two differ (see COPY-NOTES.md, 'Stale dumps').",
+  "version": "2026-11-06",
+
+  "identity": {
+    "name": { "value": "Rustam Gurbanov", "source": "site/index.html:6 <title>, h1 aria-label" },
+    "wordmark": { "value": "GURBANOV", "source": "site/index.html hero__line; .olympus/boards/B-noir-portal.png" },
+    "initials": { "value": "RG", "source": "site/index.html topbar__mark" },
+    "fileId": { "value": "RG-2026", "source": "site/index.html hero.kicker, site/cv.js cv.cover.kicker" },
+    "titles": {
+      "value": ["Software Engineer", "AI Orchestrator", "Designer", "Creator"],
+      "de": ["Softwareentwickler", "KI-Orchestrator", "Designer", "Creator"],
+      "source": "site/main.js I18N hero.sub (en ~l.508, de ~l.583)"
+    },
+    "roleWords": {
+      "value": ["ENGINEER", "ORCHESTRATOR", "DESIGNER", "CREATOR"],
+      "source": "site/cv.js cv.role.1-4 (identical EN/DE)"
+    },
+    "origin": { "value": "Baku, AZ", "source": "site/cv.html:132 cv.meta.origin" },
+    "station": { "value": "Klagenfurt, AT", "source": "site/index.html hero__meta STATION; site/cv.html" },
+    "legalLocation": { "value": "Klagenfurt am Wörthersee, Österreich", "source": "site/legal.html Offenlegung" },
+    "status": {
+      "en": "Based in Klagenfurt, Austria · EU / Remote",
+      "de": "Ansässig in Klagenfurt, Österreich · EU / Remote",
+      "source": "site/cv.js cv.vitals.statusVal (EN l.~73, DE l.~182); main.js sum.statusVal EN"
+    },
+    "availability": {
+      "en": "Available for work",
+      "de": "Offen für Anstellung",
+      "source": "site/main.js bar.availability; site/cv.js cv.end.cta"
+    },
+    "period": { "value": "2017 — 2026", "source": "site/index.html hero__meta PERIOD; site/cv.html:134" },
+    "fields": {
+      "en": "Engineering · AI · Design",
+      "de": "Entwicklung · KI · Design",
+      "source": "site/main.js meta.fieldVal"
+    }
+  },
+
+  "stats": {
+    "source": "site/index.html #stats .vitals (data-count) + site/cv.js cv.vitals.*",
+    "items": [
+      { "id": "years",     "value": "10", "suffix": "+", "en": "Years building",           "de": "Jahre Praxis" },
+      { "id": "projects",  "value": "20", "suffix": "+", "en": "Projects shipped",         "de": "Projekte geliefert" },
+      { "id": "languages", "value": "5",  "suffix": "",  "en": "Languages spoken",         "de": "Sprachen" },
+      { "id": "pipeline",  "value": "1",  "suffix": "",  "en": "Person, whole pipeline",   "de": "Person, ganze Pipeline" }
+    ],
+    "check": { "en": ["10", "20", "5", "1"], "de": ["10", "20", "5", "1"] }
+  },
+
+  "counts": {
+    "roles": 4, "degrees": 2, "languages": 5, "documents": 5,
+    "source": "site/cv.js cv.meta.pagesVal '4 ROLES · 2 DEGREES · 5 DOCUMENTS'; main.js xref.desc"
+  },
+
+  "experience": {
+    "source": "site/cv.html:217-300 (dates, employers, cities, tags) + site/cv.js cv.job.* (role, duration, bullets EN l.~86-104 / DE l.~195-213)",
+    "roles": [
+      {
+        "id": "infineon",
+        "from": "2023", "to": "2026",
+        "duration": { "en": "2 yrs 7 mos", "de": "2 J. 7 Mon." },
+        "role": "Digitalization Engineer, Fullstack Developer",
+        "employer": "Infineon Technologies",
+        "city": "Villach",
+        "country": { "en": "Austria", "de": "Österreich" },
+        "bullets": {
+          "en": [
+            "Shipped fullstack tools for manufacturing digitalization — data workflows, APIs, and operator-facing UIs.",
+            "Built and automated KNIME / OpenShift pipelines; IFX-KNIME Division Pioneer Award (E9Steps, 2024).",
+            "Owned features end to end: TypeScript/React frontends, testing, Git workflows, and production handoff."
+          ],
+          "de": [
+            "Fullstack-Tools für Fertigungsdigitalisierung — Datenworkflows, APIs und bedienernahe UIs.",
+            "KNIME-/OpenShift-Pipelines gebaut und automatisiert; IFX-KNIME Division Pioneer Award (E9Steps, 2024).",
+            "Features end-to-end: TypeScript/React-Frontends, Testing, Git-Workflows und Production-Handoff."
+          ]
+        },
+        "tags": ["TypeScript", "React", "KNIME", "OpenShift", "Python", "Git"],
+        "award": { "value": "IFX-KNIME Division Pioneer Award · 2024", "link": "#doc-knime", "source": "site/cv.html:238-239" }
+      },
+      {
+        "id": "iba",
+        "from": "2019", "to": "2021",
+        "duration": { "en": "1 yr 8 mos", "de": "1 J. 8 Mon." },
+        "role": "Frontend Developer, Graphical Designer",
+        "employer": "International Bank of Azerbaijan",
+        "city": "Baku",
+        "country": { "en": "Azerbaijan", "de": "Aserbaidschan" },
+        "bullets": {
+          "en": [
+            "Designed and built frontend interfaces for bank digital products with HTML, CSS, JS, and React.",
+            "Produced brand-aligned graphic assets and UI systems that kept product and marketing in sync."
+          ],
+          "de": [
+            "Frontend-Interfaces für digitale Bankprodukte mit HTML, CSS, JS und React.",
+            "Markenkonforme Grafiken und UI-Systeme — Produkt und Marketing im Gleichklang."
+          ]
+        },
+        "tags": ["JavaScript", "React", "HTML/CSS", "Figma"]
+      },
+      {
+        "id": "ibatech",
+        "from": "2019", "to": "2019",
+        "duration": { "en": "3 mos", "de": "3 Mon." },
+        "role": "Frontend Developer",
+        "employer": "IBA-Tech Academy",
+        "city": "Baku",
+        "country": { "en": "Azerbaijan", "de": "Aserbaidschan" },
+        "bullets": {
+          "en": ["Completed intensive frontend development track (DAN.IT / IBA Tech Academy) and shipped academy projects."],
+          "de": ["Intensivkurs Frontend Development (DAN.IT / IBA Tech Academy) und ausgelieferte Academy-Projekte."]
+        },
+        "tags": ["JavaScript", "HTML/CSS"]
+      },
+      {
+        "id": "bank",
+        "from": "2018", "to": "2019",
+        "duration": { "en": "1 yr 3 mos", "de": "1 J. 3 Mon." },
+        "role": "Help desk specialist",
+        "employer": "Bank Republic",
+        "city": "Baku",
+        "country": { "en": "Azerbaijan", "de": "Aserbaidschan" },
+        "bullets": {
+          "en": ["First-line support for customers and internal teams — triage, resolution, and clear handoffs."],
+          "de": ["First-Level-Support für Kunden und interne Teams — Triage, Lösung, klare Übergaben."]
+        },
+        "tags": { "en": ["Support", "Triage"], "de": ["Support", "Triage"] }
+      }
+    ],
+    "countryNote": "The current site prints the country in English on both languages (HTML, not i18n). City is the locked fact; the DE copy names the country in German. See COPY-NOTES.md."
+  },
+
+  "education": {
+    "source": "site/cv.html:312-324 + site/cv.js cv.edu.*",
+    "degrees": [
+      {
+        "id": "master",
+        "from": "2021", "to": { "en": "present", "de": "heute" },
+        "title": "Master of Game Studies and Engineering",
+        "institution": "Universität Klagenfurt",
+        "city": "Klagenfurt",
+        "country": { "en": "Austria", "de": "Österreich" }
+      },
+      {
+        "id": "bachelor",
+        "from": "2017", "to": "2021",
+        "title": "Bachelor of Information Technologies (IT)",
+        "institution": "Azerbaijan Technical University",
+        "city": "Baku",
+        "country": { "en": "Azerbaijan", "de": "Aserbaidschan" }
+      }
+    ]
+  },
+
+  "languages": {
+    "source": "site/cv.html:378-403 + site/cv.js cv.lang.*",
+    "items": [
+      { "id": "az", "en": "Azerbaijani", "de": "Aserbaidschanisch", "native": "Azərbaycan", "level": { "en": "native", "de": "Muttersprache" } },
+      { "id": "en", "en": "English",     "de": "Englisch",          "native": "English",    "level": "C2" },
+      { "id": "de", "en": "German",      "de": "Deutsch",           "native": "Deutsch",    "level": "B2" },
+      { "id": "ru", "en": "Russian",     "de": "Russisch",          "native": "Русский",    "level": "C2" },
+      { "id": "tr", "en": "Turkish",     "de": "Türkisch",          "native": "Türkçe",     "level": "C2" }
+    ]
+  },
+
+  "capabilities": {
+    "source": "site/cv.html:331-372 + site/cv.js cv.skills.*, cv.where.self",
+    "selfDirected": { "en": "Self-directed", "de": "Eigenprojekte" },
+    "groups": [
+      { "id": "eng", "en": "Engineering", "de": "Engineering", "rows": [
+        { "label": { "en": "HTML · CSS · JS · TypeScript", "de": "HTML · CSS · JS · TypeScript" }, "where": "Infineon · IBA" },
+        { "label": { "en": "React · API handling · Testing", "de": "React · API handling · Testing" }, "where": "Infineon" },
+        { "label": { "en": "Git · OpenShift · KNIME", "de": "Git · OpenShift · KNIME" }, "where": "Infineon" }
+      ]},
+      { "id": "design", "en": "Design", "de": "Design", "rows": [
+        { "label": { "en": "Figma · Canva", "de": "Figma · Canva" }, "where": "IBA" },
+        { "label": { "en": "Graphic design", "de": "Grafikdesign" }, "where": "IBA" },
+        { "label": { "en": "Scroll animation", "de": "Scroll-Animation" }, "where": "self" }
+      ]},
+      { "id": "ai", "en": "AI & Automation", "de": "KI & Automation", "rows": [
+        { "label": { "en": "AI orchestration", "de": "KI-Orchestrierung" }, "where": "self" },
+        { "label": { "en": "Cursor · Claude Code", "de": "Cursor · Claude Code" }, "where": "self" },
+        { "label": { "en": "Content generation", "de": "Content-Generierung" }, "where": "self" }
+      ]},
+      { "id": "mkt", "en": "Marketing", "de": "Marketing", "rows": [
+        { "label": { "en": "Content strategy", "de": "Content-Strategie" }, "where": "self" },
+        { "label": { "en": "Social media", "de": "Social Media" }, "where": "self" },
+        { "label": { "en": "Brand storytelling", "de": "Brand Storytelling" }, "where": "IBA" }
+      ]}
+    ],
+    "homeStrip": {
+      "en": ["Branding", "Graphic Design", "AI Content", "Social Media", "Motion", "Video"],
+      "de": ["Branding", "Grafikdesign", "KI-Content", "Social Media", "Motion", "Video"],
+      "source": "site/main.js pillars.strip.*"
+    }
+  },
+
+  "documents": {
+    "source": "site/cv.html:412-482 (paths, filenames, pages, sizes) + site/cv.js cv.doc.* (titles, descriptions). Sizes re-measured on disk 2026-11-06 (bytes/1024, rounded): all match.",
+    "items": [
+      {
+        "id": "knime",
+        "anchor": "doc-knime",
+        "title": { "en": "IFX-KNIME Division Pioneer Award", "de": "IFX-KNIME Division Pioneer Award" },
+        "desc": { "en": "Infineon certificate of achievement — IDEA: E9Steps, Use Case Contest 2024.", "de": "Infineon-Auszeichnung — IDEA: E9Steps, Use Case Contest 2024." },
+        "pdf": "assets/docs/ifx-knime-pioneer-award.pdf",
+        "downloadName": "Rustam-Gurbanov-IFX-KNIME-Pioneer-Award.pdf",
+        "preview": "media/docs/full/ifx-knime-award.webp",
+        "pages": 1, "sizeKB": 123, "bytes": 125592
+      },
+      {
+        "id": "iba",
+        "title": { "en": "IBA Tech Academy — Frontend Certificate", "de": "IBA Tech Academy — Frontend-Zertifikat" },
+        "desc": { "en": "Completion certificate — Frontend Development (Oct–Dec 2019), IBA Tech Academy / DAN.IT.", "de": "Abschlusszertifikat — Frontend Development (Okt–Dez 2019), IBA Tech Academy / DAN.IT." },
+        "pdf": "assets/docs/iba-frontend-certificate.pdf",
+        "downloadName": "Rustam-Gurbanov-IBA-Frontend-Certificate.pdf",
+        "preview": "media/docs/full/iba-frontend-cert.webp",
+        "pages": 1, "sizeKB": 927, "bytes": 948744
+      },
+      {
+        "id": "bach",
+        "title": { "en": "Bachelor Certificate", "de": "Bachelor-Zeugnis" },
+        "desc": { "en": "Degree certificate — Azerbaijan Technical University (Information Technologies).", "de": "Abschlusszeugnis — Azerbaijan Technical University (Information Technologies)." },
+        "pdf": "assets/docs/bachelor-certificate.pdf",
+        "downloadName": "Rustam-Gurbanov-Bachelor-Certificate.pdf",
+        "preview": "media/docs/full/bachelor-certificate.webp",
+        "pages": 5, "sizeKB": 937, "bytes": 959290
+      },
+      {
+        "id": "ref1",
+        "title": { "en": "Reference Letter", "de": "Empfehlungsschreiben" },
+        "desc": { "en": "Professional reference letter (scanned PDF).", "de": "Professionelles Empfehlungsschreiben (gescanntes PDF)." },
+        "pdf": "assets/docs/reference-letter.pdf",
+        "downloadName": "Rustam-Gurbanov-Reference-Letter.pdf",
+        "preview": "media/docs/full/reference-letter.webp",
+        "pages": 1, "sizeKB": 287, "bytes": 294304
+      },
+      {
+        "id": "ref2",
+        "title": { "en": "Reference Letter 2", "de": "Empfehlungsschreiben 2" },
+        "desc": { "en": "Additional professional reference letter (scanned PDF).", "de": "Weiteres professionelles Empfehlungsschreiben (gescanntes PDF)." },
+        "pdf": "assets/docs/reference-letter-2.pdf",
+        "downloadName": "Rustam-Gurbanov-Reference-Letter-2.pdf",
+        "preview": "media/docs/full/reference-letter-2.webp",
+        "pages": 1, "sizeKB": 204, "bytes": 208571
+      }
+    ],
+    "order": ["knime", "iba", "bach", "ref1", "ref2"]
+  },
+
+  "cvPdf": {
+    "path": "assets/rustam-gurbanov-resume.pdf",
+    "downloadName": "Rustam-Gurbanov-CV.pdf",
+    "bytes": 61927,
+    "source": "site/index.html:75,193 + site/cv.html:66,139 (index.html:462 uses 'Rustam-Gurbanov-Resume.pdf' once — an inconsistency; CV.pdf is the majority and is locked)"
+  },
+
+  "contact": {
+    "source": "site/index.html:116-118,479-482 + site/cv.html:502-505",
+    "email": { "value": "rustam.gurbanov016@gmail.com", "href": "mailto:rustam.gurbanov016@gmail.com" },
+    "linkedin": { "label": "LinkedIn", "href": "https://www.linkedin.com/in/rustam-gurbanov016/" },
+    "instagram": { "label": "Instagram", "href": "https://www.instagram.com/russ.tafarii/" },
+    "whatsapp": { "label": "WhatsApp", "href": "https://wa.me/436763492193", "aria": { "en": "Chat on WhatsApp", "de": "Per WhatsApp chatten" } }
+  },
+
+  "legal": {
+    "page": "site/legal.html",
+    "lang": "de",
+    "title": "Offenlegung & Datenschutz — Rustam Gurbanov",
+    "heading": "Offenlegung & Datenschutz",
+    "description": "Offenlegung nach § 25 Mediengesetz und Datenschutzerklärung für die persönliche Website von Rustam Gurbanov.",
+    "backLink": "← Zurück zur Startseite",
+    "stand": "Stand: August 2026 · Rustam Gurbanov · Klagenfurt, AT",
+    "footerLabel": { "en": "Legal", "de": "Impressum" },
+    "constraints": [
+      "Purpose stated as: presentation of professional career and job applications ('Bewerbung um Anstellungen'); offers no goods or services for sale.",
+      "No cookies, no tracking, no contact form; language choice stored in localStorage only after the visitor uses the toggle.",
+      "All fonts and scripts are served by the site itself; no Google Fonts or script CDN."
+    ],
+    "source": "site/legal.html (verbatim body; NOT rewritten)"
+  },
+
+  "site": {
+    "url": "https://rustamg16.github.io/rustam-portfolio/",
+    "cvUrl": "https://rustamg16.github.io/rustam-portfolio/cv.html",
+    "ogLocale": "en_US", "ogLocaleAlternate": "de_AT",
+    "copyright": "© 2026 Rustam Gurbanov",
+    "source": "site/index.html:11,19-28; site/cv.html:9"
+  },
+
+  "works": {
+    "truthRule": "Only Convenium is described as Rustam's own studio. None of the other five is client work; never write 'client', 'commissioned' or 'for <brand>' as if booked. Source: .olympus/PLAN.md 'Adversarial turn' + D:/Projects/Convenium/content/projects.ts comments.",
+    "order": ["convenium", "meridian", "sonnwerk", "wild-gruppe", "savra", "doko"],
+    "items": [
+      {
+        "id": "convenium",
+        "name": "Convenium",
+        "status": { "en": "Studio · live", "de": "Studio · live" },
+        "url": "https://convenium.at",
+        "facts": [
+          "Studio Rustam founded; Marija co-founded it with him (Convenium content/about.ts: role 'Founder · Design + Engineering'; Marija 'co-founded Convenium with Rustam').",
+          "Based in Klagenfurt (wild-gruppe <meta description> 'Von Convenium Studio, Klagenfurt.').",
+          "Studio line: 'We digitalize any idea.' (PLAN.md Remotion tagline; Convenium content/about.ts intro heading)."
+        ],
+        "tags": ["Next.js", "React", "TypeScript", "GSAP", "Three.js"],
+        "tagsSource": "D:/Projects/Convenium/PRODUCT.md 'Existing stack'",
+        "source": ".olympus/PLAN.md (works-convenium); D:/Projects/Convenium/content/about.ts"
+      },
+      {
+        "id": "meridian",
+        "name": "The Meridian",
+        "status": { "en": "Hospitality · concept build", "de": "Hospitality · Konzept" },
+        "url": "https://rustamg16.github.io/003-meridian-mvp/",
+        "facts": ["luxury alpine resort", "scroll-scrubbed canvas arrival", "four interactive instruments", "eight bespoke routes", "demo brand, not a booked hotel client (Convenium projects.ts)"],
+        "check": { "en": ["four", "eight"], "de": ["vier", "acht"] },
+        "tags": ["Astro", "GSAP", "Canvas scrub", "Flip"],
+        "source": "site/index.html:360-370 + main.js work.meridian; status from D:/Projects/Convenium/content/projects.ts"
+      },
+      {
+        "id": "sonnwerk",
+        "name": "Sonn'werk",
+        "status": { "en": "Brand · concept build", "de": "Brand · Konzept" },
+        "url": "https://rustamg16.github.io/002-sonnwerk/",
+        "facts": ["premium CBD brand", "field-to-bottle storytelling ('Vom Feld in die Flasche')", "editorial type", "scroll narrative", "in negotiation, nothing commissioned (Convenium projects.ts, confirmed 2026-08-20)"],
+        "tags": ["Astro", "GSAP", "ScrollTrigger", "Editorial"],
+        "source": "site/index.html:381-391 + main.js work.sonnwerk; status from D:/Projects/Convenium/content/projects.ts"
+      },
+      {
+        "id": "wild-gruppe",
+        "name": "Wild Gruppe",
+        "status": { "en": "Optomechatronics · concept", "de": "Optomechatronik · Konzept" },
+        "url": "https://rustamg16.github.io/wild-gruppe/",
+        "facts": ["unsolicited relaunch concept ('Unaufgeforderter Relaunch-Konzeptentwurf')", "WILD Gruppe, Völkermarkt", "3D demonstrator", "by Convenium Studio, Klagenfurt", "headline 'Von der Spezifikation zur Serie.'"],
+        "tags": ["Three.js", "GSAP", "Lenis", "Vite"],
+        "tagsSource": "live bundle /wild-gruppe/assets/index-CKjBV7s0.js inspected 2026-11-06 (WebGLRenderer, gsap, ScrollTrigger, lenis)",
+        "source": "live <title>/<meta description>/<h1> of https://rustamg16.github.io/wild-gruppe/ fetched 2026-11-06; .olympus/PLAN.md"
+      },
+      {
+        "id": "savra",
+        "name": "Savra",
+        "status": { "en": "Restaurant · concept build", "de": "Gastronomie · Konzept" },
+        "url": "https://rustamg16.github.io/Savra_v2/",
+        "facts": ["fictional dining room in Vienna ('an intimate dining room in Vienna, shaped by fire, stone and season')", "'Through the blue door and into the room, in one scroll.'"],
+        "tags": ["React", "GSAP", "ScrollTrigger", "Vite"],
+        "tagsSource": "live bundle /Savra_v2/assets/index-BiyeOSSp.js inspected 2026-11-06 (react-dom, gsap, ScrollTrigger)",
+        "source": "live <meta description> fetched 2026-11-06; D:/Projects/Convenium/content/projects.ts (sector, outcome)"
+      },
+      {
+        "id": "doko",
+        "name": "DOKO",
+        "status": { "en": "Barbershop · proposal", "de": "Barbershop · Vorschlag" },
+        "url": "https://rustamg16.github.io/doko-barbershop-proposal/",
+        "facts": ["website proposal for a two-location barbershop", "'Two locations, one domain.'", "no client approval recorded"],
+        "check": { "en": ["Two locations"], "de": ["Zwei Standorte"] },
+        "tags": ["GSAP", "Lenis", "ScrollTrigger", "Vite"],
+        "tagsSource": "live bundle /doko-barbershop-proposal/assets/main-NvZit5V9.js inspected 2026-11-06 (gsap, ScrollTrigger, lenis)",
+        "source": "D:/Projects/Convenium/content/universe.ts:61 + projects.ts; live page ('Zwei Standorte')"
+      }
+    ]
+  },
+
+  "retiredFromWorks": {
+    "items": ["ECO POWERTECH (site/index.html row 03 today)", "Education Hub (site/index.html row 04 today)"],
+    "note": "Not in the new six per PLAN.md. Education4Students is the only commissioned client job on record (Convenium projects.ts) — dropping it was the plan's decision, flagged in COPY-NOTES.md."
+  }
+}

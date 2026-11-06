@@ -1,0 +1,25 @@
+---
+// Inter 12-13px tracked uppercase label (the boards' mono role). gray on cotton 4.54:1, gray-on-noir on noir 7.02:1.
+interface Props {
+  tag?: 'span' | 'p' | 'div';
+  tone?: 'default' | 'accent';
+  class?: string;
+}
+const { tag: Tag = 'span', tone = 'default', class: cls = '' } = Astro.props;
+---
+<Tag class:list={['t-label', 'label', tone === 'accent' && 'label--accent', cls]}><slot /></Tag>
+
+<style>
+  .label {
+    color: var(--color-gray);
+  }
+  .label--accent {
+    color: var(--red-cherry);
+  }
+  :global([data-theme="noir"]) .label {
+    color: var(--color-gray-on-noir);
+  }
+  :global([data-theme="noir"]) .label--accent {
+    color: var(--red-chili-300);
+  }
+</style>

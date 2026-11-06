@@ -1,0 +1,148 @@
+---
+// /cv/ cover (noir): mark, file kicker, the name as H1, the roles, the file-metadata table, the portrait.
+// The portrait is P4 when it exists at build time, else a token block with the same 4:5 aspect.
+import Mark from '../chrome/Mark.astro';
+import Pill from '../ui/Pill.astro';
+import { t, FACTS, type Lang } from '../../lib/i18n';
+import { withBase } from '../../lib/paths';
+import { portrait } from '../home/media';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const c = t(lang).cv;
+const cv = c.cover;
+const p4 = portrait('cv');
+---
+<section id="top" class="cover" data-theme="noir">
+  <div class="cover__text">
+    <Mark size={64} />
+    <p class="cover__kicker t-label">{cv.kicker}</p>
+    <h1 class="cover__name t-h1" aria-label={cv.nameAria}>
+      <span aria-hidden="true">{cv.name[0]}</span><br aria-hidden="true" /><span aria-hidden="true">{cv.name[1]}</span>
+    </h1>
+    <p class="cover__roles t-subhead"><span class="sr-only">{cv.rolesAria}</span><em aria-hidden="true">{cv.roles.join('. ')}.</em></p>
+    <dl class="meta">
+      {Object.values(cv.meta).map((m) => (
+        <div class="meta__row">
+          <dt class="t-label">{m.label}</dt>
+          <dd class="t-small">{m.value}</dd>
+        </div>
+      ))}
+    </dl>
+    <div class="cover__cta">
+      <Pill href={withBase(FACTS.cvPdf.path)} download={FACTS.cvPdf.downloadName}>{c.download}</Pill>
+      <a class="cover__docs t-nav" href="#vault" data-cursor="link">{cv.docsLink}</a>
+    </div>
+  </div>
+  <div class="cover__portrait">
+    {p4
+      ? <img src={p4.src} alt={cv.portraitAlt} width="1200" height="1500" decoding="async" />
+      : <div class="cover__ph" aria-hidden="true"></div>}
+  </div>
+  <p class="cover__hint t-label" aria-hidden="true">{cv.hint}</p>
+</section>
+
+<style>
+  .cover {
+    position: relative;
+    display: grid;
+    gap: var(--space-5) var(--gutter);
+    padding: calc(var(--header-h) + var(--space-4)) var(--space-container) var(--space-6);
+    background: var(--color-noir);
+    color: var(--color-cotton);
+    --ring-ground: var(--color-noir);
+  }
+  .cover__text {
+    display: grid;
+    align-content: end;
+    justify-items: start;
+    gap: var(--space-3);
+  }
+  .cover__kicker {
+    color: var(--color-gray-on-noir);
+  }
+  .cover__name {
+    margin: 0;
+    color: var(--color-cotton);
+  }
+  .cover__roles {
+    color: var(--color-cotton);
+    max-width: var(--measure-lede);
+  }
+  .meta {
+    width: min(100%, 520px);
+    border-top: 1px solid var(--rule-on-noir);
+  }
+  .meta__row {
+    display: grid;
+    grid-template-columns: 7.5em 1fr;
+    align-items: baseline;
+    gap: var(--space-2);
+    min-height: 44px;
+    padding-block: 10px;
+    border-bottom: 1px solid var(--rule-on-noir);
+  }
+  .meta__row dt {
+    color: var(--color-gray-on-noir);
+  }
+  .meta__row dd {
+    margin: 0;
+    color: var(--color-cotton);
+  }
+  .cover__cta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2) var(--space-4);
+    margin-top: var(--space-1);
+  }
+  .cover__docs {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--touch-min);
+    color: var(--color-cotton);
+    text-underline-offset: 6px;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    transition: color var(--duration-nav-hover) var(--ease-out-sharp);
+  }
+  .cover__docs:hover {
+    color: var(--red-chili-300);
+  }
+  .cover__portrait {
+    width: min(100%, 440px);
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    background: var(--color-wordmark);
+  }
+  .cover__portrait img,
+  .cover__ph {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 20%;
+  }
+  .cover__hint {
+    display: none;
+    color: var(--color-gray-on-noir);
+  }
+  @media (min-width: 960px) {
+    .cover {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: end;
+      min-height: 100svh;
+      padding-bottom: var(--space-5);
+    }
+    .cover__portrait {
+      width: min(34vw, 460px);
+    }
+    .cover__hint {
+      display: block;
+      position: absolute;
+      left: var(--space-container);
+      bottom: var(--space-3);
+    }
+  }
+</style>
